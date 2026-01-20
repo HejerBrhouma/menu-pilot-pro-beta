@@ -1,0 +1,9 @@
+api_platform:
+    eager_loading:
+        max_joins: 50 # Par défaut c'est 30, augmentez à 50 ou 100
+    mapping:
+        paths: ['%kernel.project_dir%/src/Entity']
+    patch_formats:
+        json: ['application/merge-patch+json']
+    swagger:
+        versions: [3]

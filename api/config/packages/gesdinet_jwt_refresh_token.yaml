@@ -1,0 +1,12 @@
+# symfony-api/config/packages/gesdinet_jwt_refresh_token.yaml
+
+gesdinet_jwt_refresh_token:
+  ttl: 2592000 # 30 jours
+  user_identity_field: email
+  refresh_token_entity: App\Entity\RefreshToken
+
+  single_use: true
+  token_parameter_name: refresh_token
+  firewall: api
+
+  # L'option 'refresh_token_path' n'existe plus, nous la gérons dans security.yaml

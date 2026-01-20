@@ -1,0 +1,90 @@
+version: '3.8'
+
+services:
+  # 1. SERVICE API (SYMFONY - PHP-FPM)
+  api:
+    build:
+      context: ./docker/php
+      dockerfile: Dockerfile
+    container_name: digimenu_symfony_fpm
+    volumes:
+      - ./api:/var/www/html # Monte le code Symfony
+    # Symfony se connectera à la BDD via le nom de service 'database'
+    environment:
+      # L'URL BDD sera configurée dans le .env du projet Symfony, mais le HOST est 'database'
+      DATABASE_URL: mysql://${DB_USER}:${DB_PASSWORD}@database:${DB_PORT}/${DB_NAME}?serverVersion=mariadb-10.11.2
+    depends_on:
+      - database
+
+  # 2. SERVEUR WEB (CADDY)
+  #caddy:
+    #image: caddy:2-alpine
+    #container_name: digimenu_caddy
+    #restart: unless-stopped
+    #ports:
+     # - "${SYMFONY_PORT}:80" # Votre port 8000
+    #volumes:
+     # - ./api:/var/www/html
+    #environment:
+     # SERVER_NAME: 'localhost'
+    # ASSUREZ-VOUS QUE CETTE LIGNE EST PRÉSENTE ET CORRECTE :
+    #command: caddy reverse-proxy --from :80 --to api:9000
+    # ^^^^^^^^^^^ Caddy doit parler au service 'api' sur le port 9000
+  # 2. SERVEUR WEB (NGINX)
+  nginx:
+    image: nginx:stable-alpine
+    container_name: digimenu_nginx
+    restart: unless-stopped
+    ports:
+      - "${SYMFONY_PORT}:80" # Permet d'accéder à l'API via localhost:8000
+    volumes:
+      # Monte le code Symfony pour que Nginx puisse le servir
+      - ./symfony-api:/var/www/html:ro
+      # Monte le fichier de configuration Nginx
+      - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - api # Nginx dépend de PHP-FPM
+
+  # 3. BASE DE DONNÉES (MARIADB)
+  database:
+    image: mariadb:10.11
+    container_name: digimenu_mariadb
+    restart: always
+    volumes:
+      - db-data:/var/lib/mysql # Persistance des données
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+
+  # 4. ADMIN DE BASE DE DONNÉES (PHPMYADMIN)
+  pma:
+    image: phpmyadmin:latest
+    container_name: digimenu_phpmyadmin
+    restart: always
+    ports:
+      - "${PMA_PORT}:80" # Permet d'accéder à phpMyAdmin via localhost:8080
+    environment:
+      # Se connecte à notre service de base de données 'database'
+      PMA_HOST: database
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    depends_on:
+      - database
+
+  # 5. ANGULAR (POUR EXÉCUTER NG SERVE/CLI)
+  node_management:
+    build:
+      context: ./docker/angular
+      dockerfile: Dockerfile
+    container_name: digimenu_angular_cli
+    user: node # Exécute les commandes en tant qu'utilisateur non-root
+    volumes:
+      - ./frontend:/src/app # Monte le code Angular
+      - /src/app/node_modules # S'assure que node_modules reste dans le conteneur
+    ports:
+      - "${ANGULAR_PORT}:4200"
+    command: "npm start" # La commande sera lancée plus tard pour 'ng serve'
+
+volumes:
+  db-data:
