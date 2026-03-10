@@ -1,0 +1,163 @@
+// src/app/pages/dashboard/product/product-list/product-list.component.ts
+
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormControl } from '@angular/forms';
+import { MatTableModule, MatTableDataSource } from '@angular/material/table';
+import { MatPaginatorModule, MatPaginator, PageEvent } from '@angular/material/paginator';
+import { MatSortModule, MatSort } from '@angular/material/sort';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+
+import { ProductService } from '../../../../core/services/product.service';
+import { CategoryService } from '../../../../core/services/category.service';
+import { ProductRead } from '../../../../core/models/product.model';
+import { Category } from '../../../../core/models/category.model';
+import { ProductFormDialogComponent } from '../product-form-dialog/ product-form-dialog.component';
+import { ConfirmDialogComponent } from '../../../../shared/confirm-dialog/confirm-dialog.component';
+
+@Component({
+  selector: 'app-product-list',
+  standalone: true,
+  imports: [
+    CommonModule, ReactiveFormsModule,
+    MatTableModule, MatPaginatorModule, MatSortModule,
+    MatButtonModule, MatIconModule, MatInputModule,
+    MatFormFieldModule, MatChipsModule, MatTooltipModule,
+    MatSnackBarModule, MatDialogModule, MatProgressSpinnerModule
+  ],
+  templateUrl: './product-list.component.html',
+  styleUrls: ['./product-list.component.scss']
+})
+export class ProductListComponent implements OnInit {
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  @ViewChild(MatSort) sort!: MatSort;
+
+  displayedColumns = ['name', 'price', 'categories', 'status', 'actions'];
+  dataSource = new MatTableDataSource<ProductRead>();
+
+  categories: Category[] = [];
+  loading = false;
+  totalItems = 0;
+  currentPage = 1;
+  pageSize = 10;
+
+  searchControl = new FormControl('');
+
+  constructor(
+    private productService: ProductService,
+    private categoryService: CategoryService,
+    private snackBar: MatSnackBar,
+    private dialog: MatDialog
+  ) {}
+
+  ngOnInit(): void {
+    this.loadCategories();
+    this.loadProducts();
+
+    this.searchControl.valueChanges.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(query => {
+      this.dataSource.filter = (query ?? '').trim().toLowerCase();
+    });
+  }
+
+  loadCategories(): void {
+    this.categoryService.getAll().subscribe({
+      next: cats => this.categories = cats,
+      error: () => this.notify('Erreur chargement catégories', 'error')
+    });
+  }
+
+  loadProducts(): void {
+    this.loading = true;
+    this.productService.getAll(this.currentPage, this.pageSize).subscribe({
+      next: ({ items, total }) => {
+        this.dataSource.data = items;
+        this.totalItems = total;
+        this.loading = false;
+        setTimeout(() => { this.dataSource.sort = this.sort; });
+      },
+      error: (err) => {
+        this.notify(err.message, 'error');
+        this.loading = false;
+      }
+    });
+  }
+
+  onPageChange(event: PageEvent): void {
+    this.currentPage = event.pageIndex + 1;
+    this.pageSize = event.pageSize;
+    this.loadProducts();
+  }
+
+  openAddDialog(): void {
+    const ref = this.dialog.open(ProductFormDialogComponent, {
+      width: '600px',
+      data: { product: null, categories: this.categories }
+    });
+    ref.afterClosed().subscribe(result => {
+      if (!result) return;
+      this.productService.create(result).subscribe({
+        next: () => { this.notify('Produit ajouté ✓'); this.loadProducts(); },
+        error: (err) => this.notify(err.message, 'error')
+      });
+    });
+  }
+
+  openEditDialog(product: ProductRead): void {
+    const ref = this.dialog.open(ProductFormDialogComponent, {
+      width: '600px',
+      data: { product, categories: this.categories }
+    });
+    ref.afterClosed().subscribe(result => {
+      if (!result || !product.id) return;
+      this.productService.update(product.id, result).subscribe({
+        next: () => { this.notify('Produit mis à jour ✓'); this.loadProducts(); },
+        error: (err) => this.notify(err.message, 'error')
+      });
+    });
+  }
+
+  confirmDelete(product: ProductRead): void {
+    const ref = this.dialog.open(ConfirmDialogComponent, {
+      width: '420px',
+      data: {
+        title: 'Supprimer le produit',
+        message: `Supprimer <strong>${product.name}</strong> ?`,
+        confirmLabel: 'Supprimer',
+        confirmColor: 'warn'
+      }
+    });
+    ref.afterClosed().subscribe(confirmed => {
+      if (!confirmed || !product.id) return;
+      this.productService.delete(product.id).subscribe({
+        next: () => { this.notify('Produit supprimé'); this.loadProducts(); },
+        error: (err) => this.notify(err.message, 'error')
+      });
+    });
+  }
+
+  getCategoryName(catOrIri: any): string {
+    const iri = typeof catOrIri === 'string' ? catOrIri : catOrIri?.['@id'];
+    return this.categories.find(c => c['@id'] === iri)?.name ?? '—';
+  }
+
+  private notify(message: string, type: 'success' | 'error' = 'success'): void {
+    this.snackBar.open(message, '✕', {
+      duration: 3500,
+      panelClass: type === 'error' ? ['snack-error'] : ['snack-success'],
+      horizontalPosition: 'end',
+      verticalPosition: 'top'
+    });
+  }
+}

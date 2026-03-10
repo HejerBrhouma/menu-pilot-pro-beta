@@ -1,0 +1,21 @@
+.product-container {
+  max-width: 1200px;
+  margin: 0 auto;
+
+  table {
+    td {
+      vertical-align: middle;
+    }
+  }
+
+  select[multiple] {
+    scrollbar-width: thin;
+    &::-webkit-scrollbar {
+      width: 4px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+  }
+}

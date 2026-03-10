@@ -1,0 +1,52 @@
+// src/app/pages/dashboard/product/product-form-dialog/product-form-dialog.component.scss
+
+.dialog-wrapper { display: flex; flex-direction: column; min-width: 560px; }
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+
+  .dialog-title {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    mat-icon { color: #3f51b5; font-size: 1.5rem; width: 1.5rem; height: 1.5rem; }
+    h2 { margin: 0; font-size: 1.15rem; font-weight: 700; color: #1a1a2e; }
+  }
+}
+
+.dialog-body {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.full-width { width: 100%; }
+
+.row-fields {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+
+  .price-field { flex: 1; }
+
+  .toggle-field {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding-bottom: 1.1rem;
+    .toggle-label { font-size: 0.75rem; color: #6b7280; font-weight: 500; }
+  }
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  button[mat-flat-button] { border-radius: 8px; font-weight: 600; }
+}

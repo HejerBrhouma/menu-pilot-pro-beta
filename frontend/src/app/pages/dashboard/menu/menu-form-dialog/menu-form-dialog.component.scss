@@ -1,0 +1,153 @@
+// src/app/pages/dashboard/menu/menu-form-dialog/menu-form-dialog.component.scss
+
+.dialog-wrapper { display: flex; flex-direction: column; min-width: 700px; }
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+
+  .dialog-title {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    mat-icon { color: #ec4899; font-size: 1.5rem; width: 1.5rem; height: 1.5rem; }
+    h2 { margin: 0; font-size: 1.15rem; font-weight: 700; color: #1a1a2e; }
+  }
+}
+
+.dialog-body {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 68vh;
+  overflow-y: auto;
+}
+
+.form-section-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 0.25rem;
+}
+
+.full-width { width: 100%; }
+
+.row-fields {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+
+  .time-field { flex: 1; }
+
+  .toggle-field {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding-bottom: 1.1rem;
+    .toggle-label { font-size: 0.75rem; color: #6b7280; font-weight: 500; white-space: nowrap; }
+  }
+}
+
+.section-divider { margin: 0.5rem 0 1rem; }
+
+// Sections
+.sections-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+
+  .add-section-btn {
+    font-size: 0.8rem;
+    height: 34px;
+    border-color: #ec4899;
+    color: #ec4899;
+    border-radius: 8px;
+  }
+}
+
+.sections-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  color: #9ca3af;
+  background: #f8fafc;
+  border-radius: 10px;
+  border: 2px dashed #e5e7eb;
+  gap: 0.5rem;
+
+  mat-icon { font-size: 2rem; width: 2rem; height: 2rem; opacity: 0.5; }
+  p { margin: 0; font-size: 0.85rem; }
+}
+
+.sections-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.section-panel {
+  border-radius: 10px !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: none !important;
+
+  &.mat-expanded { border-color: #ec4899 !important; }
+}
+
+.section-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+}
+
+.section-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+
+  .flex-grow { flex: 1; }
+}
+
+.order-btns {
+  display: flex;
+  flex-direction: column;
+  padding-top: 4px;
+  button { width: 32px !important; height: 32px !important; line-height: 32px !important; }
+}
+
+// Option avec prix
+.select-option {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  gap: 1rem;
+
+  .option-price {
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: #ec4899;
+    flex-shrink: 0;
+  }
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+
+  button[mat-flat-button] {
+    border-radius: 8px;
+    font-weight: 600;
+    background: #ec4899 !important;
+    box-shadow: 0 4px 14px rgba(236,72,153,0.25);
+  }
+}

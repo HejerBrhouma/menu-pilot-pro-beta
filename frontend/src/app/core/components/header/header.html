@@ -1,0 +1,144 @@
+<!-- src/app/core/components/header/header.html -->
+
+<mat-sidenav-container class="sidenav-container">
+
+  <!-- ══════════ SIDEBAR ══════════ -->
+  <mat-sidenav mode="side" opened class="sidenav">
+
+    <!-- Logo -->
+    <div class="sidebar-logo">
+      <div class="logo-icon">
+        <mat-icon>restaurant_menu</mat-icon>
+      </div>
+      <div class="logo-text">
+        <span class="logo-name">Menu Pilot</span>
+        <span class="logo-version">Pro</span>
+      </div>
+    </div>
+
+    <div class="sidebar-content">
+
+      <!-- ── Dashboard ── -->
+      <nav class="nav-section">
+        <a mat-ripple class="nav-item"
+           routerLink="/dashboard"
+           routerLinkActive="active">
+          <div class="nav-icon"><mat-icon>dashboard</mat-icon></div>
+          <span>Dashboard</span>
+        </a>
+      </nav>
+
+      <!-- ── Gestion ── -->
+      <div class="nav-group">
+        <div class="nav-group-label">Gestion</div>
+        <nav class="nav-section">
+
+          <a mat-ripple class="nav-item"
+             routerLink="/products"
+             routerLinkActive="active">
+            <div class="nav-icon"><mat-icon>inventory_2</mat-icon></div>
+            <span>Produits</span>
+          </a>
+
+          <a mat-ripple class="nav-item"
+             routerLink="/categories"
+             routerLinkActive="active">
+            <div class="nav-icon"><mat-icon>category</mat-icon></div>
+            <span>Catégories</span>
+          </a>
+
+          <a mat-ripple class="nav-item"
+             routerLink="/packs"
+             routerLinkActive="active">
+            <div class="nav-icon"><mat-icon>layers</mat-icon></div>
+            <span>Packs</span>
+          </a>
+
+        </nav>
+      </div>
+
+      <!-- ── Menu & Digital ── -->
+      <div class="nav-group">
+        <div class="nav-group-label">Menu Digital</div>
+        <nav class="nav-section">
+
+          <a mat-ripple class="nav-item"
+             routerLink="/menu"
+             routerLinkActive="active">
+            <div class="nav-icon"><mat-icon>menu_book</mat-icon></div>
+            <span>Menu</span>
+          </a>
+
+          <a mat-ripple class="nav-item"
+             routerLink="/qr-code"
+             routerLinkActive="active">
+            <div class="nav-icon"><mat-icon>qr_code_2</mat-icon></div>
+            <span>QR Code</span>
+            <span class="nav-badge">Bêta</span>
+          </a>
+
+        </nav>
+      </div>
+
+      <!-- ── Interactions ── -->
+      <div class="nav-group">
+        <div class="nav-group-label">Interactions</div>
+        <nav class="nav-section">
+
+          <a mat-ripple class="nav-item"
+             routerLink="/reviews"
+             routerLinkActive="active">
+            <div class="nav-icon"><mat-icon>star_rate</mat-icon></div>
+            <span>Avis</span>
+          </a>
+
+          <a mat-ripple class="nav-item"
+             routerLink="/notifications"
+             routerLinkActive="active">
+            <div class="nav-icon"><mat-icon>notifications</mat-icon></div>
+            <span>Notifications</span>
+            <span class="nav-dot" *ngIf="hasNotifications"></span>
+          </a>
+
+        </nav>
+      </div>
+
+      <!-- ── Système ── -->
+      <div class="nav-group">
+        <div class="nav-group-label">Système</div>
+        <nav class="nav-section">
+
+          <a mat-ripple class="nav-item"
+             routerLink="/settings"
+             routerLinkActive="active">
+            <div class="nav-icon"><mat-icon>settings</mat-icon></div>
+            <span>Paramètres</span>
+          </a>
+
+        </nav>
+      </div>
+
+    </div>
+
+    <!-- ── User card + Logout ── -->
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar">{{ userInitial }}</div>
+        <div class="user-info">
+          <span class="user-name">{{ userName }}</span>
+          <span class="user-role">Administrateur</span>
+        </div>
+        <button mat-icon-button class="logout-btn" (click)="logout()" matTooltip="Déconnexion">
+          <mat-icon>logout</mat-icon>
+        </button>
+      </div>
+    </div>
+
+  </mat-sidenav>
+
+  <!-- ══════════ CONTENU ══════════ -->
+  <mat-sidenav-content class="main-content">
+    <!-- <router-outlet></router-outlet>-->
+ </mat-sidenav-content>
+
+</mat-sidenav-container>

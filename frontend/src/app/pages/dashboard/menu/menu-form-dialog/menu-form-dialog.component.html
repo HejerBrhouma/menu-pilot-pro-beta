@@ -1,0 +1,171 @@
+<!-- src/app/pages/dashboard/menu/menu-form-dialog/menu-form-dialog.component.html -->
+
+<div class="dialog-wrapper">
+
+  <!-- Header -->
+  <div class="dialog-header">
+    <div class="dialog-title">
+      <mat-icon>{{ isEdit ? 'edit' : 'restaurant_menu' }}</mat-icon>
+      <h2>{{ isEdit ? 'Modifier le menu' : 'Nouveau menu' }}</h2>
+    </div>
+    <button mat-icon-button (click)="cancel()"><mat-icon>close</mat-icon></button>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <form [formGroup]="form" class="dialog-body">
+
+    <!-- ── Infos générales ── -->
+    <div class="form-section-title">Informations générales</div>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Nom du menu *</mat-label>
+      <input matInput formControlName="name" placeholder="Ex: Menu Midi, Carte du Soir…">
+      <mat-icon matSuffix>restaurant_menu</mat-icon>
+      <mat-error>{{ nameError }}</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Description</mat-label>
+      <textarea matInput formControlName="description" rows="2"
+                placeholder="Décrivez ce menu…"></textarea>
+    </mat-form-field>
+
+    <!-- Horaires + Toggle -->
+    <div class="row-fields">
+      <mat-form-field appearance="outline" class="time-field">
+        <mat-label>Heure de début</mat-label>
+        <input matInput type="time" formControlName="timeStart">
+        <mat-icon matSuffix>schedule</mat-icon>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="time-field">
+        <mat-label>Heure de fin</mat-label>
+        <input matInput type="time" formControlName="timeEnd">
+        <mat-icon matSuffix>schedule</mat-icon>
+      </mat-form-field>
+
+      <div class="toggle-field">
+        <label class="toggle-label">Menu actif</label>
+        <mat-slide-toggle formControlName="isActive" color="primary"></mat-slide-toggle>
+      </div>
+    </div>
+
+    <mat-divider class="section-divider"></mat-divider>
+
+    <!-- ── Sections ── -->
+    <div class="sections-header">
+      <div class="form-section-title">Sections du menu</div>
+      <button type="button" mat-stroked-button (click)="addSection()" class="add-section-btn">
+        <mat-icon>add</mat-icon>
+        Ajouter une section
+      </button>
+    </div>
+
+    <div class="sections-empty" *ngIf="sections.length === 0">
+      <mat-icon>layers</mat-icon>
+      <p>Aucune section. Ajoutez des sections pour organiser votre menu.</p>
+    </div>
+
+    <mat-accordion class="sections-accordion" formArrayName="sections">
+      <mat-expansion-panel
+        *ngFor="let section of sections.controls; let i = index"
+        [formGroupName]="i"
+        class="section-panel">
+
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <mat-icon>segment</mat-icon>
+            {{ section.get('title')?.value || 'Nouvelle section' }}
+          </mat-panel-title>
+          <mat-panel-description>
+            {{ section.get('products')?.value?.length || 0 }} produits •
+            {{ section.get('packs')?.value?.length || 0 }} packs •
+            {{ section.get('categories')?.value?.length || 0 }} catégories
+          </mat-panel-description>
+        </mat-expansion-panel-header>
+
+        <!-- Contenu section -->
+        <div class="section-content">
+
+          <!-- Titre + Ordre -->
+          <div class="section-row">
+            <mat-form-field appearance="outline" class="flex-grow">
+              <mat-label>Titre de la section *</mat-label>
+              <input matInput formControlName="title" placeholder="Ex: Entrées, Plats, Desserts…">
+              <mat-error *ngIf="section.get('title')?.hasError('required')">Titre requis</mat-error>
+            </mat-form-field>
+
+            <div class="order-btns">
+              <button type="button" mat-icon-button (click)="moveSection(i, 'up')"
+                      [disabled]="i === 0" matTooltip="Monter">
+                <mat-icon>keyboard_arrow_up</mat-icon>
+              </button>
+              <button type="button" mat-icon-button (click)="moveSection(i, 'down')"
+                      [disabled]="i === sections.length - 1" matTooltip="Descendre">
+                <mat-icon>keyboard_arrow_down</mat-icon>
+              </button>
+              <button type="button" mat-icon-button color="warn" (click)="removeSection(i)" matTooltip="Supprimer">
+                <mat-icon>delete_outline</mat-icon>
+              </button>
+            </div>
+          </div>
+
+          <!-- Produits -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Produits</mat-label>
+            <mat-select formControlName="products" multiple>
+              <mat-option *ngFor="let p of data.products" [value]="p['@id']">
+                <span class="select-option">
+                  <span>{{ p.name }}</span>
+                  <span class="option-price">{{ p.price | number:'1.2-2' }} €</span>
+                </span>
+              </mat-option>
+            </mat-select>
+            <mat-icon matSuffix>inventory_2</mat-icon>
+          </mat-form-field>
+
+          <!-- Packs -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Packs</mat-label>
+            <mat-select formControlName="packs" multiple>
+              <mat-option *ngFor="let p of data.packs" [value]="p['@id']">
+                <span class="select-option">
+                  <span>{{ p.name }}</span>
+                  <span class="option-price">{{ p.price | number:'1.2-2' }} €</span>
+                </span>
+              </mat-option>
+            </mat-select>
+            <mat-icon matSuffix>layers</mat-icon>
+          </mat-form-field>
+
+          <!-- Catégories -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Catégories entières</mat-label>
+            <mat-select formControlName="categories" multiple>
+              <mat-option *ngFor="let c of data.categories" [value]="c['@id']">
+                {{ c.name }}
+              </mat-option>
+            </mat-select>
+            <mat-icon matSuffix>category</mat-icon>
+            <mat-hint>Tous les produits de ces catégories seront inclus</mat-hint>
+          </mat-form-field>
+
+        </div>
+      </mat-expansion-panel>
+    </mat-accordion>
+
+  </form>
+
+  <mat-divider></mat-divider>
+
+  <!-- Footer -->
+  <div class="dialog-footer">
+    <button mat-stroked-button (click)="cancel()">Annuler</button>
+    <button mat-flat-button color="primary" (click)="submit()" [disabled]="form.invalid">
+      <mat-icon>{{ isEdit ? 'save' : 'add' }}</mat-icon>
+      {{ isEdit ? 'Enregistrer' : 'Créer le menu' }}
+    </button>
+  </div>
+
+</div>

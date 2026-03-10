@@ -1,0 +1,43 @@
+<!-- src/app/pages/dashboard/category/category-form-dialog/category-form-dialog.component.html -->
+
+<div class="dialog-wrapper">
+
+  <div class="dialog-header">
+    <div class="dialog-title">
+      <mat-icon>{{ isEdit ? 'edit' : 'add_circle' }}</mat-icon>
+      <h2>{{ isEdit ? 'Modifier la catégorie' : 'Nouvelle catégorie' }}</h2>
+    </div>
+    <button mat-icon-button (click)="cancel()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <form [formGroup]="form" class="dialog-body">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Nom de la catégorie *</mat-label>
+      <input matInput formControlName="name"
+             placeholder="Ex: Boissons, Pizzas, Desserts…"
+             (keyup.enter)="submit()">
+      <mat-icon matSuffix>label</mat-icon>
+      <mat-error>{{ nameError }}</mat-error>
+    </mat-form-field>
+
+    <p class="hint-text">
+      <mat-icon>info_outline</mat-icon>
+      Les catégories permettent d'organiser vos produits dans le menu.
+    </p>
+  </form>
+
+  <mat-divider></mat-divider>
+
+  <div class="dialog-footer">
+    <button mat-stroked-button (click)="cancel()">Annuler</button>
+    <button mat-flat-button color="primary" (click)="submit()" [disabled]="form.invalid">
+      <mat-icon>{{ isEdit ? 'save' : 'add' }}</mat-icon>
+      {{ isEdit ? 'Enregistrer' : 'Créer' }}
+    </button>
+  </div>
+
+</div>

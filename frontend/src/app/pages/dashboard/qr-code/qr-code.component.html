@@ -1,0 +1,130 @@
+<!-- src/app/pages/dashboard/qr-code/qr-code.component.html -->
+
+<div class="qr-page">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1><mat-icon>qr_code_2</mat-icon> QR Code & PDF</h1>
+      <p class="subtitle">Générez et téléchargez vos menus en PDF avec QR code</p>
+    </div>
+  </div>
+
+  <div class="qr-layout">
+
+    <!-- ── Sélection menu ── -->
+    <div class="panel select-panel">
+      <div class="panel-title">
+        <mat-icon>restaurant_menu</mat-icon>
+        Sélectionner un menu
+      </div>
+
+      <div class="loading-menus" *ngIf="loading">
+        <mat-spinner diameter="32"></mat-spinner>
+      </div>
+
+      <div class="menu-cards" *ngIf="!loading">
+        <div
+          class="menu-card"
+          *ngFor="let m of menus"
+          [class.selected]="selectedMenu?.id === m.id"
+          [class.inactive]="!m.isActive"
+          (click)="selectMenu(m)">
+
+          <div class="menu-card-icon">
+            <mat-icon>restaurant_menu</mat-icon>
+          </div>
+          <div class="menu-card-info">
+            <span class="menu-card-name">{{ m.name }}</span>
+            <span class="menu-card-meta">
+              {{ m.sections.length }} section(s)
+              <span *ngIf="m.timeStart"> · {{ m.timeStart }}–{{ m.timeEnd }}</span>
+            </span>
+          </div>
+          <div class="menu-card-status" [class.active]="m.isActive">
+            <span class="dot"></span>
+          </div>
+        </div>
+
+        <div class="no-menus" *ngIf="menus.length === 0">
+          <mat-icon>restaurant_menu</mat-icon>
+          <p>Aucun menu créé</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Aperçu QR + Actions ── -->
+    <div class="panel preview-panel" *ngIf="selectedMenu">
+
+      <!-- QR Code -->
+      <div class="qr-preview">
+        <div class="qr-card">
+          <div class="qr-header-text">
+            <span class="qr-restaurant">Menu Pilot Pro</span>
+            <span class="qr-menu-name">{{ selectedMenu.name }}</span>
+            <span class="qr-horaire" *ngIf="selectedMenu.timeStart">
+              {{ selectedMenu.timeStart }} — {{ selectedMenu.timeEnd }}
+            </span>
+          </div>
+
+          <div class="qr-image-wrap">
+            <img [src]="qrDataUrl" *ngIf="qrDataUrl" alt="QR Code" class="qr-image">
+            <mat-spinner diameter="40" *ngIf="!qrDataUrl"></mat-spinner>
+          </div>
+
+          <p class="qr-scan-label">Scannez pour voir le menu</p>
+          <p class="qr-url">{{ getMenuUrl(selectedMenu) }}</p>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="actions-panel">
+        <div class="panel-title">
+          <mat-icon>download</mat-icon>
+          Actions
+        </div>
+
+        <!-- Info sections -->
+        <div class="menu-summary">
+          <div class="summary-item" *ngFor="let s of selectedMenu.sections">
+            <mat-icon>segment</mat-icon>
+            <span>{{ s.title }}</span>
+            <span class="summary-count">
+              {{ s.products.length || 0 }} produits
+            </span>
+          </div>
+        </div>
+
+        <!-- Boutons -->
+        <div class="action-buttons">
+          <button mat-stroked-button class="action-btn copy-btn" (click)="copyLink()">
+            <mat-icon>link</mat-icon>
+            Copier le lien
+          </button>
+
+          <a [href]="getMenuUrl(selectedMenu)" target="_blank" mat-stroked-button class="action-btn preview-btn">
+            <mat-icon>open_in_new</mat-icon>
+            Voir le menu
+          </a>
+
+          <button
+            mat-flat-button
+            class="action-btn pdf-btn"
+            (click)="generatePDF()"
+            [disabled]="generating">
+            <mat-spinner diameter="18" *ngIf="generating"></mat-spinner>
+            <mat-icon *ngIf="!generating">picture_as_pdf</mat-icon>
+            {{ generating ? 'Génération…' : 'Télécharger PDF' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Placeholder si aucun menu sélectionné -->
+    <div class="panel preview-panel empty-preview" *ngIf="!selectedMenu && !loading">
+      <mat-icon>qr_code_2</mat-icon>
+      <p>Sélectionnez un menu pour générer son QR code et son PDF</p>
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,106 @@
+<!-- src/app/pages/menu-public/menu-public.component.html -->
+
+<!-- LOADER -->
+<div class="public-loader" *ngIf="loading">
+  <mat-spinner diameter="48"></mat-spinner>
+  <p>Chargement du menu…</p>
+</div>
+
+<!-- NOT FOUND -->
+<div class="not-found" *ngIf="!loading && notFound">
+  <mat-icon>restaurant</mat-icon>
+  <h2>Menu introuvable</h2>
+  <p>Ce QR code ne correspond à aucun menu actif.</p>
+</div>
+
+<!-- MENU PUBLIC -->
+<div class="public-menu" *ngIf="!loading && menu">
+
+  <!-- Header restaurant -->
+  <div class="menu-hero">
+    <div class="hero-icon">
+      <mat-icon>restaurant_menu</mat-icon>
+    </div>
+    <h1 class="restaurant-name">Menu Pilot</h1>
+    <h2 class="menu-name">{{ menu.name }}</h2>
+    <p class="menu-desc" *ngIf="menu.description">{{ menu.description }}</p>
+    <div class="menu-horaire" *ngIf="menu.timeStart && menu.timeEnd">
+      <mat-icon>schedule</mat-icon>
+      {{ menu.timeStart }} — {{ menu.timeEnd }}
+    </div>
+  </div>
+
+  <!-- Sections vides -->
+  <div class="menu-content" *ngIf="menu.sections.length === 0">
+    <div class="empty-sections">
+      <mat-icon>restaurant_menu</mat-icon>
+      <p>Ce menu n'a pas encore de sections.</p>
+      <span>Revenez bientôt !</span>
+    </div>
+  </div>
+
+  <!-- Sections -->
+  <div class="menu-content" *ngIf="menu.sections.length > 0">
+    <div class="menu-section" *ngFor="let section of menu.sections">
+
+      <div class="section-header">
+        <h3>{{ section.title }}</h3>
+        <div class="section-line"></div>
+      </div>
+
+      <!-- Produits -->
+      <div class="items-grid" *ngIf="section.products && section.products.length > 0">
+        <div class="menu-item" *ngFor="let p of section.products">
+          <div class="item-avatar">{{ $any(p).name ? $any(p).name[0] : '?' }}</div>
+          <div class="item-info">
+            <span class="item-name">{{ $any(p).name }}</span>
+            <span class="item-desc" *ngIf="$any(p).description">{{ $any(p).description }}</span>
+          </div>
+          <span class="item-price">{{ $any(p).price | number:'1.2-2' }} €</span>
+        </div>
+      </div>
+
+      <!-- Packs -->
+      <div class="items-grid" *ngIf="section.packs && section.packs.length > 0">
+        <div class="menu-item pack-item" *ngFor="let pk of section.packs">
+          <div class="item-avatar pack-avatar">
+            <mat-icon>layers</mat-icon>
+          </div>
+          <div class="item-info">
+            <span class="item-name">{{ $any(pk).name }}</span>
+            <span class="item-desc" *ngIf="$any(pk).description">{{ $any(pk).description }}</span>
+            <div class="pack-products" *ngIf="$any(pk).products?.length">
+              <span *ngFor="let prod of $any(pk).products" class="pack-tag">{{ prod.name }}</span>
+            </div>
+          </div>
+          <span class="item-price pack-price">{{ $any(pk).price | number:'1.2-2' }} €</span>
+        </div>
+      </div>
+
+      <!-- Catégories -->
+      <ng-container *ngIf="section.categories && section.categories.length > 0">
+        <div *ngFor="let cat of section.categories">
+          <div class="cat-title">{{ $any(cat).name }}</div>
+          <div class="items-grid" *ngIf="$any(cat).products?.length">
+            <div class="menu-item" *ngFor="let p of $any(cat).products">
+              <div class="item-avatar">{{ p.name ? p.name[0] : '?' }}</div>
+              <div class="item-info">
+                <span class="item-name">{{ p.name }}</span>
+                <span class="item-desc" *ngIf="p.description">{{ p.description }}</span>
+              </div>
+              <span class="item-price">{{ p.price | number:'1.2-2' }} €</span>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="menu-footer">
+    <mat-icon>restaurant</mat-icon>
+    <p>Powered by Menu Pilot Pro</p>
+  </div>
+
+</div>
