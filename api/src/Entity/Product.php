@@ -21,21 +21,27 @@ class Product
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
-     * @Groups({"product:read"})
+     * @Groups({"product:read", "menu:read"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"product:read", "product:write"})
+     * @Groups({"product:read", "product:write", "menu:read"})
      */
     private $name;
 
     /**
      * @ORM\Column(type="float")
-     * @Groups({"product:read", "product:write"})
+     * @Groups({"product:read", "product:write", "menu:read"})
      */
     private $price;
+
+    /**
+     * @ORM\Column(type="boolean")
+     * @Groups({"product:read", "product:write", "menu:read"})
+     */
+    private bool $isAvailable = true;
 
     /**
      * @ORM\ManyToMany(targetEntity=Category::class, inversedBy="products")
@@ -48,40 +54,19 @@ class Product
         $this->categories = new ArrayCollection();
     }
 
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
+    public function getId(): ?int { return $this->id; }
 
-    public function getName(): ?string
-    {
-        return $this->name;
-    }
+    public function getName(): ?string { return $this->name; }
+    public function setName(string $name): self { $this->name = $name; return $this; }
 
-    public function setName(string $name): self
-    {
-        $this->name = $name;
-        return $this;
-    }
+    public function getPrice(): ?float { return $this->price; }
+    public function setPrice(float $price): self { $this->price = $price; return $this; }
 
-    public function getPrice(): ?float
-    {
-        return $this->price;
-    }
+    public function getIsAvailable(): bool { return $this->isAvailable; }
+    public function setIsAvailable(bool $isAvailable): self { $this->isAvailable = $isAvailable; return $this; }
 
-    public function setPrice(float $price): self
-    {
-        $this->price = $price;
-        return $this;
-    }
-
-    /**
-     * @return Collection|Category[]
-     */
-    public function getCategories(): Collection
-    {
-        return $this->categories;
-    }
+    /** @return Collection|Category[] */
+    public function getCategories(): Collection { return $this->categories; }
 
     public function addCategory(Category $category): self
     {
