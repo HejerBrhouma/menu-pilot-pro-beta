@@ -1,0 +1,60 @@
+// promotion-form-dialog.component.scss
+
+.dialog-header {
+  display: flex; align-items: center; gap: 10px; padding: 1.5rem 1.5rem 0;
+  mat-icon { color: #f59e0b; font-size: 1.75rem; width: 1.75rem; height: 1.75rem; }
+  h2 { margin: 0; font-size: 1.25rem; font-weight: 700; color: #1a1a2e; }
+}
+
+mat-dialog-content {
+  padding: 1.25rem 1.5rem !important;
+  max-height: 72vh;
+}
+
+.promo-form { display: flex; flex-direction: column; gap: 0.625rem; }
+
+.section-title {
+  font-size: 0.72rem; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 0.8px; color: #6366f1; margin: 0.5rem 0 0;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+
+.section-hint {
+  font-size: 0.68rem; font-weight: 400; text-transform: none;
+  color: #9ca3af; letter-spacing: 0;
+}
+
+mat-divider { margin: 0.5rem 0 !important; }
+
+.full-width { width: 100%; }
+.two-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+.target-option {
+  display: flex; justify-content: space-between; align-items: center;
+  width: 100%; gap: 1rem;
+}
+.target-price { font-size: 0.78rem; font-weight: 700; color: #f59e0b; flex-shrink: 0; }
+
+// ── Jours de la semaine ──
+.days-selector { padding: 0.5rem 0; }
+.days-label { font-size: 0.78rem; font-weight: 600; color: #374151; display: block; margin-bottom: 0.5rem; }
+.days-grid { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.day-btn {
+  width: 44px; height: 44px; border-radius: 10px;
+  border: 2px solid #e5e7eb; background: white;
+  font-size: 0.72rem; font-weight: 700; color: #6b7280;
+  cursor: pointer; transition: all 0.15s;
+  &:hover { border-color: #6366f1; color: #6366f1; }
+  &.selected { background: #6366f1; border-color: #6366f1; color: white; }
+}
+
+// ── Dates custom ──
+.custom-dates-section { display: flex; flex-direction: column; gap: 0.5rem; }
+.custom-dates-input { display: flex; align-items: center; gap: 0.5rem; }
+.flex-1 { flex: 1; }
+.custom-dates-list mat-chip { font-size: 0.78rem; }
+
+.toggle-row { display: flex; align-items: center; padding: 0.25rem 0 0.5rem; }
+
+mat-dialog-actions { padding: 1rem 1.5rem !important; gap: 0.75rem; }
+mat-dialog-actions button { border-radius: 10px; display: flex; align-items: center; gap: 6px; }

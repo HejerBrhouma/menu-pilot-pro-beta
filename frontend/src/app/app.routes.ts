@@ -148,6 +148,13 @@ export const routes: Routes = [
           import('./pages/dashboard/staff/staff.component')
             .then(m => m.StaffComponent)
       },
+      {
+        path: 'promotions',
+        title: 'Promotions',
+        loadComponent: () =>
+          import('./pages/dashboard/promotions/promotions.component')
+            .then(m => m.PromotionsComponent)
+      }
     ]
   },
 
