@@ -33,7 +33,7 @@ class ImpersonationController extends AbstractController
      */
     public function impersonate(int $id): JsonResponse
     {
-        // Vérifier que l'appelant est bien SUPER_ADMIN ou ADMIN
+        /** @var User|null $currentUser */
         $currentUser = $this->security->getUser();
 
         if (!$currentUser) {
@@ -41,9 +41,10 @@ class ImpersonationController extends AbstractController
         }
 
         $isSuperAdmin = in_array('ROLE_SUPER_ADMIN', $currentUser->getRoles());
-        $isAdmin      = in_array('ROLE_ADMIN', $currentUser->getRoles());
+        $isAdmin      = in_array('ROLE_ADMIN',       $currentUser->getRoles());
+        $isManager    = in_array('ROLE_MANAGER',     $currentUser->getRoles());
 
-        if (!$isSuperAdmin && !$isAdmin) {
+        if (!$isSuperAdmin && !$isAdmin && !$isManager) {
             return $this->json(['error' => 'Accès refusé'], 403);
         }
 
@@ -56,38 +57,44 @@ class ImpersonationController extends AbstractController
 
         $targetRoles = $targetUser->getRoles();
 
-        // SUPER_ADMIN peut prendre la main sur ADMIN uniquement
-        if ($isSuperAdmin && !$isAdmin) {
+        // SUPER_ADMIN → peut prendre la main sur ADMIN uniquement
+        if ($isSuperAdmin && !$isAdmin && !$isManager) {
             if (!in_array('ROLE_ADMIN', $targetRoles)) {
                 return $this->json(['error' => 'Vous ne pouvez prendre la main que sur un ADMIN'], 403);
             }
         }
 
-        // ADMIN peut prendre la main sur MANAGER ou WAITER de son enseigne uniquement
-        if ($isAdmin) {
-            $allowedRoles = ['ROLE_MANAGER', 'ROLE_WAITER'];
-            $hasAllowedRole = count(array_intersect($allowedRoles, $targetRoles)) > 0;
-
-            if (!$hasAllowedRole) {
+        // ADMIN → peut prendre la main sur MANAGER ou WAITER de son enseigne
+        if ($isAdmin && !$isSuperAdmin) {
+            $allowed = ['ROLE_MANAGER', 'ROLE_WAITER'];
+            if (!count(array_intersect($allowed, $targetRoles))) {
                 return $this->json(['error' => 'Vous ne pouvez prendre la main que sur un Manager ou Serveur'], 403);
             }
-
-            // Vérifier même enseigne
-            if ($currentUser instanceof User && $targetUser->getEstablishment()) {
-                $currentEstablishment = $this->em
-                    ->getRepository(\App\Entity\Establishment::class)
-                    ->findOneBy(['owner' => $currentUser]);
-
-                if (!$currentEstablishment ||
-                    $currentEstablishment->getId() !== $targetUser->getEstablishment()->getId()) {
-                    return $this->json(['error' => 'Cet utilisateur n\'appartient pas à votre enseigne'], 403);
-                }
+            if (!$this->sameEstablishment($currentUser, $targetUser)) {
+                return $this->json(['error' => 'Cet utilisateur n\'appartient pas à votre enseigne'], 403);
             }
         }
 
-        // Générer un JWT au nom de l'utilisateur cible
+        // MANAGER → peut prendre la main sur WAITER de son enseigne uniquement
+        if ($isManager && !$isAdmin && !$isSuperAdmin) {
+            if (!in_array('ROLE_WAITER', $targetRoles)) {
+                return $this->json(['error' => 'Vous ne pouvez prendre la main que sur un Serveur'], 403);
+            }
+            if (!$this->sameEstablishment($currentUser, $targetUser)) {
+                return $this->json(['error' => 'Cet utilisateur n\'appartient pas à votre enseigne'], 403);
+            }
+        }
+
         $token = $this->jwtManager->create($targetUser);
 
         return $this->json(['token' => $token]);
+    }
+
+    private function sameEstablishment(User $a, User $b): bool
+    {
+        $estA = $a->getEstablishment();
+        $estB = $b->getEstablishment();
+        if (!$estA || !$estB) return false;
+        return $estA->getId() === $estB->getId();
     }
 }

@@ -35,7 +35,7 @@
           <img [src]="logoPreview" *ngIf="logoPreview" alt="Logo" class="logo-img">
           <mat-icon *ngIf="!logoPreview">store</mat-icon>
         </div>
-        <label class="logo-upload-btn" for="logo-input">
+        <label class="logo-upload-btn" for="logo-input" *ngIf="canManage">
           <mat-icon>upload</mat-icon>
           {{ logoPreview ? 'Changer le logo' : 'Ajouter un logo' }}
         </label>
@@ -92,26 +92,21 @@
           <form [formGroup]="infoForm" class="tab-content">
             <div class="form-grid">
               <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Nom du restaurant *</mat-label>
-                <input matInput formControlName="name" placeholder="Ex: Le Gourmet Parisien">
+                <mat-label>Nom du restaurant</mat-label>
+                <input matInput formControlName="name">
                 <mat-icon matSuffix>store</mat-icon>
-                <mat-error *ngIf="infoForm.get('name')?.hasError('required')">Nom requis</mat-error>
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Slug URL *</mat-label>
-                <input matInput formControlName="slug" placeholder="le-gourmet-parisien">
-                <span matPrefix>/r/&nbsp;</span>
+                <mat-label>Slug URL</mat-label>
+                <span matTextPrefix>/r/&nbsp;</span>
+                <input matInput formControlName="slug">
                 <mat-hint>Uniquement lettres minuscules, chiffres et tirets</mat-hint>
-                <mat-error *ngIf="infoForm.get('slug')?.hasError('pattern')">
-                  Format invalide (ex: mon-restaurant)
-                </mat-error>
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Description</mat-label>
-                <textarea matInput formControlName="description" rows="3"
-                          placeholder="Décrivez votre restaurant…"></textarea>
+                <textarea matInput formControlName="description" rows="3"></textarea>
               </mat-form-field>
 
               <div class="two-cols">
@@ -120,7 +115,6 @@
                   <input matInput formControlName="email" type="email">
                   <mat-icon matSuffix>email</mat-icon>
                 </mat-form-field>
-
                 <mat-form-field appearance="outline">
                   <mat-label>Téléphone</mat-label>
                   <input matInput formControlName="phone">
@@ -139,7 +133,6 @@
                   <mat-label>Ville</mat-label>
                   <input matInput formControlName="city">
                 </mat-form-field>
-
                 <mat-form-field appearance="outline">
                   <mat-label>Pays</mat-label>
                   <input matInput formControlName="country">
@@ -147,7 +140,7 @@
               </div>
             </div>
 
-            <div class="tab-actions">
+            <div class="tab-actions" *ngIf="canManage">
               <button mat-flat-button color="primary" (click)="saveInfo()"
                       [disabled]="saving || infoForm.invalid">
                 <mat-spinner diameter="18" *ngIf="saving"></mat-spinner>
@@ -172,15 +165,18 @@
                 <mat-slide-toggle
                   [checked]="!openingHours[day]?.closed"
                   (change)="toggleDay(day)"
+                  [disabled]="!canManage"
                   color="primary">
                   {{ openingHours[day]?.closed ? 'Fermé' : 'Ouvert' }}
                 </mat-slide-toggle>
                 <div class="time-inputs" *ngIf="!openingHours[day]?.closed">
                   <input type="time" class="time-input"
-                         [(ngModel)]="openingHours[day].open">
+                         [(ngModel)]="openingHours[day].open"
+                         [disabled]="!canManage">
                   <span class="time-sep">—</span>
                   <input type="time" class="time-input"
-                         [(ngModel)]="openingHours[day].close">
+                         [(ngModel)]="openingHours[day].close"
+                         [disabled]="!canManage">
                 </div>
                 <div class="closed-label" *ngIf="openingHours[day]?.closed">
                   Fermé ce jour
@@ -188,7 +184,7 @@
               </div>
             </div>
 
-            <div class="tab-actions">
+            <div class="tab-actions" *ngIf="canManage">
               <button mat-flat-button color="primary" (click)="saveHoraires()" [disabled]="saving">
                 <mat-icon>save</mat-icon>
                 Enregistrer les horaires
@@ -207,7 +203,6 @@
           <form [formGroup]="themeForm" class="tab-content">
             <div class="theme-section">
               <p class="theme-desc">Personnalisez les couleurs de votre menu digital public.</p>
-
               <div class="color-fields">
                 <div class="color-field">
                   <label>Couleur principale</label>
@@ -221,7 +216,6 @@
                     Boutons, accents
                   </div>
                 </div>
-
                 <div class="color-field">
                   <label>Couleur secondaire</label>
                   <div class="color-input-wrap">
@@ -237,7 +231,7 @@
               </div>
             </div>
 
-            <div class="tab-actions">
+            <div class="tab-actions" *ngIf="canManage">
               <button mat-flat-button color="primary" (click)="saveTheme()" [disabled]="saving">
                 <mat-icon>save</mat-icon>
                 Enregistrer le thème
@@ -260,21 +254,19 @@
                 <input matInput formControlName="website" placeholder="https://monrestaurant.com">
                 <mat-icon matSuffix>language</mat-icon>
               </mat-form-field>
-
               <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Instagram</mat-label>
-                <input matInput formControlName="instagram" placeholder="https://instagram.com/monrestaurant">
+                <input matInput formControlName="instagram">
                 <mat-icon matSuffix>photo_camera</mat-icon>
               </mat-form-field>
-
               <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Facebook</mat-label>
-                <input matInput formControlName="facebook" placeholder="https://facebook.com/monrestaurant">
+                <input matInput formControlName="facebook">
                 <mat-icon matSuffix>thumb_up</mat-icon>
               </mat-form-field>
             </div>
 
-            <div class="tab-actions">
+            <div class="tab-actions" *ngIf="canManage">
               <button mat-flat-button color="primary" (click)="saveSocial()" [disabled]="saving">
                 <mat-icon>save</mat-icon>
                 Enregistrer

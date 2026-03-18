@@ -2,7 +2,7 @@
 
 <div class="dialog-header">
   <mat-icon>{{ isEdit ? 'edit' : 'person_add' }}</mat-icon>
-  <h2>{{ isEdit ? 'Modifier l\'utilisateur' : 'Nouvel utilisateur' }}</h2>
+  <h2>{{ isEdit ? 'Modifier l\'utilisateur' : 'Nouveau membre' }}</h2>
 </div>
 
 <mat-dialog-content>
@@ -10,7 +10,7 @@
 
     <div class="two-cols">
       <mat-form-field appearance="outline">
-        <mat-label>Prénom *</mat-label>
+        <mat-label>Prénom</mat-label>
         <input matInput formControlName="firstName">
         <mat-error *ngIf="form.get('firstName')?.hasError('required')">Requis</mat-error>
       </mat-form-field>
@@ -22,7 +22,7 @@
     </div>
 
     <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Email *</mat-label>
+      <mat-label>Email</mat-label>
       <input matInput formControlName="email" type="email">
       <mat-icon matSuffix>email</mat-icon>
       <mat-error *ngIf="form.get('email')?.hasError('required')">Requis</mat-error>
@@ -30,7 +30,7 @@
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="full-width" *ngIf="!isEdit">
-      <mat-label>Mot de passe *</mat-label>
+      <mat-label>Mot de passe</mat-label>
       <input matInput formControlName="password" [type]="showPwd ? 'text' : 'password'">
       <button mat-icon-button matSuffix type="button" (click)="showPwd = !showPwd">
         <mat-icon>{{ showPwd ? 'visibility_off' : 'visibility' }}</mat-icon>
@@ -40,7 +40,7 @@
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Rôle *</mat-label>
+      <mat-label>Rôle</mat-label>
       <mat-select formControlName="role">
         <mat-option *ngFor="let r of rolesOptions" [value]="r.value">
           {{ r.label }}
@@ -48,16 +48,21 @@
       </mat-select>
     </mat-form-field>
 
+    <!-- Enseigne — grisée et pré-sélectionnée en mode admin -->
     <mat-form-field appearance="outline" class="full-width">
       <mat-label>Enseigne</mat-label>
       <mat-select formControlName="establishment">
-        <mat-option [value]="null">— Aucune (Super Admin) —</mat-option>
+        <mat-option [value]="null" *ngIf="!isAdminMode">— Aucune (Super Admin) —</mat-option>
         <mat-option *ngFor="let est of data.establishments"
                     [value]="'/api/establishments/' + est.id">
           {{ est.name }}
-          <span class="max-users">(max {{ est.maxUsers }} users)</span>
+          <span class="max-users" *ngIf="!isAdminMode">(max {{ est.maxUsers }} users)</span>
         </mat-option>
       </mat-select>
+      <mat-hint *ngIf="isAdminMode">
+        <mat-icon style="font-size:0.8rem;width:0.8rem;height:0.8rem;vertical-align:middle">lock</mat-icon>
+        Assigné automatiquement à votre enseigne
+      </mat-hint>
     </mat-form-field>
 
   </form>

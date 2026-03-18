@@ -8,7 +8,6 @@ use App\Entity\Establishment;
 use App\Entity\User;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryCollectionExtensionInterface;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryItemExtensionInterface;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Security\Core\Security;
 
@@ -23,7 +22,7 @@ class EstablishmentExtension implements QueryCollectionExtensionInterface, Query
 
     public function applyToCollection(
         QueryBuilder $queryBuilder,
-        QueryNameGeneratorInterface $queryNameGenerator,
+        $queryNameGenerator,
         string $resourceClass,
         string $operationName = null
     ): void {
@@ -32,7 +31,7 @@ class EstablishmentExtension implements QueryCollectionExtensionInterface, Query
 
     public function applyToItem(
         QueryBuilder $queryBuilder,
-        QueryNameGeneratorInterface $queryNameGenerator,
+                     $queryNameGenerator,
         string $resourceClass,
         array $identifiers,
         string $operationName = null,
@@ -60,17 +59,14 @@ class EstablishmentExtension implements QueryCollectionExtensionInterface, Query
             return;
         }
 
-        // Récupérer l'enseigne de l'user connecté (ADMIN, MANAGER, WAITER)
         $establishment = $user->getEstablishment();
 
         if (!$establishment) {
-            // User sans enseigne → ne retourne rien
             $rootAlias = $queryBuilder->getRootAliases()[0];
             $queryBuilder->andWhere(sprintf('%s.id IS NULL', $rootAlias));
             return;
         }
 
-        // Retourner uniquement son enseigne
         $rootAlias = $queryBuilder->getRootAliases()[0];
         $queryBuilder
             ->andWhere(sprintf('%s.id = :establishment_id', $rootAlias))

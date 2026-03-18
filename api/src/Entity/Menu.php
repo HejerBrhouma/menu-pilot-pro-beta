@@ -77,7 +77,7 @@ class Menu
     /**
      * Enseigne propriétaire de ce menu
      * @ORM\ManyToOne(targetEntity=Establishment::class)
-     * @ORM\JoinColumn(nullable=true)
+     * @ORM\JoinColumn(nullable=false)
      * @Groups({"menu:read"})
      */
     private Establishment $establishment;

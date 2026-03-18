@@ -18,19 +18,34 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
  *   normalizationContext={"groups"={"user:read"}},
  *   denormalizationContext={"groups"={"user:write"}},
  *   collectionOperations={
- *     "get"={"security"="is_granted('ROLE_SUPER_ADMIN')"},
- *     "post"={"security"="is_granted('ROLE_SUPER_ADMIN')"}
+ *     "get"={
+ *       "security"="is_granted('ROLE_USER')"
+ *     },
+ *     "post"={
+ *       "security"="is_granted('ROLE_SUPER_ADMIN') or is_granted('ROLE_ADMIN')"
+ *     }
  *   },
  *   itemOperations={
- *     "get"={"security"="is_granted('ROLE_SUPER_ADMIN') or object == user"},
- *     "put"={"security"="is_granted('ROLE_SUPER_ADMIN') or object == user"},
- *     "patch"={"security"="is_granted('ROLE_SUPER_ADMIN') or object == user",
- *              "input_formats"={"json"={"application/merge-patch+json"}}},
- *     "delete"={"security"="is_granted('ROLE_SUPER_ADMIN')"}
+ *     "get"={
+ *       "security"="is_granted('ROLE_USER')"
+ *     },
+ *     "put"={
+ *       "security"="is_granted('ROLE_SUPER_ADMIN') or object == user"
+ *     },
+ *     "patch"={
+ *       "security"="is_granted('ROLE_SUPER_ADMIN') or object == user",
+ *       "input_formats"={"json"={"application/merge-patch+json"}}
+ *     },
+ *     "delete"={
+ *       "security"="is_granted('ROLE_SUPER_ADMIN')"
+ *     }
  *   }
  * )
  * @ApiFilter(SearchFilter::class, properties={"establishment": "exact", "isActive": "exact"})
  */
+
+
+
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     /**

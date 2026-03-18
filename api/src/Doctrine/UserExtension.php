@@ -1,29 +1,18 @@
 <?php
 
-// src/Doctrine/EstablishmentDataExtension.php
+// src/Doctrine/UserExtension.php
 
 namespace App\Doctrine;
 
-use App\Entity\Product;
-use App\Entity\Pack;
-use App\Entity\Category;
-use App\Entity\Menu;
 use App\Entity\User;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryCollectionExtensionInterface;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryItemExtensionInterface;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Security\Core\Security;
 
-class EstablishmentDataExtension implements QueryCollectionExtensionInterface, QueryItemExtensionInterface
+class UserExtension implements QueryCollectionExtensionInterface, QueryItemExtensionInterface
 {
     private Security $security;
-
-    private const FILTERED_ENTITIES = [
-        Product::class,
-        Pack::class,
-        Category::class,
-        Menu::class,
-    ];
 
     public function __construct(Security $security)
     {
@@ -52,32 +41,35 @@ class EstablishmentDataExtension implements QueryCollectionExtensionInterface, Q
 
     private function addWhere(QueryBuilder $queryBuilder, string $resourceClass): void
     {
-        if (!in_array($resourceClass, self::FILTERED_ENTITIES)) {
+        if ($resourceClass !== User::class) {
             return;
         }
 
+        // SUPER_ADMIN voit TOUS les users
         if ($this->security->isGranted('ROLE_SUPER_ADMIN')) {
             return;
         }
 
-        /** @var User|null $user */
-        $user = $this->security->getUser();
+        /** @var User|null $currentUser */
+        $currentUser = $this->security->getUser();
 
-        if (!$user) {
+        if (!$currentUser) {
             return;
         }
 
-        $establishment = $user->getEstablishment();
+        $establishment = $currentUser->getEstablishment();
 
-        if (!$establishment) {
+        // ADMIN avec enseigne → voit uniquement les users de son enseigne
+        if ($establishment) {
             $rootAlias = $queryBuilder->getRootAliases()[0];
-            $queryBuilder->andWhere(sprintf('%s.id IS NULL', $rootAlias));
+            $queryBuilder
+                ->andWhere(sprintf('%s.establishment = :user_establishment', $rootAlias))
+                ->setParameter('user_establishment', $establishment);
             return;
         }
 
+        // Pas d'enseigne et pas SUPER_ADMIN → rien
         $rootAlias = $queryBuilder->getRootAliases()[0];
-        $queryBuilder
-            ->andWhere(sprintf('%s.establishment = :current_establishment', $rootAlias))
-            ->setParameter('current_establishment', $establishment);
+        $queryBuilder->andWhere(sprintf('%s.id IS NULL', $rootAlias));
     }
 }
