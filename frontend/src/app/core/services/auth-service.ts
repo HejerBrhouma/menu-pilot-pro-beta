@@ -18,7 +18,6 @@ export class AuthService {
     private router: Router
   ) {}
 
-  // ── Connexion email/password ───────────────────────────────────────────
   login(email: string, password: string): Observable<AuthResponse> {
     return this.http.post<AuthResponse>('/api/login_check', { email, password }).pipe(
       tap(res => this.handleAuthSuccess(res)),
@@ -26,7 +25,6 @@ export class AuthService {
     );
   }
 
-  // ── Connexion Google OAuth ─────────────────────────────────────────────
   socialLogin(provider: string, token: string): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`/api/auth/${provider}`, { token }).pipe(
       tap(res => this.handleAuthSuccess(res)),
@@ -34,7 +32,6 @@ export class AuthService {
     );
   }
 
-  // ── Refresh token ─────────────────────────────────────────────────────
   refreshToken(): Observable<AuthResponse> {
     const refreshToken = localStorage.getItem('refresh_token');
     return this.http.post<AuthResponse>('/api/token/refresh', { refresh_token: refreshToken }).pipe(
@@ -46,7 +43,6 @@ export class AuthService {
     );
   }
 
-  // ── Déconnexion ───────────────────────────────────────────────────────
   logout(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('refresh_token');
@@ -55,17 +51,35 @@ export class AuthService {
     this.router.navigate(['/login']);
   }
 
-  // ── Getters ───────────────────────────────────────────────────────────
   getCurrentUser(): User | null {
     return this.currentUserSubject.value;
   }
 
+  // ── Rôles ─────────────────────────────────────────────────────────────
   isSuperAdmin(): boolean {
     return this.getCurrentUser()?.roles?.includes('ROLE_SUPER_ADMIN') ?? false;
   }
 
   isAdmin(): boolean {
     return this.getCurrentUser()?.roles?.includes('ROLE_ADMIN') ?? false;
+  }
+
+  isManager(): boolean {
+    return this.getCurrentUser()?.roles?.includes('ROLE_MANAGER') ?? false;
+  }
+
+  isWaiter(): boolean {
+    return this.getCurrentUser()?.roles?.includes('ROLE_WAITER') ?? false;
+  }
+
+  /** Peut gérer l'équipe et l'enseigne (ADMIN uniquement) */
+  canManage(): boolean {
+    return this.isAdmin() || this.isManager();
+  }
+
+  /** Peut voir sans modifier (MANAGER + WAITER) */
+  isReadOnly(): boolean {
+    return this.isManager() || this.isWaiter();
   }
 
   isLoggedIn(): boolean {
@@ -107,7 +121,6 @@ export class AuthService {
       const user = this.decodeToken(res.token);
       this.currentUserSubject.next(user);
 
-      // Rediriger selon le rôle
       if (user?.roles?.includes('ROLE_SUPER_ADMIN')) {
         this.router.navigate(['/super-admin/dashboard']);
       } else {

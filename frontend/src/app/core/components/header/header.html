@@ -8,7 +8,6 @@
     <!-- Logo : enseigne si dispo, sinon Menu Pilot Pro -->
     <div class="sidebar-logo" routerLink="/dashboard">
 
-      <!-- Logo enseigne (image) -->
       <ng-container *ngIf="logoUrl; else defaultLogo">
         <div class="logo-establishment">
           <img [src]="logoUrl" [alt]="establishment?.name" class="establishment-img">
@@ -19,7 +18,6 @@
         </div>
       </ng-container>
 
-      <!-- Logo Menu Pilot par défaut (pas d'enseigne ou pas de logo) -->
       <ng-template #defaultLogo>
         <div class="logo-icon">
           <mat-icon>restaurant_menu</mat-icon>
@@ -71,6 +69,13 @@
              routerLinkActive="active">
             <div class="nav-icon"><mat-icon>layers</mat-icon></div>
             <span>Packs</span>
+          </a>
+          <!-- ← Mon Équipe ajouté ici -->
+          <a mat-ripple class="nav-item"
+             routerLink="/staff"
+             routerLinkActive="active">
+            <div class="nav-icon"><mat-icon>badge</mat-icon></div>
+            <span>Mon Équipe</span>
           </a>
         </nav>
       </div>

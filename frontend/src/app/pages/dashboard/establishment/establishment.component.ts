@@ -14,6 +14,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDividerModule } from '@angular/material/divider';
 import { EstablishmentService } from '../../../core/services/establishment.service';
+import { AuthService } from '../../../core/services/auth-service';
 import { Establishment, DAYS_FR, DEFAULT_OPENING_HOURS, OpeningHours } from '../../../core/models/establishment.model';
 
 @Component({
@@ -31,15 +32,18 @@ import { Establishment, DAYS_FR, DEFAULT_OPENING_HOURS, OpeningHours } from '../
 })
 export class EstablishmentComponent implements OnInit {
   establishment: Establishment | null = null;
-  loading = true;
-  saving = false;
+  loading  = true;
+  saving   = false;
+
+  // Droits selon le rôle
+  canManage = false;
 
   infoForm!: FormGroup;
   themeForm!: FormGroup;
   socialForm!: FormGroup;
 
   openingHours: OpeningHours = { ...DEFAULT_OPENING_HOURS };
-  daysKeys = Object.keys(DAYS_FR);
+  daysKeys   = Object.keys(DAYS_FR);
   daysLabels = DAYS_FR;
 
   logoPreview: string | null = null;
@@ -48,11 +52,13 @@ export class EstablishmentComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private establishmentService: EstablishmentService,
+    private authService: AuthService,
     private snackBar: MatSnackBar,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
+    this.canManage = this.authService.canManage();
     this.initForms();
     this.loadEstablishment();
   }
@@ -114,10 +120,17 @@ export class EstablishmentComponent implements OnInit {
     this.socialForm.patchValue({
       website: e.website, instagram: e.instagram, facebook: e.facebook
     });
+
+    // Désactiver tous les formulaires si lecture seule
+    if (!this.canManage) {
+      this.infoForm.disable();
+      this.themeForm.disable();
+      this.socialForm.disable();
+    }
   }
 
-  // ── Logo ──────────────────────────────────
   onLogoChange(event: Event): void {
+    if (!this.canManage) return;
     const input = event.target as HTMLInputElement;
     if (!input.files?.length) return;
     this.logoFile = input.files[0];
@@ -129,14 +142,13 @@ export class EstablishmentComponent implements OnInit {
     reader.readAsDataURL(this.logoFile);
   }
 
-  // ── Horaires ──────────────────────────────
   toggleDay(day: string): void {
+    if (!this.canManage) return;
     (this.openingHours as any)[day].closed = !(this.openingHours as any)[day].closed;
   }
 
-  // ── Save infos ────────────────────────────
   saveInfo(): void {
-    if (this.infoForm.invalid) { this.infoForm.markAllAsTouched(); return; }
+    if (!this.canManage || this.infoForm.invalid) return;
     this.saving = true;
     const data = this.infoForm.value;
 
@@ -147,7 +159,6 @@ export class EstablishmentComponent implements OnInit {
     save$.subscribe({
       next: (result) => {
         this.establishment = result;
-        // Upload logo si sélectionné
         if (this.logoFile && result.id) {
           this.establishmentService.uploadLogo(result.id, this.logoFile).subscribe({
             next: (r) => {
@@ -166,7 +177,7 @@ export class EstablishmentComponent implements OnInit {
   }
 
   saveTheme(): void {
-    if (!this.establishment?.id) return;
+    if (!this.canManage || !this.establishment?.id) return;
     this.saving = true;
     this.establishmentService.update(this.establishment.id, this.themeForm.value).subscribe({
       next: () => { this.saving = false; this.notify('Thème sauvegardé ✓'); },
@@ -175,7 +186,7 @@ export class EstablishmentComponent implements OnInit {
   }
 
   saveHoraires(): void {
-    if (!this.establishment?.id) return;
+    if (!this.canManage || !this.establishment?.id) return;
     this.saving = true;
     this.establishmentService.update(this.establishment.id, { openingHours: this.openingHours }).subscribe({
       next: () => { this.saving = false; this.notify('Horaires sauvegardés ✓'); },
@@ -184,7 +195,7 @@ export class EstablishmentComponent implements OnInit {
   }
 
   saveSocial(): void {
-    if (!this.establishment?.id) return;
+    if (!this.canManage || !this.establishment?.id) return;
     this.saving = true;
     this.establishmentService.update(this.establishment.id, this.socialForm.value).subscribe({
       next: () => { this.saving = false; this.notify('Réseaux sociaux sauvegardés ✓'); },

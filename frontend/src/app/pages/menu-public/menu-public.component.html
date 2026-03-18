@@ -16,18 +16,38 @@
 <!-- MENU PUBLIC -->
 <div class="public-menu" *ngIf="!loading && menu">
 
-  <!-- Header restaurant -->
+  <!-- Hero -->
   <div class="menu-hero">
-    <div class="hero-icon">
-      <mat-icon>restaurant_menu</mat-icon>
+
+    <!-- Logo enseigne -->
+    <div class="hero-logo-wrapper">
+      <div class="hero-logo" *ngIf="logoUrl">
+        <img [src]="logoUrl" [alt]="establishment?.name || 'Logo'">
+      </div>
+      <div class="hero-logo no-logo" *ngIf="!logoUrl">
+        <mat-icon>restaurant</mat-icon>
+      </div>
     </div>
-    <h1 class="restaurant-name">Menu Pilot</h1>
+
+    <!-- Nom enseigne -->
+    <p class="restaurant-name">{{ establishment?.name || 'Notre Restaurant' }}</p>
+
+    <!-- Nom + desc menu -->
     <h2 class="menu-name">{{ menu.name }}</h2>
     <p class="menu-desc" *ngIf="menu.description">{{ menu.description }}</p>
+
+    <!-- Horaire -->
     <div class="menu-horaire" *ngIf="menu.timeStart && menu.timeEnd">
       <mat-icon>schedule</mat-icon>
       {{ menu.timeStart }} — {{ menu.timeEnd }}
     </div>
+
+    <!-- Ville -->
+    <div class="est-location" *ngIf="establishment?.city">
+      <mat-icon>location_on</mat-icon>
+      {{ establishment!.city }}
+    </div>
+
   </div>
 
   <!-- Sections vides -->
@@ -51,7 +71,9 @@
       <!-- Produits -->
       <div class="items-grid" *ngIf="section.products && section.products.length > 0">
         <div class="menu-item" *ngFor="let p of section.products">
-          <div class="item-avatar">{{ $any(p).name ? $any(p).name[0] : '?' }}</div>
+          <div class="item-avatar">
+            {{ $any(p).name ? $any(p).name[0].toUpperCase() : '?' }}
+          </div>
           <div class="item-info">
             <span class="item-name">{{ $any(p).name }}</span>
             <span class="item-desc" *ngIf="$any(p).description">{{ $any(p).description }}</span>
@@ -83,7 +105,7 @@
           <div class="cat-title">{{ $any(cat).name }}</div>
           <div class="items-grid" *ngIf="$any(cat).products?.length">
             <div class="menu-item" *ngFor="let p of $any(cat).products">
-              <div class="item-avatar">{{ p.name ? p.name[0] : '?' }}</div>
+              <div class="item-avatar">{{ p.name ? p.name[0].toUpperCase() : '?' }}</div>
               <div class="item-info">
                 <span class="item-name">{{ p.name }}</span>
                 <span class="item-desc" *ngIf="p.description">{{ p.description }}</span>
@@ -100,7 +122,7 @@
   <!-- Footer -->
   <div class="menu-footer">
     <mat-icon>restaurant</mat-icon>
-    <p>Powered by Menu Pilot Pro</p>
+    <p>Powered by <strong>Menu Pilot Pro</strong></p>
   </div>
 
 </div>

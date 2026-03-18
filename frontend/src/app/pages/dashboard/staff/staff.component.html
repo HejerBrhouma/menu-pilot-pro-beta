@@ -1,35 +1,28 @@
-<!-- src/app/pages/super-admin/users/users-list/users-list.component.html -->
+<!-- src/app/pages/dashboard/staff/staff.component.html -->
 
 <div class="page">
 
   <!-- HEADER -->
   <div class="page-header">
     <div>
-      <h1><mat-icon>group</mat-icon> Utilisateurs</h1>
-      <p class="subtitle">{{ users.length }} utilisateur(s) au total</p>
+      <h1><mat-icon>badge</mat-icon> Mon Équipe</h1>
+      <p class="subtitle">
+        {{ staff.length }} membre(s)
+        <span *ngIf="establishment"> — {{ establishment.name }}</span>
+      </p>
     </div>
-    <button mat-flat-button color="primary" (click)="openCreateDialog()">
-      <mat-icon>person_add</mat-icon> Nouvel utilisateur
+    <!-- Bouton ajouter — ADMIN uniquement -->
+    <button mat-flat-button color="primary" (click)="openCreateDialog()" *ngIf="canManage">
+      <mat-icon>person_add</mat-icon> Ajouter un membre
     </button>
   </div>
 
-  <!-- FILTRES -->
+  <!-- RECHERCHE -->
   <div class="filters-bar">
     <mat-form-field appearance="outline" class="search-field">
       <mat-label>Rechercher</mat-label>
       <input matInput [(ngModel)]="searchQuery" (input)="applyFilters()" placeholder="Nom, email...">
       <mat-icon matSuffix>search</mat-icon>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="filter-field">
-      <mat-label>Enseigne</mat-label>
-      <mat-select [(ngModel)]="filterEstablishment" (selectionChange)="applyFilters()">
-        <mat-option value="">Toutes</mat-option>
-        <mat-option *ngFor="let est of establishments" [value]="'/api/establishments/' + est.id">
-          {{ est.name }}
-          <span class="user-count">({{ getUserCount('/api/establishments/' + est.id) }})</span>
-        </mat-option>
-      </mat-select>
     </mat-form-field>
   </div>
 
@@ -40,11 +33,11 @@
 
   <!-- TABLE -->
   <div class="table-card" *ngIf="!loading">
-    <table mat-table [dataSource]="filteredUsers" class="users-table">
+    <table mat-table [dataSource]="filteredStaff" class="staff-table">
 
       <!-- Colonne User -->
       <ng-container matColumnDef="user">
-        <th mat-header-cell *matHeaderCellDef>Utilisateur</th>
+        <th mat-header-cell *matHeaderCellDef>Membre</th>
         <td mat-cell *matCellDef="let user">
           <div class="user-cell">
             <div class="avatar" [style.background]="getRoleColor(user.roles)">
@@ -55,18 +48,6 @@
               <span class="user-email">{{ user.email }}</span>
             </div>
           </div>
-        </td>
-      </ng-container>
-
-      <!-- Colonne Enseigne -->
-      <ng-container matColumnDef="establishment">
-        <th mat-header-cell *matHeaderCellDef>Enseigne</th>
-        <td mat-cell *matCellDef="let user">
-          <span class="est-badge" *ngIf="user.establishment">
-            <mat-icon>store</mat-icon>
-            {{ getEstablishmentName(user.establishment) }}
-          </span>
-          <span class="no-est" *ngIf="!user.establishment">—</span>
         </td>
       </ng-container>
 
@@ -82,12 +63,15 @@
         </td>
       </ng-container>
 
-      <!-- Colonne Statut -->
+      <!-- Colonne Statut — ADMIN uniquement peut toggle -->
       <ng-container matColumnDef="status">
         <th mat-header-cell *matHeaderCellDef>Statut</th>
         <td mat-cell *matCellDef="let user">
-          <mat-slide-toggle [checked]="user.isActive" color="primary"
-                            (change)="toggleActive(user)">
+          <mat-slide-toggle
+            [checked]="user.isActive"
+            color="primary"
+            [disabled]="!canManage"
+            (change)="canManage && toggleActive(user)">
           </mat-slide-toggle>
         </td>
       </ng-container>
@@ -98,21 +82,34 @@
         <td mat-cell *matCellDef="let user">
           <div class="actions-cell">
 
-            <!-- Prendre la main — SUPER_ADMIN sur ADMIN, ADMIN sur MANAGER/WAITER -->
+            <!-- Prendre la main — ADMIN sur MANAGER/WAITER -->
             <button mat-icon-button color="accent"
-                    *ngIf="canImpersonate(user)"
+                    *ngIf="canManage && canImpersonate(user)"
                     (click)="impersonate(user)"
-                    [matTooltip]="'Prendre la main sur ' + user.firstName">
+                    [matTooltip]="'Voir l\'app en tant que ' + user.firstName">
               <mat-icon>manage_accounts</mat-icon>
             </button>
 
-            <button mat-icon-button (click)="openEditDialog(user)" matTooltip="Modifier">
+            <!-- Modifier — ADMIN uniquement -->
+            <button mat-icon-button
+                    *ngIf="canManage"
+                    (click)="openEditDialog(user)"
+                    matTooltip="Modifier">
               <mat-icon>edit</mat-icon>
             </button>
 
-            <button mat-icon-button (click)="openResetPassword(user)" matTooltip="Réinitialiser mot de passe">
+            <!-- Reset password — ADMIN uniquement -->
+            <button mat-icon-button
+                    *ngIf="canManage"
+                    (click)="openResetPassword(user)"
+                    matTooltip="Réinitialiser mot de passe">
               <mat-icon>lock_reset</mat-icon>
             </button>
+
+            <!-- Message si lecture seule -->
+            <span class="readonly-hint" *ngIf="!canManage">
+              <mat-icon matTooltip="Consultation uniquement">visibility</mat-icon>
+            </span>
 
           </div>
         </td>
@@ -123,9 +120,12 @@
           [class.inactive-row]="!row.isActive"></tr>
     </table>
 
-    <div class="empty-table" *ngIf="filteredUsers.length === 0">
-      <mat-icon>person_off</mat-icon>
-      <p>Aucun utilisateur trouvé</p>
+    <div class="empty-table" *ngIf="filteredStaff.length === 0">
+      <mat-icon>group_off</mat-icon>
+      <p>Aucun membre dans votre équipe</p>
+      <button mat-flat-button color="primary" (click)="openCreateDialog()" *ngIf="canManage">
+        Ajouter le premier membre
+      </button>
     </div>
   </div>
 
