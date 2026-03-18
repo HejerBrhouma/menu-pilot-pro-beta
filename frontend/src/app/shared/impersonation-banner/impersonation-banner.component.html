@@ -1,0 +1,20 @@
+<!-- src/app/shared/impersonation-banner/impersonation-banner.component.html -->
+
+<div class="impersonation-banner" *ngIf="isImpersonating">
+  <div class="banner-left">
+    <div class="banner-icon">
+      <mat-icon>manage_accounts</mat-icon>
+    </div>
+    <div class="banner-text">
+      <span class="banner-label">Mode impersonation</span>
+      <span class="banner-name">
+        Connecté en tant que <strong>{{ impersonatedName }}</strong>
+      </span>
+    </div>
+  </div>
+
+  <button mat-stroked-button class="stop-btn" (click)="stopImpersonation()">
+    <mat-icon>logout</mat-icon>
+    Reprendre ma session
+  </button>
+</div>

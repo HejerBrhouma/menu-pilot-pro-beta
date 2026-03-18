@@ -1,0 +1,289 @@
+<!-- src/app/pages/dashboard/establishment/establishment.component.html -->
+
+<div class="establishment-page">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1><mat-icon>store</mat-icon> Mon Enseigne</h1>
+      <p class="subtitle">Gérez les informations de votre restaurant</p>
+    </div>
+    <div class="header-actions" *ngIf="establishment">
+      <button mat-stroked-button (click)="copyPublicUrl()" class="public-btn">
+        <mat-icon>link</mat-icon>
+        Page publique
+      </button>
+      <a [href]="getPublicUrl()" target="_blank" mat-stroked-button class="preview-btn">
+        <mat-icon>open_in_new</mat-icon>
+        Voir
+      </a>
+    </div>
+  </div>
+
+  <!-- LOADER -->
+  <div class="page-loader" *ngIf="loading">
+    <mat-spinner diameter="48"></mat-spinner>
+  </div>
+
+  <!-- CONTENU -->
+  <div class="settings-layout" *ngIf="!loading">
+
+    <!-- SIDEBAR LOGO + STATUT -->
+    <div class="sidebar-card">
+      <div class="logo-section">
+        <div class="logo-preview" [class.has-logo]="logoPreview">
+          <img [src]="logoPreview" *ngIf="logoPreview" alt="Logo" class="logo-img">
+          <mat-icon *ngIf="!logoPreview">store</mat-icon>
+        </div>
+        <label class="logo-upload-btn" for="logo-input">
+          <mat-icon>upload</mat-icon>
+          {{ logoPreview ? 'Changer le logo' : 'Ajouter un logo' }}
+        </label>
+        <input type="file" id="logo-input" accept="image/*"
+               (change)="onLogoChange($event)" style="display:none">
+        <p class="logo-hint">PNG, JPG ou SVG — max 2MB</p>
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <div class="sidebar-info" *ngIf="establishment">
+        <div class="info-row">
+          <mat-icon>link</mat-icon>
+          <span class="slug-badge">/r/{{ establishment.slug }}</span>
+        </div>
+        <div class="info-row" *ngIf="establishment.city">
+          <mat-icon>location_on</mat-icon>
+          <span>{{ establishment.city }}</span>
+        </div>
+        <div class="info-row" *ngIf="establishment.phone">
+          <mat-icon>phone</mat-icon>
+          <span>{{ establishment.phone }}</span>
+        </div>
+        <div class="status-row">
+          <span class="status-dot" [class.active]="establishment.isActive"></span>
+          <span>{{ establishment.isActive ? 'Actif' : 'Inactif' }}</span>
+        </div>
+      </div>
+
+      <div class="theme-preview" *ngIf="establishment">
+        <p class="preview-label">Aperçu thème</p>
+        <div class="color-preview">
+          <div class="color-dot"
+               [style.background]="themeForm.get('primaryColor')?.value"
+               matTooltip="Couleur principale"></div>
+          <div class="color-dot"
+               [style.background]="themeForm.get('secondaryColor')?.value"
+               matTooltip="Couleur secondaire"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs-card">
+      <mat-tab-group animationDuration="200ms" class="settings-tabs">
+
+        <!-- ── TAB 1 : Informations ── -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <mat-icon>info</mat-icon>
+            Informations
+          </ng-template>
+
+          <form [formGroup]="infoForm" class="tab-content">
+            <div class="form-grid">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Nom du restaurant *</mat-label>
+                <input matInput formControlName="name" placeholder="Ex: Le Gourmet Parisien">
+                <mat-icon matSuffix>store</mat-icon>
+                <mat-error *ngIf="infoForm.get('name')?.hasError('required')">Nom requis</mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Slug URL *</mat-label>
+                <input matInput formControlName="slug" placeholder="le-gourmet-parisien">
+                <span matPrefix>/r/&nbsp;</span>
+                <mat-hint>Uniquement lettres minuscules, chiffres et tirets</mat-hint>
+                <mat-error *ngIf="infoForm.get('slug')?.hasError('pattern')">
+                  Format invalide (ex: mon-restaurant)
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Description</mat-label>
+                <textarea matInput formControlName="description" rows="3"
+                          placeholder="Décrivez votre restaurant…"></textarea>
+              </mat-form-field>
+
+              <div class="two-cols">
+                <mat-form-field appearance="outline">
+                  <mat-label>Email</mat-label>
+                  <input matInput formControlName="email" type="email">
+                  <mat-icon matSuffix>email</mat-icon>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Téléphone</mat-label>
+                  <input matInput formControlName="phone">
+                  <mat-icon matSuffix>phone</mat-icon>
+                </mat-form-field>
+              </div>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Adresse</mat-label>
+                <input matInput formControlName="address">
+                <mat-icon matSuffix>location_on</mat-icon>
+              </mat-form-field>
+
+              <div class="two-cols">
+                <mat-form-field appearance="outline">
+                  <mat-label>Ville</mat-label>
+                  <input matInput formControlName="city">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Pays</mat-label>
+                  <input matInput formControlName="country">
+                </mat-form-field>
+              </div>
+            </div>
+
+            <div class="tab-actions">
+              <button mat-flat-button color="primary" (click)="saveInfo()"
+                      [disabled]="saving || infoForm.invalid">
+                <mat-spinner diameter="18" *ngIf="saving"></mat-spinner>
+                <mat-icon *ngIf="!saving">save</mat-icon>
+                Enregistrer
+              </button>
+            </div>
+          </form>
+        </mat-tab>
+
+        <!-- ── TAB 2 : Horaires ── -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <mat-icon>schedule</mat-icon>
+            Horaires
+          </ng-template>
+
+          <div class="tab-content">
+            <div class="horaires-grid">
+              <div class="horaire-row" *ngFor="let day of daysKeys">
+                <div class="day-label">{{ daysLabels[day] }}</div>
+                <mat-slide-toggle
+                  [checked]="!openingHours[day]?.closed"
+                  (change)="toggleDay(day)"
+                  color="primary">
+                  {{ openingHours[day]?.closed ? 'Fermé' : 'Ouvert' }}
+                </mat-slide-toggle>
+                <div class="time-inputs" *ngIf="!openingHours[day]?.closed">
+                  <input type="time" class="time-input"
+                         [(ngModel)]="openingHours[day].open">
+                  <span class="time-sep">—</span>
+                  <input type="time" class="time-input"
+                         [(ngModel)]="openingHours[day].close">
+                </div>
+                <div class="closed-label" *ngIf="openingHours[day]?.closed">
+                  Fermé ce jour
+                </div>
+              </div>
+            </div>
+
+            <div class="tab-actions">
+              <button mat-flat-button color="primary" (click)="saveHoraires()" [disabled]="saving">
+                <mat-icon>save</mat-icon>
+                Enregistrer les horaires
+              </button>
+            </div>
+          </div>
+        </mat-tab>
+
+        <!-- ── TAB 3 : Thème ── -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <mat-icon>palette</mat-icon>
+            Thème
+          </ng-template>
+
+          <form [formGroup]="themeForm" class="tab-content">
+            <div class="theme-section">
+              <p class="theme-desc">Personnalisez les couleurs de votre menu digital public.</p>
+
+              <div class="color-fields">
+                <div class="color-field">
+                  <label>Couleur principale</label>
+                  <div class="color-input-wrap">
+                    <input type="color" formControlName="primaryColor" class="color-picker">
+                    <mat-form-field appearance="outline">
+                      <input matInput formControlName="primaryColor" placeholder="#6366f1">
+                    </mat-form-field>
+                  </div>
+                  <div class="color-sample" [style.background]="themeForm.get('primaryColor')?.value">
+                    Boutons, accents
+                  </div>
+                </div>
+
+                <div class="color-field">
+                  <label>Couleur secondaire</label>
+                  <div class="color-input-wrap">
+                    <input type="color" formControlName="secondaryColor" class="color-picker">
+                    <mat-form-field appearance="outline">
+                      <input matInput formControlName="secondaryColor" placeholder="#ec4899">
+                    </mat-form-field>
+                  </div>
+                  <div class="color-sample secondary" [style.background]="themeForm.get('secondaryColor')?.value">
+                    Header, badges
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="tab-actions">
+              <button mat-flat-button color="primary" (click)="saveTheme()" [disabled]="saving">
+                <mat-icon>save</mat-icon>
+                Enregistrer le thème
+              </button>
+            </div>
+          </form>
+        </mat-tab>
+
+        <!-- ── TAB 4 : Réseaux sociaux ── -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <mat-icon>share</mat-icon>
+            Réseaux
+          </ng-template>
+
+          <form [formGroup]="socialForm" class="tab-content">
+            <div class="social-fields">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Site web</mat-label>
+                <input matInput formControlName="website" placeholder="https://monrestaurant.com">
+                <mat-icon matSuffix>language</mat-icon>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Instagram</mat-label>
+                <input matInput formControlName="instagram" placeholder="https://instagram.com/monrestaurant">
+                <mat-icon matSuffix>photo_camera</mat-icon>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Facebook</mat-label>
+                <input matInput formControlName="facebook" placeholder="https://facebook.com/monrestaurant">
+                <mat-icon matSuffix>thumb_up</mat-icon>
+              </mat-form-field>
+            </div>
+
+            <div class="tab-actions">
+              <button mat-flat-button color="primary" (click)="saveSocial()" [disabled]="saving">
+                <mat-icon>save</mat-icon>
+                Enregistrer
+              </button>
+            </div>
+          </form>
+        </mat-tab>
+
+      </mat-tab-group>
+    </div>
+  </div>
+</div>

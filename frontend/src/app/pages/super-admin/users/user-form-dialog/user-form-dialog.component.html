@@ -1,0 +1,73 @@
+<!-- src/app/pages/super-admin/users/user-form-dialog/user-form-dialog.component.html -->
+
+<div class="dialog-header">
+  <mat-icon>{{ isEdit ? 'edit' : 'person_add' }}</mat-icon>
+  <h2>{{ isEdit ? 'Modifier l\'utilisateur' : 'Nouvel utilisateur' }}</h2>
+</div>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="user-form">
+
+    <div class="two-cols">
+      <mat-form-field appearance="outline">
+        <mat-label>Prénom *</mat-label>
+        <input matInput formControlName="firstName">
+        <mat-error *ngIf="form.get('firstName')?.hasError('required')">Requis</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Nom</mat-label>
+        <input matInput formControlName="lastName">
+      </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Email *</mat-label>
+      <input matInput formControlName="email" type="email">
+      <mat-icon matSuffix>email</mat-icon>
+      <mat-error *ngIf="form.get('email')?.hasError('required')">Requis</mat-error>
+      <mat-error *ngIf="form.get('email')?.hasError('email')">Email invalide</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width" *ngIf="!isEdit">
+      <mat-label>Mot de passe *</mat-label>
+      <input matInput formControlName="password" [type]="showPwd ? 'text' : 'password'">
+      <button mat-icon-button matSuffix type="button" (click)="showPwd = !showPwd">
+        <mat-icon>{{ showPwd ? 'visibility_off' : 'visibility' }}</mat-icon>
+      </button>
+      <mat-hint>Minimum 8 caractères</mat-hint>
+      <mat-error *ngIf="form.get('password')?.hasError('minlength')">Minimum 8 caractères</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Rôle *</mat-label>
+      <mat-select formControlName="role">
+        <mat-option *ngFor="let r of rolesOptions" [value]="r.value">
+          {{ r.label }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Enseigne</mat-label>
+      <mat-select formControlName="establishment">
+        <mat-option [value]="null">— Aucune (Super Admin) —</mat-option>
+        <mat-option *ngFor="let est of data.establishments"
+                    [value]="'/api/establishments/' + est.id">
+          {{ est.name }}
+          <span class="max-users">(max {{ est.maxUsers }} users)</span>
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-stroked-button mat-dialog-close [disabled]="saving">Annuler</button>
+  <button mat-flat-button color="primary" (click)="save()" [disabled]="saving || form.invalid">
+    <mat-spinner diameter="16" *ngIf="saving"></mat-spinner>
+    <mat-icon *ngIf="!saving">save</mat-icon>
+    {{ isEdit ? 'Enregistrer' : 'Créer' }}
+  </button>
+</mat-dialog-actions>

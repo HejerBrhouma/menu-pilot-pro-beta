@@ -1,0 +1,134 @@
+<!-- src/app/pages/restaurant-public/restaurant-public.component.html -->
+
+<!-- LOADER -->
+<div class="pub-loader" *ngIf="loading">
+  <mat-spinner diameter="48"></mat-spinner>
+</div>
+
+<!-- NOT FOUND -->
+<div class="not-found" *ngIf="!loading && notFound">
+  <mat-icon>store_mall_directory</mat-icon>
+  <h2>Restaurant introuvable</h2>
+  <p>Ce restaurant n'existe pas ou n'est plus actif.</p>
+</div>
+
+<!-- PAGE PUBLIQUE -->
+<div class="pub-page" *ngIf="!loading && establishment"
+     [style.--primary]="establishment.primaryColor || '#6366f1'"
+     [style.--secondary]="establishment.secondaryColor || '#ec4899'">
+
+  <!-- HERO -->
+  <div class="pub-hero">
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+      <div class="hero-logo" *ngIf="establishment.logo">
+        <img [src]="getLogoUrl()" [alt]="establishment.name">
+      </div>
+      <div class="hero-logo no-logo" *ngIf="!establishment.logo">
+        <mat-icon>store</mat-icon>
+      </div>
+      <h1>{{ establishment.name }}</h1>
+      <p class="hero-desc" *ngIf="establishment.description">{{ establishment.description }}</p>
+
+      <div class="hero-badges">
+        <span class="badge open" *ngIf="isOpenNow()">
+          <span class="dot"></span> Ouvert maintenant
+        </span>
+        <span class="badge closed" *ngIf="!isOpenNow()">
+          <span class="dot"></span> Fermé
+        </span>
+        <span class="badge time" *ngIf="getTodayHours()">
+          <mat-icon>schedule</mat-icon>
+          {{ getTodayHours() }}
+        </span>
+        <span class="badge city" *ngIf="establishment.city">
+          <mat-icon>location_on</mat-icon>
+          {{ establishment.city }}
+        </span>
+      </div>
+
+      <!-- Réseaux sociaux -->
+      <div class="social-links">
+        <a [href]="establishment.website" target="_blank" *ngIf="establishment.website" class="social-btn">
+          <mat-icon>language</mat-icon>
+        </a>
+        <a [href]="establishment.instagram" target="_blank" *ngIf="establishment.instagram" class="social-btn">
+          <mat-icon>photo_camera</mat-icon>
+        </a>
+        <a [href]="establishment.facebook" target="_blank" *ngIf="establishment.facebook" class="social-btn">
+          <mat-icon>thumb_up</mat-icon>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- INFOS CONTACT -->
+  <div class="pub-contact" *ngIf="establishment.address || establishment.phone || establishment.email">
+    <div class="contact-item" *ngIf="establishment.address">
+      <mat-icon>location_on</mat-icon>
+      <span>{{ establishment.address }}{{ establishment.city ? ', ' + establishment.city : '' }}</span>
+    </div>
+    <div class="contact-item" *ngIf="establishment.phone">
+      <mat-icon>phone</mat-icon>
+      <a [href]="'tel:' + establishment.phone">{{ establishment.phone }}</a>
+    </div>
+    <div class="contact-item" *ngIf="establishment.email">
+      <mat-icon>email</mat-icon>
+      <a [href]="'mailto:' + establishment.email">{{ establishment.email }}</a>
+    </div>
+  </div>
+
+  <!-- MENUS -->
+  <div class="pub-menus">
+    <h2 class="section-title">Nos Menus</h2>
+
+    <div class="menus-empty" *ngIf="menus.length === 0">
+      <mat-icon>restaurant_menu</mat-icon>
+      <p>Aucun menu disponible pour le moment.</p>
+    </div>
+
+    <div class="menus-grid" *ngIf="menus.length > 0">
+      <a class="menu-card" *ngFor="let m of menus"
+         [routerLink]="['/menu', m.qrToken]">
+        <div class="menu-card-header">
+          <mat-icon>restaurant_menu</mat-icon>
+          <div class="menu-card-info">
+            <span class="menu-card-name">{{ m.name }}</span>
+            <span class="menu-card-desc" *ngIf="m.description">{{ m.description }}</span>
+          </div>
+        </div>
+        <div class="menu-card-footer">
+          <span class="menu-horaire" *ngIf="m.timeStart">
+            <mat-icon>schedule</mat-icon>
+            {{ m.timeStart }} — {{ m.timeEnd }}
+          </span>
+          <span class="menu-sections">{{ m.sections.length }} section(s)</span>
+          <mat-icon class="arrow">arrow_forward</mat-icon>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- HORAIRES -->
+  <div class="pub-horaires">
+    <h2 class="section-title">Horaires d'ouverture</h2>
+    <div class="horaires-list">
+      <div class="horaire-item" *ngFor="let day of daysKeys">
+        <span class="day-name">{{ daysLabels[day] }}</span>
+        <span class="day-hours closed-day" *ngIf="establishment.openingHours?.[day]?.closed">
+          Fermé
+        </span>
+        <span class="day-hours" *ngIf="!establishment.openingHours?.[day]?.closed">
+          {{ establishment.openingHours?.[day]?.open }} — {{ establishment.openingHours?.[day]?.close }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="pub-footer">
+    <mat-icon>restaurant</mat-icon>
+    <p>Powered by Menu Pilot Pro</p>
+  </div>
+
+</div>

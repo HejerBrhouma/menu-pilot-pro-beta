@@ -57,7 +57,9 @@ security:
         - { path: ^/api/login_check, roles: PUBLIC_ACCESS }
         - { path: ^/api/login/google, roles: PUBLIC_ACCESS }
         - { path: ^/api/token/refresh, roles: PUBLIC_ACCESS }
-
+        - { path: ^/api/establishments, methods: GET, roles: PUBLIC_ACCESS }
+        - { path: ^/api/establishments, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/api/impersonate, roles: IS_AUTHENTICATED_FULLY }
         # Autoriser la création de compte (POST sur /api/users) sans token
         - { path: ^/api/users$, roles: PUBLIC_ACCESS, methods: [ POST ] }
 

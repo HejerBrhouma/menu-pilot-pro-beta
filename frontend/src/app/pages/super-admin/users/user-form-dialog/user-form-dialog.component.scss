@@ -1,0 +1,62 @@
+// src/app/pages/super-admin/users/user-form-dialog/user-form-dialog.component.scss
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 1.5rem 1.5rem 0;
+
+  mat-icon {
+    color: #f59e0b;
+    font-size: 1.75rem;
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+
+  h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1a1a2e;
+  }
+}
+
+mat-dialog-content {
+  padding: 1.25rem 1.5rem !important;
+}
+
+.user-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.full-width { width: 100%; }
+
+.two-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.max-users {
+  color: #9ca3af;
+  font-size: 0.75rem;
+  margin-left: 4px;
+}
+
+mat-dialog-actions {
+  padding: 1rem 1.5rem !important;
+  gap: 0.75rem;
+
+  button {
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+}

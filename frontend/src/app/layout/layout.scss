@@ -2,6 +2,7 @@
 
 .app-layout {
   display: flex;
+  flex-direction: column;   // ← empilement vertical : bannière + header + contenu
   height: 100vh;
   overflow: hidden;
 }
@@ -10,5 +11,5 @@
   flex: 1;
   overflow-y: auto;
   background: #f4f6fb;
-  min-width: 0; // empêche le débordement flex
+  min-width: 0;
 }

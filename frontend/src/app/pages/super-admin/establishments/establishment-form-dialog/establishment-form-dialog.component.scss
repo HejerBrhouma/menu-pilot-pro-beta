@@ -1,0 +1,17 @@
+// src/app/pages/super-admin/establishments/establishment-form-dialog/establishment-form-dialog.component.scss
+
+.dialog-header {
+  display: flex; align-items: center; gap: 10px; padding: 1.5rem 1.5rem 0;
+  mat-icon { color: #f59e0b; font-size: 1.75rem; width: 1.75rem; height: 1.75rem; }
+  h2 { margin: 0; font-size: 1.25rem; font-weight: 700; color: #1a1a2e; }
+}
+mat-dialog-content { padding: 1.25rem 1.5rem !important; max-height: 65vh; }
+.est-form { display: flex; flex-direction: column; gap: 0.5rem; }
+.full-width { width: 100%; }
+.two-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.color-fields { display: flex; flex-direction: column; gap: 4px; }
+.color-field label { font-size: 0.78rem; font-weight: 700; color: #374151; }
+.color-row { display: flex; align-items: center; gap: 8px; }
+.color-picker { width: 40px; height: 40px; border-radius: 8px; border: 2px solid #e5e7eb; padding: 2px; cursor: pointer; background: none; flex-shrink: 0; }
+mat-dialog-actions { padding: 1rem 1.5rem !important; gap: 0.75rem; }
+mat-dialog-actions button { border-radius: 10px; display: flex; align-items: center; gap: 6px; }

@@ -3,30 +3,33 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 
 /**
  * @ORM\Entity(repositoryClass=UserRepository::class)
  * @ApiResource(
- * normalizationContext={"groups"={"user:read"}},
- * denormalizationContext={"groups"={"user:write"}},
- * collectionOperations={
- * "get"={"security"="is_granted('ROLE_SUPER_ADMIN')"},
- * "post"
- * },
- * itemOperations={
- * "get"={"security"="is_granted('ROLE_USER') and object == user or is_granted('ROLE_SUPER_ADMIN')"},
- * "put"={"security"="is_granted('ROLE_USER') and object == user or is_granted('ROLE_SUPER_ADMIN')"},
- * "delete"={"security"="is_granted('ROLE_SUPER_ADMIN')"}
- * }
+ *   normalizationContext={"groups"={"user:read"}},
+ *   denormalizationContext={"groups"={"user:write"}},
+ *   collectionOperations={
+ *     "get"={"security"="is_granted('ROLE_SUPER_ADMIN')"},
+ *     "post"={"security"="is_granted('ROLE_SUPER_ADMIN')"}
+ *   },
+ *   itemOperations={
+ *     "get"={"security"="is_granted('ROLE_SUPER_ADMIN') or object == user"},
+ *     "put"={"security"="is_granted('ROLE_SUPER_ADMIN') or object == user"},
+ *     "patch"={"security"="is_granted('ROLE_SUPER_ADMIN') or object == user",
+ *              "input_formats"={"json"={"application/merge-patch+json"}}},
+ *     "delete"={"security"="is_granted('ROLE_SUPER_ADMIN')"}
+ *   }
  * )
+ * @ApiFilter(SearchFilter::class, properties={"establishment": "exact", "isActive": "exact"})
  */
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
@@ -51,13 +54,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private array $roles = [];
 
     /**
-     * @var string Le mot de passe haché stocké en base
      * @ORM\Column(type="string")
      */
     private string $password;
 
     /**
-     * @var string|null Champ virtuel pour l'inscription (non stocké en base)
      * @Groups({"user:write"})
      * @SerializedName("password")
      */
@@ -82,16 +83,27 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private bool $isActive = true;
 
     /**
+     * Nombre maximum d'utilisateurs autorisés pour cette enseigne
+     * @ORM\Column(type="integer")
+     * @Groups({"establishment:read", "establishment:write"})
+     */
+    private int $maxUsers = 5;
+
+    /**
      * @ORM\Column(type="string", length=255, nullable=true)
      * @Groups({"user:read", "user:write"})
      */
     private ?string $googleId = null;
 
     /**
-     * @ORM\Column(type="string", length=255, nullable=true)
+     * Enseigne à laquelle appartient cet utilisateur (null = SUPER_ADMIN)
+     * @ORM\ManyToOne(targetEntity=Establishment::class)
+     * @ORM\JoinColumn(nullable=true)
      * @Groups({"user:read", "user:write"})
      */
-    private ?string $facebookId = null;
+    private ?Establishment $establishment = null;
+
+    // ── Getters / Setters ─────────────────────────────────────────────────
 
     public function getId(): ?int
     {
@@ -111,15 +123,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getUserIdentifier(): string
     {
-        return (string) $this->email;
+        return (string)$this->email;
     }
 
-    /**
-     * @deprecated depuis Symfony 5.3
-     */
     public function getUsername(): string
     {
-        return (string) $this->email;
+        return (string)$this->email;
     }
 
     public function getRoles(): array
@@ -208,6 +217,28 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setGoogleId(?string $googleId): self
     {
         $this->googleId = $googleId;
+        return $this;
+    }
+
+    public function getEstablishment(): ?Establishment
+    {
+        return $this->establishment;
+    }
+
+    public function setEstablishment(?Establishment $establishment): self
+    {
+        $this->establishment = $establishment;
+        return $this;
+    }
+
+    public function getMaxUsers(): int
+    {
+        return $this->maxUsers;
+    }
+
+    public function setMaxUsers(int $maxUsers): self
+    {
+        $this->maxUsers = $maxUsers;
         return $this;
     }
 }

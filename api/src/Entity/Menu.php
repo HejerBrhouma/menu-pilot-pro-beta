@@ -75,6 +75,14 @@ class Menu
     private \DateTimeImmutable $createdAt;
 
     /**
+     * Enseigne propriétaire de ce menu
+     * @ORM\ManyToOne(targetEntity=Establishment::class)
+     * @ORM\JoinColumn(nullable=true)
+     * @Groups({"menu:read"})
+     */
+    private Establishment $establishment;
+
+    /**
      * @ORM\OneToMany(
      *   targetEntity=MenuSection::class,
      *   mappedBy="menu",
@@ -114,6 +122,13 @@ class Menu
     public function setQrToken(string $qrToken): self { $this->qrToken = $qrToken; return $this; }
 
     public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
+
+    public function getEstablishment(): Establishment { return $this->establishment; }
+    public function setEstablishment(Establishment $establishment): self
+    {
+        $this->establishment = $establishment;
+        return $this;
+    }
 
     public function getSections(): Collection { return $this->sections; }
 

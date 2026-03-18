@@ -36,14 +36,12 @@ services:
     container_name: digimenu_nginx
     restart: unless-stopped
     ports:
-      - "${SYMFONY_PORT}:80" # Permet d'accéder à l'API via localhost:8000
+      - "${SYMFONY_PORT}:80"
     volumes:
-      # Monte le code Symfony pour que Nginx puisse le servir
-      - ./symfony-api:/var/www/html:ro
-      # Monte le fichier de configuration Nginx
+      - ./api:/var/www/html:ro          # ← était ./symfony-api, doit être ./api
       - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
-      - api # Nginx dépend de PHP-FPM
+      - api
 
   # 3. BASE DE DONNÉES (MARIADB)
   database:

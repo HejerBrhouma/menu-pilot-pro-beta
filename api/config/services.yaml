@@ -20,5 +20,9 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
 
+    App\Controller\EstablishmentLogoController:
+        arguments:
+            $uploadDir: '%kernel.project_dir%/public/uploads/logos'
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

@@ -2,58 +2,43 @@
 
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject, throwError } from 'rxjs';
-import { tap, catchError, map } from 'rxjs/operators';
 import { Router } from '@angular/router';
-import { AuthResponse, User } from '../models/auth.model';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
+import { tap, catchError } from 'rxjs/operators';
+import { User, AuthResponse } from '../models/auth.model';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
 
-  private readonly API_URL   = '/api';
-  private readonly JWT_KEY   = 'jwt_token';
-  private readonly REFRESH_KEY = 'refresh_token';
-  private readonly USER_KEY  = 'current_user';
+  private currentUserSubject = new BehaviorSubject<User | null>(this.getUserFromToken());
+  currentUser$ = this.currentUserSubject.asObservable();
 
-  // État réactif de l'utilisateur connecté
-  private currentUserSubject = new BehaviorSubject<User | null>(this.loadUserFromStorage());
-  public currentUser$ = this.currentUserSubject.asObservable();
+  constructor(
+    private http: HttpClient,
+    private router: Router
+  ) {}
 
-  constructor(private http: HttpClient, private router: Router) {}
-
-  // ── Authentification ──────────────────────
-
+  // ── Connexion email/password ───────────────────────────────────────────
   login(email: string, password: string): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.API_URL}/login_check`, { email, password }).pipe(
-      tap(res => this.storeSession(res)),
-      tap(() => this.router.navigate(['/dashboard'])),
+    return this.http.post<AuthResponse>('/api/login_check', { email, password }).pipe(
+      tap(res => this.handleAuthSuccess(res)),
       catchError(this.handleError)
     );
   }
 
-  register(userData: any): Observable<any> {
-    return this.http.post(`${this.API_URL}/register`, userData).pipe(
-      catchError(this.handleError)
-    );
-  }
-
+  // ── Connexion Google OAuth ─────────────────────────────────────────────
   socialLogin(provider: string, token: string): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.API_URL}/login/${provider}`, { accessToken: token }).pipe(
-      tap(res => this.storeSession(res)),
-      tap(() => this.router.navigate(['/dashboard'])),
+    return this.http.post<AuthResponse>(`/api/auth/${provider}`, { token }).pipe(
+      tap(res => this.handleAuthSuccess(res)),
       catchError(this.handleError)
     );
   }
 
+  // ── Refresh token ─────────────────────────────────────────────────────
   refreshToken(): Observable<AuthResponse> {
-    const refreshToken = localStorage.getItem(this.REFRESH_KEY);
-    if (!refreshToken) {
-      this.logout();
-      return throwError(() => new Error('Session expirée'));
-    }
-
-    return this.http.post<AuthResponse>(`${this.API_URL}/token/refresh`, { refresh_token: refreshToken }).pipe(
-      tap(res => this.storeSession(res)),
+    const refreshToken = localStorage.getItem('refresh_token');
+    return this.http.post<AuthResponse>('/api/token/refresh', { refresh_token: refreshToken }).pipe(
+      tap(res => this.handleAuthSuccess(res)),
       catchError(err => {
         this.logout();
         return throwError(() => err);
@@ -61,67 +46,98 @@ export class AuthService {
     );
   }
 
+  // ── Déconnexion ───────────────────────────────────────────────────────
   logout(): void {
-    localStorage.removeItem(this.JWT_KEY);
-    localStorage.removeItem(this.REFRESH_KEY);
-    localStorage.removeItem(this.USER_KEY);
+    localStorage.removeItem('token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('impersonate_token');
     this.currentUserSubject.next(null);
     this.router.navigate(['/login']);
   }
 
-  // ── Utilisateur courant ───────────────────
-
+  // ── Getters ───────────────────────────────────────────────────────────
   getCurrentUser(): User | null {
     return this.currentUserSubject.value;
   }
 
-  fetchCurrentUser(): Observable<User> {
-    return this.http.get<User>(`${this.API_URL}/me`).pipe(
-      tap(user => {
-        localStorage.setItem(this.USER_KEY, JSON.stringify(user));
-        this.currentUserSubject.next(user);
-      }),
-      catchError(this.handleError)
-    );
+  isSuperAdmin(): boolean {
+    return this.getCurrentUser()?.roles?.includes('ROLE_SUPER_ADMIN') ?? false;
   }
 
-  // ── Tokens ────────────────────────────────
-
-  getJwtToken(): string | null {
-    return localStorage.getItem(this.JWT_KEY);
+  isAdmin(): boolean {
+    return this.getCurrentUser()?.roles?.includes('ROLE_ADMIN') ?? false;
   }
 
   isLoggedIn(): boolean {
-    return !!this.getJwtToken();
-  }
-
-  // ── Helpers privés ────────────────────────
-
-  private storeSession(response: AuthResponse): void {
-    if (response.token) {
-      localStorage.setItem(this.JWT_KEY, response.token);
-    }
-    if (response.refresh_token) {
-      localStorage.setItem(this.REFRESH_KEY, response.refresh_token);
-    }
-    // Si l'API retourne l'utilisateur dans la réponse de login
-    if (response.user) {
-      localStorage.setItem(this.USER_KEY, JSON.stringify(response.user));
-      this.currentUserSubject.next(response.user);
-    }
-  }
-
-  private loadUserFromStorage(): User | null {
+    const token = localStorage.getItem('token');
+    if (!token) return false;
     try {
-      const raw = localStorage.getItem(this.USER_KEY);
-      return raw ? JSON.parse(raw) : null;
-    } catch {
-      return null;
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.exp * 1000 > Date.now();
+    } catch { return false; }
+  }
+
+  // ── Impersonation ─────────────────────────────────────────────────────
+  impersonate(adminToken: string): void {
+    localStorage.setItem('impersonate_token', adminToken);
+    const user = this.decodeToken(adminToken);
+    this.currentUserSubject.next(user);
+    this.router.navigate(['/dashboard']);
+  }
+
+  stopImpersonation(): void {
+    localStorage.removeItem('impersonate_token');
+    const token = localStorage.getItem('token');
+    const user = token ? this.decodeToken(token) : null;
+    this.currentUserSubject.next(user);
+    this.router.navigate(['/super-admin/dashboard']);
+  }
+
+  isImpersonating(): boolean {
+    return !!localStorage.getItem('impersonate_token');
+  }
+
+  // ── Helpers privés ────────────────────────────────────────────────────
+  private handleAuthSuccess(res: AuthResponse): void {
+    if (res.token) {
+      localStorage.setItem('token', res.token);
+      if (res.refresh_token) {
+        localStorage.setItem('refresh_token', res.refresh_token);
+      }
+      const user = this.decodeToken(res.token);
+      this.currentUserSubject.next(user);
+
+      // Rediriger selon le rôle
+      if (user?.roles?.includes('ROLE_SUPER_ADMIN')) {
+        this.router.navigate(['/super-admin/dashboard']);
+      } else {
+        this.router.navigate(['/dashboard']);
+      }
     }
+  }
+
+  private decodeToken(token: string): User | null {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return {
+        id:        payload.id,
+        email:     payload.email,
+        firstName: payload.firstName,
+        lastName:  payload.lastName,
+        roles:     payload.roles || [],
+        isActive:  payload.isActive ?? true,
+      };
+    } catch { return null; }
+  }
+
+  private getUserFromToken(): User | null {
+    const token = localStorage.getItem('impersonate_token')
+      || localStorage.getItem('token');
+    return token ? this.decodeToken(token) : null;
   }
 
   private handleError(error: any): Observable<never> {
-    const msg = error?.error?.message || error?.message || 'Une erreur est survenue';
+    const msg = error?.error?.message || 'Erreur de connexion';
     return throwError(() => new Error(msg));
   }
 }

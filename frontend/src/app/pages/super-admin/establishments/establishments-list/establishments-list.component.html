@@ -1,0 +1,98 @@
+<!-- src/app/pages/super-admin/establishments/establishments-list/establishments-list.component.html -->
+
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1><mat-icon>store</mat-icon> Toutes les enseignes</h1>
+      <p class="subtitle">{{ establishments.length }} enseigne(s) au total</p>
+    </div>
+    <button mat-flat-button color="primary" (click)="openCreate()">
+      <mat-icon>add_business</mat-icon> Nouvelle enseigne
+    </button>
+  </div>
+
+  <div class="loader" *ngIf="loading"><mat-spinner diameter="40"></mat-spinner></div>
+
+  <div class="establishments-grid" *ngIf="!loading">
+
+    <div class="est-card" *ngFor="let est of establishments">
+
+      <!-- HEADER -->
+      <div class="est-header">
+        <div class="est-logo" *ngIf="est.logo">
+          <img [src]="establishmentService.getLogoUrl(est.logo)" [alt]="est.name">
+        </div>
+        <div class="est-logo no-logo" *ngIf="!est.logo">
+          <mat-icon>store</mat-icon>
+        </div>
+        <div class="est-info">
+          <h3>{{ est.name }}</h3>
+          <span class="est-slug">/r/{{ est.slug }}</span>
+          <span class="est-city" *ngIf="est.city">
+            <mat-icon>location_on</mat-icon>{{ est.city }}
+          </span>
+        </div>
+        <!-- Badge statut -->
+        <span class="status-badge" [class.active]="est.isActive">
+          {{ est.isActive ? 'Actif' : 'Inactif' }}
+        </span>
+      </div>
+
+      <!-- STATS -->
+      <div class="est-stats">
+        <div class="stat">
+          <mat-icon>group</mat-icon>
+          <span>{{ getUserCount(est) }} / {{ est.maxUsers }} users</span>
+        </div>
+        <div class="stat" *ngIf="getAdmin(est)">
+          <mat-icon>admin_panel_settings</mat-icon>
+          <span>{{ getAdmin(est)?.firstName }} {{ getAdmin(est)?.lastName }}</span>
+        </div>
+        <div class="stat no-admin" *ngIf="!getAdmin(est)">
+          <mat-icon>warning</mat-icon>
+          <span>Pas d'admin</span>
+        </div>
+      </div>
+
+      <!-- ACTIONS -->
+      <div class="est-actions">
+        <mat-slide-toggle
+          [checked]="est.isActive"
+          color="primary"
+          (change)="toggleActive(est)">
+        </mat-slide-toggle>
+
+        <!-- Prendre la main sur l'admin de cette enseigne -->
+        <button mat-icon-button color="accent"
+                [disabled]="!getAdmin(est)"
+                (click)="impersonateAdmin(est)"
+                [matTooltip]="getAdmin(est) ? 'Prendre la main sur ' + getAdmin(est)?.firstName : 'Pas d\'admin disponible'">
+          <mat-icon>manage_accounts</mat-icon>
+        </button>
+
+        <!-- Modifier l'enseigne -->
+        <button mat-icon-button
+                (click)="openEdit(est)"
+                matTooltip="Modifier l'enseigne">
+          <mat-icon>edit</mat-icon>
+        </button>
+
+        <!-- Voir page publique -->
+        <a [href]="'/r/' + est.slug" target="_blank"
+           mat-icon-button matTooltip="Voir page publique">
+          <mat-icon>open_in_new</mat-icon>
+        </a>
+      </div>
+
+    </div>
+
+    <div class="empty" *ngIf="establishments.length === 0">
+      <mat-icon>store_mall_directory</mat-icon>
+      <p>Aucune enseigne</p>
+      <button mat-flat-button color="primary" (click)="openCreate()">
+        Créer la première
+      </button>
+    </div>
+
+  </div>
+</div>

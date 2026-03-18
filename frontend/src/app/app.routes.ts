@@ -1,6 +1,8 @@
+// src/app/app.routes.ts
+
 import { Routes } from '@angular/router';
-import { AuthGuard } from './core/guards/auth-guard';
 import { LoginComponent } from './auth/login/login';
+import { AdminGuard, SuperAdminGuard } from './core/guards/auth-guard';
 
 export const routes: Routes = [
 
@@ -11,22 +13,72 @@ export const routes: Routes = [
     title: 'Connexion'
   },
 
-  // ── Page publique QR — HORS layout, HORS AuthGuard ───────────────────
+  // ── Pages publiques (sans auth) ───────────────────────────────────────
   {
     path: 'menu/:token',
+    title: 'Menu Digital',
     loadComponent: () =>
       import('./pages/menu-public/menu-public.component')
-        .then(m => m.MenuPublicComponent),
-    title: 'Menu Digital'
+        .then(m => m.MenuPublicComponent)
+  },
+  {
+    path: 'r/:slug',
+    title: 'Notre Enseigne',
+    loadComponent: () =>
+      import('./pages/establishment-public/establishment-public.component')
+        .then(m => m.EstablishmentPublicComponent)
   },
 
-  // ── Layout protégé ────────────────────────────────────────────────────
+  // ── SUPER ADMIN ───────────────────────────────────────────────────────
+  {
+    path: 'super-admin',
+    canActivate: [SuperAdminGuard],
+    loadComponent: () =>
+      import('./layout/super-admin-layout/super-admin-layout')
+        .then(m => m.SuperAdminLayout),
+    children: [
+      {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full'
+      },
+      {
+        path: 'dashboard',
+        title: 'Super Admin — Dashboard',
+        loadComponent: () =>
+          import('./pages/super-admin/dashboard/super-admin-dashboard.component')
+            .then(m => m.SuperAdminDashboardComponent)
+      },
+      {
+        path: 'establishments',
+        title: 'Toutes les enseignes',
+        loadComponent: () =>
+          import('./pages/super-admin/establishments/establishments-list/establishments-list.component')
+            .then(m => m.EstablishmentsListComponent)
+      },
+      {
+        path: 'establishments/new',
+        title: 'Nouvelle enseigne',
+        loadComponent: () =>
+          import('./pages/super-admin/establishments/establishment-create/establishment-create.component')
+            .then(m => m.EstablishmentCreateComponent)
+      },
+      {
+        path: 'users',
+        title: 'Gestion utilisateurs',
+        loadComponent: () =>
+          import('./pages/super-admin/users/users-list/users-list.component')
+            .then(m => m.UsersListComponent)
+      },
+    ]
+  },
+
+  // ── ADMIN (layout avec sidebar) ───────────────────────────────────────
   {
     path: '',
+    canActivate: [AdminGuard],
     loadComponent: () =>
-      import('./layout/layout')
-        .then(m => m.Layout),
-    canActivate: [AuthGuard],   // ← AuthGuard sur TOUT le layout
+      import('./layout/layout').then(m => m.Layout),
     children: [
       {
         path: '',
@@ -39,6 +91,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/dashboard/dashboard-component')
             .then(m => m.DashboardComponent)
+      },
+      {
+        path: 'establishment',
+        title: 'Mon Enseigne',
+        loadComponent: () =>
+          import('./pages/dashboard/establishment/establishment.component')
+            .then(m => m.EstablishmentComponent)
       },
       {
         path: 'products',
@@ -74,6 +133,20 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/dashboard/qr-code/qr.code.component')
             .then(m => m.QrCodeComponent)
+      },
+      {
+        path: 'promotions',
+        title: 'Promotions',
+        loadComponent: () =>
+          import('./pages/dashboard/promotions/promotions.component')
+            .then(m => m.PromotionsComponent)
+      },
+      {
+        path: 'staff',
+        title: 'Personnel',
+        loadComponent: () =>
+          import('./pages/dashboard/staff/staff.component')
+            .then(m => m.StaffComponent)
       },
     ]
   },

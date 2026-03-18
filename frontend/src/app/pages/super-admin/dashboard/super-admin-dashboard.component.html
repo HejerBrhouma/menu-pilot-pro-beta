@@ -1,0 +1,81 @@
+<!-- src/app/pages/super-admin/dashboard/super-admin-dashboard.component.html -->
+
+<div class="sa-dashboard">
+
+  <div class="page-header">
+    <h1><mat-icon>dashboard</mat-icon> Tableau de bord global</h1>
+    <p class="subtitle">Vue d'ensemble de la plateforme</p>
+  </div>
+
+  <div class="loader" *ngIf="loading"><mat-spinner diameter="40"></mat-spinner></div>
+
+  <div *ngIf="!loading">
+
+    <!-- STATS ENSEIGNES -->
+    <p class="section-label">Enseignes</p>
+    <div class="stats-grid">
+      <div class="stat-card indigo">
+        <div class="stat-icon"><mat-icon>store</mat-icon></div>
+        <div class="stat-info">
+          <span class="stat-value">{{ totalEstablishments }}</span>
+          <span class="stat-label">Total</span>
+        </div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-icon"><mat-icon>check_circle</mat-icon></div>
+        <div class="stat-info">
+          <span class="stat-value">{{ activeEstablishments }}</span>
+          <span class="stat-label">Actives</span>
+        </div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-icon"><mat-icon>pause_circle</mat-icon></div>
+        <div class="stat-info">
+          <span class="stat-value">{{ inactiveEstablishments }}</span>
+          <span class="stat-label">Inactives</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATS USERS -->
+    <p class="section-label">Utilisateurs</p>
+    <div class="stats-grid">
+      <div class="stat-card amber">
+        <div class="stat-icon"><mat-icon>group</mat-icon></div>
+        <div class="stat-info">
+          <span class="stat-value">{{ totalUsers }}</span>
+          <span class="stat-label">Total</span>
+        </div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-icon"><mat-icon>person</mat-icon></div>
+        <div class="stat-info">
+          <span class="stat-value">{{ activeUsers }}</span>
+          <span class="stat-label">Actifs</span>
+        </div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-icon"><mat-icon>person_off</mat-icon></div>
+        <div class="stat-info">
+          <span class="stat-value">{{ totalUsers - activeUsers }}</span>
+          <span class="stat-label">Inactifs</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTIONS RAPIDES -->
+    <p class="section-label">Actions rapides</p>
+    <div class="quick-actions">
+      <a routerLink="/super-admin/establishments" mat-flat-button color="primary">
+        <mat-icon>store</mat-icon> Voir les enseignes
+      </a>
+      <a routerLink="/super-admin/establishments/new" mat-stroked-button color="primary">
+        <mat-icon>add_business</mat-icon> Nouvelle enseigne
+      </a>
+      <a routerLink="/super-admin/users" mat-stroked-button>
+        <mat-icon>person_add</mat-icon> Gérer les utilisateurs
+      </a>
+    </div>
+
+  </div>
+</div>

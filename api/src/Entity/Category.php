@@ -37,6 +37,14 @@ class Category
      */
     private $products;
 
+    /**
+     * Enseigne propriétaire de ce menu
+     * @ORM\ManyToOne(targetEntity=Establishment::class)
+     * @ORM\JoinColumn(nullable=true)
+     * @Groups({"menu:read"})
+     */
+    private Establishment $establishment;
+
     public function __construct()
     {
         $this->products = new ArrayCollection();
@@ -46,6 +54,13 @@ class Category
 
     public function getName(): ?string { return $this->name; }
     public function setName(string $name): self { $this->name = $name; return $this; }
+
+    public function getEstablishment(): Establishment { return $this->establishment; }
+    public function setEstablishment(Establishment $establishment): self
+    {
+        $this->establishment = $establishment;
+        return $this;
+    }
 
     /** @return Collection|Product[] */
     public function getProducts(): Collection { return $this->products; }

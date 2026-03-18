@@ -1,156 +1,161 @@
 // src/app/core/components/header/header.scss
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap');
 
-// ── Variables ─────────────────────────────────
-:host {
-  --sidebar-width: 256px;
-  --sidebar-bg: #0f1629;
-  --sidebar-border: rgba(255,255,255,0.07);
-  --nav-hover: rgba(255,255,255,0.07);
-  --nav-active-bg: rgba(99,102,241,0.2);
-  --nav-active-color: #818cf8;
-  --nav-active-border: #6366f1;
-  --text-primary: #f1f5f9;
-  --text-secondary: #64748b;
-  --text-muted: #475569;
-}
+// ── Variables ─────────────────────────────────────────────────────────────
+$sidebar-width   : 260px;
+$sidebar-bg      : #1a1a2e;
+$sidebar-hover   : rgba(255,255,255,0.07);
+$sidebar-active  : rgba(99,102,241,0.25);
+$active-color    : #6366f1;
+$text-primary    : #f1f5f9;
+$text-secondary  : #94a3b8;
+$text-muted      : #64748b;
 
-// ── Layout container ──────────────────────────
+// ── Container ──────────────────────────────────────────────────────────────
 .sidenav-container {
   height: 100vh;
-  font-family: 'DM Sans', sans-serif;
+  width: 100vw;
 }
 
-// ══════════════════════════════════════════════
-//  SIDENAV
-// ══════════════════════════════════════════════
+// ── Sidebar ────────────────────────────────────────────────────────────────
 .sidenav {
-  width: var(--sidebar-width);
-  background: var(--sidebar-bg);
-  border-right: 1px solid var(--sidebar-border) !important;
+  width: $sidebar-width;
+  background: $sidebar-bg;
+  border-right: none !important;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
-// ── Logo ──────────────────────────────────────
+// ── Logo ───────────────────────────────────────────────────────────────────
 .sidebar-logo {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 1.5rem 1.25rem 1.25rem;
-  border-bottom: 1px solid var(--sidebar-border);
+  padding: 1.25rem 1.25rem 1rem;
+  cursor: pointer;
   flex-shrink: 0;
+  text-decoration: none;
+
+  // Logo enseigne image
+  .logo-establishment {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 2px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.08);
+
+    .establishment-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  // Logo Menu Pilot par défaut
+  .logo-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(99,102,241,0.4);
+
+    mat-icon { color: white; font-size: 1.3rem; width: 1.3rem; height: 1.3rem; }
+  }
+
+  .logo-text {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    .logo-name {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: $text-primary;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 160px;
+    }
+
+    .logo-version {
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: $active-color;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+  }
 }
 
-.logo-icon {
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-
-  mat-icon { color: white; font-size: 1.2rem; width: 1.2rem; height: 1.2rem; }
-}
-
-.logo-text {
-  display: flex;
-  align-items: baseline;
-  gap: 5px;
-}
-
-.logo-name {
-  font-family: 'Syne', sans-serif;
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  letter-spacing: -0.3px;
-}
-
-.logo-version {
-  font-size: 0.65rem;
-  font-weight: 700;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  color: white;
-  padding: 1px 7px;
-  border-radius: 99px;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-}
-
-// ── Scroll content ────────────────────────────
+// ── Contenu sidebar ────────────────────────────────────────────────────────
 .sidebar-content {
   flex: 1;
   overflow-y: auto;
-  padding: 0.75rem 0;
-  scrollbar-width: none;
-  &::-webkit-scrollbar { display: none; }
-}
-
-// ── Nav groups ────────────────────────────────
-.nav-group {
-  margin-bottom: 0.25rem;
-}
-
-.nav-group-label {
-  padding: 0.75rem 1.25rem 0.3rem;
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: var(--text-muted);
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-}
-
-.nav-section {
+  padding: 0.5rem 0.75rem;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 0 0.75rem;
+  gap: 0.25rem;
+
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
 }
 
-// ── Nav items ─────────────────────────────────
+// ── Groupes nav ────────────────────────────────────────────────────────────
+.nav-group { margin-top: 0.5rem; }
+
+.nav-group-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: $text-muted;
+  padding: 0.5rem 0.75rem 0.25rem;
+}
+
+.nav-section { display: flex; flex-direction: column; gap: 2px; }
+
+// ── Nav items ──────────────────────────────────────────────────────────────
 .nav-item {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.6rem 0.875rem;
+  padding: 0.625rem 0.75rem;
   border-radius: 10px;
+  color: $text-secondary;
   text-decoration: none;
-  color: var(--text-secondary);
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition: all 0.15s ease;
   position: relative;
-  user-select: none;
-
-  span:not(.nav-badge):not(.nav-dot) { flex: 1; }
 
   &:hover {
-    background: var(--nav-hover);
-    color: #e2e8f0;
-    .nav-icon mat-icon { color: #e2e8f0; }
+    background: $sidebar-hover;
+    color: $text-primary;
   }
 
   &.active {
-    background: var(--nav-active-bg);
-    color: var(--nav-active-color);
+    background: $sidebar-active;
+    color: #818cf8;
 
-    .nav-icon {
-      background: rgba(99,102,241,0.2);
-      mat-icon { color: var(--nav-active-color); }
-    }
+    .nav-icon mat-icon { color: #818cf8; }
 
     &::before {
       content: '';
       position: absolute;
-      left: 0; top: 20%; bottom: 20%;
+      left: 0;
+      top: 20%;
+      height: 60%;
       width: 3px;
-      background: var(--nav-active-border);
-      border-radius: 0 3px 3px 0;
+      background: $active-color;
+      border-radius: 0 2px 2px 0;
     }
   }
 }
@@ -163,43 +168,42 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  background: rgba(255,255,255,0.05);
   transition: background 0.15s;
 
-  mat-icon {
-    font-size: 1.05rem;
-    width: 1.05rem;
-    height: 1.05rem;
-    color: var(--text-muted);
-    transition: color 0.15s;
-  }
+  mat-icon { font-size: 1.05rem; width: 1.05rem; height: 1.05rem; color: $text-secondary; }
 }
 
-// Badge "Bêta"
+.nav-item:hover .nav-icon { background: rgba(255,255,255,0.1); }
+
 .nav-badge {
+  margin-left: auto;
   font-size: 0.6rem;
   font-weight: 700;
-  background: rgba(236,72,153,0.2);
-  color: #f472b6;
+  background: #f59e0b;
+  color: white;
   padding: 2px 7px;
   border-radius: 99px;
-  letter-spacing: 0.3px;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-// Point notification
 .nav-dot {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
   width: 7px;
   height: 7px;
   border-radius: 50%;
   background: #ef4444;
-  box-shadow: 0 0 6px #ef444480;
-  flex-shrink: 0;
+  box-shadow: 0 0 6px rgba(239,68,68,0.6);
 }
 
-// ── Footer user card ──────────────────────────
+// ── Footer user card ───────────────────────────────────────────────────────
 .sidebar-footer {
-  border-top: 1px solid var(--sidebar-border);
-  padding: 0.875rem;
+  padding: 0.75rem;
+  border-top: 1px solid rgba(255,255,255,0.07);
   flex-shrink: 0;
 }
 
@@ -208,67 +212,55 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.625rem 0.75rem;
-  border-radius: 10px;
+  border-radius: 12px;
   background: rgba(255,255,255,0.05);
-  border: 1px solid var(--sidebar-border);
 }
 
 .user-avatar {
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  color: white;
-  font-weight: 700;
-  font-size: 0.9rem;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-weight: 800;
+  font-size: 0.9rem;
+  color: white;
   flex-shrink: 0;
 }
 
 .user-info {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  min-width: 0;
-}
 
-.user-name {
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+  .user-name {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: $text-primary;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
-.user-role {
-  font-size: 0.7rem;
-  color: var(--text-muted);
+  .user-role {
+    font-size: 0.68rem;
+    color: $text-muted;
+  }
 }
 
 .logout-btn {
-  width: 30px;
-  height: 30px;
-  line-height: 30px;
+  color: $text-muted !important;
   flex-shrink: 0;
-
-  mat-icon {
-    font-size: 1rem;
-    width: 1rem;
-    height: 1rem;
-    color: var(--text-muted);
-    transition: color 0.15s;
-  }
-
-  &:hover mat-icon { color: #ef4444; }
+  &:hover { color: #ef4444 !important; }
 }
 
-// ══════════════════════════════════════════════
-//  MAIN CONTENT
-// ══════════════════════════════════════════════
 .main-content {
-  background: #f4f6fb;
-  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+  background: #f8fafc;
 }
