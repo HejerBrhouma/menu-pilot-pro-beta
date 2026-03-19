@@ -154,6 +154,12 @@ class Establishment
     private ?User $owner = null;
 
     /**
+     * @ORM\Column(type="date", nullable=true)
+     * @Groups({"establishment:read", "establishment:write"})
+     */
+    private ?\DateTime $anniversaryDate = null;
+
+    /**
      * @ORM\Column(type="datetime_immutable")
      * @Groups({"establishment:read"})
      */

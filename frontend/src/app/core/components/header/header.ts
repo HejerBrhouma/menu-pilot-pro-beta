@@ -5,7 +5,9 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../services/auth-service';
 import { EstablishmentService } from '../../services/establishment.service';
+import { PromotionService } from '../../services/promotion.service';
 import { ImpersonationBannerComponent } from '../../../shared/impersonation-banner/impersonation-banner.component';
+import { PromoConflictBannerComponent } from '../../../shared/promo-conflict-banner/promo-conflict-banner.component';
 import { Establishment } from '../../models/establishment.model';
 
 import { MatSidenavModule } from '@angular/material/sidenav';
@@ -22,16 +24,18 @@ import { MatRippleModule } from '@angular/material/core';
     CommonModule, RouterModule, RouterOutlet,
     MatSidenavModule, MatListModule, MatIconModule,
     MatButtonModule, MatTooltipModule, MatRippleModule,
-    ImpersonationBannerComponent
+    ImpersonationBannerComponent,
+    PromoConflictBannerComponent
   ],
   templateUrl: './header.html',
   styleUrls: ['./header.scss']
 })
 export class Header implements OnInit {
-  userName         = 'Admin';
-  userInitial      = 'A';
-  userRole         = 'Administrateur';
-  hasNotifications = false;
+  userName          = 'Admin';
+  userInitial       = 'A';
+  userRole          = 'Administrateur';
+  hasNotifications  = false;
+  hasPromoConflicts = false;
 
   establishment: Establishment | null = null;
   logoUrl: string | null = null;
@@ -39,6 +43,7 @@ export class Header implements OnInit {
   constructor(
     private authService: AuthService,
     private establishmentService: EstablishmentService,
+    private promotionService: PromotionService,
     private router: Router
   ) {}
 
@@ -52,21 +57,24 @@ export class Header implements OnInit {
       }
     } catch {}
 
-    // Charger l'enseigne de l'user connecté
+    // Charger l'enseigne
     this.establishmentService.getAll().subscribe({
       next: (items) => {
-        if (items && items.length > 0) {
+        if (items?.length > 0) {
           this.establishment = items[0];
           if (this.establishment.logo) {
             this.logoUrl = this.establishmentService.getLogoUrl(this.establishment.logo);
           }
         }
-      },
-      error: () => {
-        // Pas d'enseigne → logo Menu Pilot par défaut
-        this.establishment = null;
-        this.logoUrl = null;
       }
+    });
+
+    // Vérifier les conflits de promos → badge orange sur le lien Promotions
+    this.promotionService.getUnresolvedConflicts().subscribe({
+      next: (conflicts) => {
+        this.hasPromoConflicts = conflicts.length > 0;
+      },
+      error: () => { this.hasPromoConflicts = false; }
     });
   }
 
