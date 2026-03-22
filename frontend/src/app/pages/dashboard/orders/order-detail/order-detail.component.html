@@ -1,0 +1,211 @@
+<!-- order-detail.component.html -->
+<div class="detail-page" *ngIf="!loading && order">
+
+  <!-- ══ TOPBAR ══ -->
+  <div class="detail-topbar">
+    <a routerLink="/orders" class="back-btn">
+      <mat-icon>arrow_back_ios</mat-icon>
+    </a>
+    <div class="topbar-info">
+      <h1>{{ order.orderNumber }}</h1>
+      <span class="topbar-date">{{ formatDate(order.createdAt) }}</span>
+    </div>
+    <div class="topbar-status"
+         [style.background]="getStatusColor(order.status) + '18'"
+         [style.color]="getStatusColor(order.status)">
+      <mat-icon>{{ getStatusIcon(order.status) }}</mat-icon>
+      {{ getStatusLabel(order.status) }}
+    </div>
+    <div class="topbar-actions" *ngIf="order.status !== 'PAID' && order.status !== 'CANCELLED'">
+      <button mat-stroked-button color="warn" (click)="cancelOrder()"
+              *ngIf="canManage" [disabled]="saving">
+        <mat-icon>cancel</mat-icon> Annuler
+      </button>
+    </div>
+  </div>
+
+  <div class="detail-layout">
+
+    <!-- ── COLONNE GAUCHE ── -->
+    <div class="left-col">
+
+      <!-- Workflow -->
+      <div class="card workflow-card" *ngIf="order.status !== 'CANCELLED'">
+        <div class="card-title">
+          <mat-icon>timeline</mat-icon> Progression
+        </div>
+        <div class="workflow-steps">
+          <div class="wf-step"
+               *ngFor="let step of workflow; let i = index"
+               [class.done]="isWorkflowDone(step)"
+               [class.active]="isWorkflowActive(step)">
+            <div class="wf-dot">
+              <mat-icon *ngIf="isWorkflowDone(step) && !isWorkflowActive(step)">check</mat-icon>
+              <mat-icon *ngIf="isWorkflowActive(step)">{{ getStatusIcon(step) }}</mat-icon>
+              <span *ngIf="!isWorkflowDone(step)">{{ i + 1 }}</span>
+            </div>
+            <div class="wf-line" *ngIf="i < workflow.length - 1"></div>
+            <div class="wf-label">{{ getStatusLabel(step) }}</div>
+          </div>
+        </div>
+
+        <!-- Bouton avancer -->
+        <div class="workflow-actions" *ngIf="order.status !== 'PAID'">
+          <!-- Bouton paiement si SERVED -->
+          <button class="action-primary pay-btn"
+                  *ngIf="order.status === 'SERVED'"
+                  (click)="openPaymentDialog()"
+                  [disabled]="saving">
+            <mat-spinner diameter="18" *ngIf="saving"></mat-spinner>
+            <mat-icon *ngIf="!saving">payments</mat-icon>
+            Encaisser · {{ order.total | number:'1.2-2' }} TND
+          </button>
+
+          <!-- Bouton avancer autres états -->
+          <button class="action-primary"
+                  *ngIf="getNextStatus() && order.status !== 'SERVED'"
+                  [style.background]="getStatusColor(getNextStatus()!)"
+                  (click)="changeStatus(getNextStatus()!)"
+                  [disabled]="saving">
+            <mat-spinner diameter="18" *ngIf="saving"></mat-spinner>
+            <mat-icon *ngIf="!saving">arrow_forward</mat-icon>
+            {{ getNextLabel() }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Statut annulé -->
+      <div class="card cancelled-card" *ngIf="order.status === 'CANCELLED'">
+        <mat-icon>cancel</mat-icon>
+        <p>Cette commande a été annulée</p>
+      </div>
+
+      <!-- Articles -->
+      <div class="card items-card">
+        <div class="card-title">
+          <mat-icon>shopping_bag</mat-icon>
+          Articles
+          <span class="items-count">{{ order.items?.length || 0 }}</span>
+        </div>
+
+        <div class="items-list">
+          <div class="item-row" *ngFor="let item of order.items">
+            <div class="item-avatar"
+                 [style.background]="item.itemType === 'PACK' ? '#fef3c7' : '#eef2ff'">
+              <mat-icon *ngIf="item.itemType === 'PACK'" style="color:#f59e0b">layers</mat-icon>
+              <mat-icon *ngIf="item.itemType !== 'PACK'" style="color:#6366f1">inventory_2</mat-icon>
+            </div>
+            <div class="item-info">
+              <span class="item-name">{{ item.itemName }}</span>
+              <span class="item-note" *ngIf="item.notes">{{ item.notes }}</span>
+              <!-- Promos appliquées -->
+              <div class="item-promos" *ngIf="item.appliedPromotions?.length">
+                <span class="promo-tag" *ngFor="let p of item.appliedPromotions">
+                  <mat-icon>local_offer</mat-icon>{{ p.name }}
+                </span>
+              </div>
+            </div>
+            <div class="item-qty">× {{ item.quantity }}</div>
+            <div class="item-prices">
+              <span class="item-unit" *ngIf="item.unitPrice !== item.finalPrice">
+                {{ item.unitPrice | number:'1.2-2' }}
+              </span>
+              <span class="item-final">
+                {{ item.finalPrice * item.quantity | number:'1.2-2' }} TND
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Récap -->
+        <div class="price-recap">
+          <div class="recap-row">
+            <span>Sous-total</span>
+            <span>{{ order.subtotal | number:'1.2-2' }} TND</span>
+          </div>
+          <div class="recap-row promo" *ngIf="order.discount > 0">
+            <span><mat-icon>local_offer</mat-icon> Promotions</span>
+            <span>−{{ order.discount | number:'1.2-2' }} TND</span>
+          </div>
+          <mat-divider></mat-divider>
+          <div class="recap-row total">
+            <span>Total</span>
+            <span>{{ order.total | number:'1.2-2' }} TND</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── COLONNE DROITE ── -->
+    <div class="right-col">
+
+      <!-- Infos commande -->
+      <div class="card info-card">
+        <div class="card-title">
+          <mat-icon>info</mat-icon> Informations
+        </div>
+        <div class="info-list">
+          <div class="info-row">
+            <span class="info-label">Type</span>
+            <span class="info-val">
+              <mat-icon>{{ order.type === 'TABLE' ? 'table_restaurant' : 'takeout_dining' }}</mat-icon>
+              {{ order.type === 'TABLE' ? 'Sur place' : 'À emporter' }}
+            </span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Table</span>
+            <span class="info-val">{{ getTableName() }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Serveur</span>
+            <span class="info-val">{{ getWaiterName() }}</span>
+          </div>
+          <div class="info-row" *ngIf="order.notes">
+            <span class="info-label">Notes</span>
+            <span class="info-val note">{{ order.notes }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Facture (si payée) -->
+      <div class="card invoice-card" *ngIf="order.status === 'PAID' && invoice">
+        <div class="card-title">
+          <mat-icon>receipt</mat-icon> Facture
+        </div>
+        <div class="invoice-info">
+          <div class="invoice-number">{{ invoice.invoiceNumber }}</div>
+          <div class="invoice-method">
+            <mat-icon>{{ invoice.paymentMethod === 'CASH' ? 'payments' : 'credit_card' }}</mat-icon>
+            {{ paymentLabels[invoice.paymentMethod!] || invoice.paymentMethod }}
+          </div>
+          <div class="invoice-date">{{ formatDate(invoice.createdAt) }}</div>
+        </div>
+        <div class="invoice-actions">
+          <a mat-stroked-button [routerLink]="['/invoices', invoice.id]">
+            <mat-icon>visibility</mat-icon> Voir la facture
+          </a>
+          <button mat-flat-button color="primary" (click)="printInvoice()">
+            <mat-icon>print</mat-icon> Imprimer
+          </button>
+        </div>
+      </div>
+
+      <!-- Paiement en attente si SERVED -->
+      <div class="card pending-payment-card" *ngIf="order.status === 'SERVED'">
+        <div class="pp-icon"><mat-icon>point_of_sale</mat-icon></div>
+        <p>En attente de paiement</p>
+        <button mat-flat-button (click)="openPaymentDialog()" [disabled]="saving">
+          <mat-icon>payments</mat-icon>
+          Encaisser {{ order.total | number:'1.2-2' }} TND
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Loader -->
+<div class="page-loader" *ngIf="loading">
+  <mat-spinner diameter="48"></mat-spinner>
+</div>

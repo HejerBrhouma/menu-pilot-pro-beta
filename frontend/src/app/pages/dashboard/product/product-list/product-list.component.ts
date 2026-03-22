@@ -1,6 +1,6 @@
 // src/app/pages/dashboard/product/product-list/product-list.component.ts
 
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
@@ -56,7 +56,8 @@ export class ProductListComponent implements OnInit {
     private productService: ProductService,
     private categoryService: CategoryService,
     private snackBar: MatSnackBar,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -73,7 +74,10 @@ export class ProductListComponent implements OnInit {
 
   loadCategories(): void {
     this.categoryService.getAll().subscribe({
-      next: cats => this.categories = cats,
+      next: cats => {
+        this.categories = cats;
+        this.cdr.detectChanges();
+      },
       error: () => this.notify('Erreur chargement catégories', 'error')
     });
   }
@@ -85,11 +89,16 @@ export class ProductListComponent implements OnInit {
         this.dataSource.data = items;
         this.totalItems = total;
         this.loading = false;
-        setTimeout(() => { this.dataSource.sort = this.sort; });
+        this.cdr.detectChanges();
+        setTimeout(() => {
+          this.dataSource.sort = this.sort;
+          this.cdr.detectChanges();
+        });
       },
       error: (err) => {
         this.notify(err.message, 'error');
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }

@@ -128,6 +128,38 @@ export const routes: Routes = [
             .then(m => m.MenuComponent)
       },
       {
+        path: 'orders',
+        title: 'Commandes',
+        loadComponent: () =>
+          import('./pages/dashboard/orders/orders-list/orders-list.component')
+            .then(m => m.OrdersListComponent)
+      },
+      {
+        path: 'orders/new',
+        title: 'Commandes',
+        loadComponent: () =>
+          import('./pages/dashboard/orders/order-new/order-new.component')
+            .then(m => m.OrderNewComponent)
+      },
+      {
+        path: 'orders/:id',
+        loadComponent: () => import('./pages/dashboard/orders/order-detail/order-detail.component')
+          .then(m => m.OrderDetailComponent)
+      },
+      { path: 'invoices',
+        loadComponent: () => import('./pages/dashboard/invoices/invoices-list/invoices-list.component')
+          .then(m => m.InvoicesListComponent) },
+      { path: 'invoices/:id',
+        loadComponent: () => import('./pages/dashboard/invoices/invoice-detail/invoice-detail.component')
+          .then(m => m.InvoiceDetailComponent) },
+      {
+        path: 'tables',
+        title: 'Tables',
+        loadComponent: () =>
+          import('./pages/dashboard/tables/tables.component')
+            .then(m => m.TablesComponent)
+      },
+      {
         path: 'qr-code',
         title: 'QR Code',
         loadComponent: () =>
@@ -148,13 +180,13 @@ export const routes: Routes = [
           import('./pages/dashboard/staff/staff.component')
             .then(m => m.StaffComponent)
       },
-      {
+      /*{
         path: 'promotions',
         title: 'Promotions',
         loadComponent: () =>
           import('./pages/dashboard/promotions/promotions.component')
             .then(m => m.PromotionsComponent)
-      }
+      }*/
     ]
   },
 

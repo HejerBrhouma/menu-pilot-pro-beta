@@ -1,0 +1,121 @@
+<!-- tables.component.html -->
+<div class="tables-page">
+
+  <div class="page-header">
+    <div class="header-left">
+      <h1><mat-icon>table_restaurant</mat-icon> Gestion des Tables</h1>
+      <p class="subtitle">
+        {{ activeTables.length }} table(s) active(s) · {{ tables.length }} au total
+      </p>
+    </div>
+    <button mat-flat-button color="primary" (click)="openAdd()" *ngIf="canManage">
+      <mat-icon>add</mat-icon> Nouvelle table
+    </button>
+  </div>
+
+  <!-- Loader -->
+  <div class="loader" *ngIf="loading">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty-state" *ngIf="!loading && tables.length === 0">
+    <div class="empty-icon"><mat-icon>table_restaurant</mat-icon></div>
+    <h2>Aucune table configurée</h2>
+    <p>Ajoutez vos tables pour permettre aux serveurs de prendre des commandes</p>
+    <button mat-flat-button color="primary" (click)="openAdd()" *ngIf="canManage">
+      <mat-icon>add</mat-icon> Ajouter la première table
+    </button>
+  </div>
+
+  <!-- Tables actives -->
+  <div class="section" *ngIf="!loading && activeTables.length > 0">
+    <div class="section-title">
+      <span class="dot active"></span> Tables actives
+    </div>
+    <div class="tables-grid">
+      <div class="table-card" *ngFor="let t of activeTables">
+
+        <div class="card-top">
+          <div class="table-icon">
+            <mat-icon>table_restaurant</mat-icon>
+          </div>
+          <div class="table-info">
+            <h3>{{ t.name }}</h3>
+            <span class="capacity">
+              <mat-icon>people</mat-icon> {{ t.capacity }} pers.
+            </span>
+          </div>
+          <div class="card-status active">Active</div>
+        </div>
+
+        <div class="card-actions">
+          <!-- Nouvelle commande -->
+          <a [routerLink]="['/orders/new']" [queryParams]="{table: t.id}"
+             mat-flat-button color="primary" class="order-btn">
+            <mat-icon>add_shopping_cart</mat-icon>
+            Commande
+          </a>
+
+          <!-- QR Code -->
+          <button mat-icon-button (click)="openQr(t)" matTooltip="Voir QR Code">
+            <mat-icon>qr_code_2</mat-icon>
+          </button>
+
+          <!-- Modifier -->
+          <button mat-icon-button (click)="openEdit(t)" matTooltip="Modifier" *ngIf="canManage">
+            <mat-icon>edit</mat-icon>
+          </button>
+
+          <!-- Toggle actif -->
+          <button mat-icon-button (click)="toggleActive(t)" matTooltip="Désactiver" *ngIf="canManage">
+            <mat-icon>toggle_on</mat-icon>
+          </button>
+
+          <!-- Supprimer -->
+          <button mat-icon-button color="warn" (click)="confirmDelete(t)"
+                  matTooltip="Supprimer" *ngIf="canManage">
+            <mat-icon>delete_outline</mat-icon>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Tables inactives -->
+  <div class="section" *ngIf="!loading && inactiveTables.length > 0">
+    <div class="section-title">
+      <span class="dot inactive"></span> Tables inactives
+    </div>
+    <div class="tables-grid faded">
+      <div class="table-card inactive" *ngFor="let t of inactiveTables">
+        <div class="card-top">
+          <div class="table-icon inactive">
+            <mat-icon>table_restaurant</mat-icon>
+          </div>
+          <div class="table-info">
+            <h3>{{ t.name }}</h3>
+            <span class="capacity">
+              <mat-icon>people</mat-icon> {{ t.capacity }} pers.
+            </span>
+          </div>
+          <div class="card-status inactive">Inactive</div>
+        </div>
+        <div class="card-actions">
+          <button mat-stroked-button (click)="toggleActive(t)" *ngIf="canManage">
+            <mat-icon>toggle_off</mat-icon> Réactiver
+          </button>
+          <button mat-icon-button (click)="openEdit(t)" matTooltip="Modifier" *ngIf="canManage">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button color="warn" (click)="confirmDelete(t)"
+                  matTooltip="Supprimer" *ngIf="canManage">
+            <mat-icon>delete_outline</mat-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

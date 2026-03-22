@@ -1,0 +1,116 @@
+<!-- invoices-list.component.html -->
+<div class="invoices-page">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1><mat-icon>receipt</mat-icon> Factures</h1>
+      <p class="header-sub">
+        {{ allInvoices.length }} facture(s) ·
+        <span class="revenue">{{ totalRevenue | number:'1.2-2' }} TND total</span>
+      </p>
+    </div>
+    <div class="header-right">
+      <div class="search-box">
+        <mat-icon>search</mat-icon>
+        <input [(ngModel)]="searchQuery" placeholder="N° facture, commande...">
+        <button *ngIf="searchQuery" (click)="searchQuery = ''">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      <button mat-icon-button (click)="loadInvoices()" matTooltip="Rafraîchir">
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row" *ngIf="!loading && allInvoices.length > 0">
+    <div class="stat-box">
+      <mat-icon>receipt</mat-icon>
+      <div>
+        <span class="stat-val">{{ allInvoices.length }}</span>
+        <span class="stat-lbl">Total factures</span>
+      </div>
+    </div>
+    <div class="stat-box green">
+      <mat-icon>payments</mat-icon>
+      <div>
+        <span class="stat-val">{{ totalRevenue | number:'1.2-2' }} TND</span>
+        <span class="stat-lbl">Chiffre d'affaires</span>
+      </div>
+    </div>
+    <div class="stat-box blue">
+      <mat-icon>today</mat-icon>
+      <div>
+        <span class="stat-val">{{ todayRevenue | number:'1.2-2' }} TND</span>
+        <span class="stat-lbl">Aujourd'hui</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtres -->
+  <div class="filter-tabs">
+    <button *ngFor="let f of filters"
+            class="filter-tab"
+            [class.active]="activeFilter === f.key"
+            (click)="activeFilter = f.key">
+      {{ f.label }}
+      <span class="f-count">{{ f.count }}</span>
+    </button>
+  </div>
+
+  <!-- Loader -->
+  <div class="loader" *ngIf="loading">
+    <mat-spinner diameter="36"></mat-spinner>
+  </div>
+
+  <!-- Empty -->
+  <div class="empty-state" *ngIf="!loading && filtered.length === 0">
+    <mat-icon>receipt</mat-icon>
+    <p>Aucune facture</p>
+    <small>Les factures sont générées lors du paiement des commandes</small>
+  </div>
+
+  <!-- Liste -->
+  <div class="invoices-list" *ngIf="!loading && filtered.length > 0">
+    <a class="invoice-row" *ngFor="let inv of filtered"
+       [routerLink]="['/invoices', inv.id]">
+
+      <!-- Icône paiement -->
+      <div class="inv-icon" [class]="'method-' + (inv.paymentMethod || 'CASH').toLowerCase()">
+        <mat-icon>{{ getPaymentIcon(inv.paymentMethod) }}</mat-icon>
+      </div>
+
+      <!-- Infos -->
+      <div class="inv-main">
+        <div class="inv-numbers">
+          <span class="inv-num">{{ inv.invoiceNumber }}</span>
+          <span class="inv-order">Cmd: {{ getOrderNumber(inv) }}</span>
+        </div>
+        <div class="inv-meta">
+          <span><mat-icon>person</mat-icon>{{ getWaiterName(inv) }}</span>
+          <span class="sep">·</span>
+          <span><mat-icon>schedule</mat-icon>{{ formatDate(inv.createdAt) }}</span>
+        </div>
+      </div>
+
+      <!-- Méthode paiement -->
+      <div class="inv-method">
+        <span class="method-badge" [class]="'method-' + (inv.paymentMethod || 'CASH').toLowerCase()">
+          <mat-icon>{{ getPaymentIcon(inv.paymentMethod) }}</mat-icon>
+          {{ paymentLabels[inv.paymentMethod!] || inv.paymentMethod }}
+        </span>
+      </div>
+
+      <!-- Montant -->
+      <div class="inv-amount">
+        <span class="amount-val">{{ inv.total | number:'1.2-2' }}</span>
+        <span class="amount-cur">TND</span>
+      </div>
+
+      <mat-icon class="inv-arrow">chevron_right</mat-icon>
+    </a>
+  </div>
+
+</div>

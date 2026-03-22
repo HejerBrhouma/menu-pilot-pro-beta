@@ -1,0 +1,158 @@
+<!-- invoice-detail.component.html -->
+
+<!-- Loader -->
+<div class="page-loader" *ngIf="loading">
+  <mat-spinner diameter="48"></mat-spinner>
+</div>
+
+<div class="detail-page" *ngIf="!loading && invoice">
+
+  <!-- ══ TOPBAR (masqué à l'impression) ══ -->
+  <div class="detail-topbar no-print">
+    <a routerLink="/invoices" class="back-btn">
+      <mat-icon>arrow_back_ios</mat-icon>
+    </a>
+    <div class="topbar-info">
+      <h1>{{ invoice.invoiceNumber }}</h1>
+      <span class="topbar-date">{{ formatDate(invoice.createdAt) }}</span>
+    </div>
+    <div class="topbar-actions">
+      <a mat-stroked-button [routerLink]="['/orders', getOrderId()]" *ngIf="getOrderId()">
+        <mat-icon>receipt_long</mat-icon> Voir la commande
+      </a>
+      <button mat-stroked-button (click)="printInvoice()">
+        <mat-icon>print</mat-icon> Imprimer
+      </button>
+      <button mat-flat-button color="primary" (click)="downloadPdf()">
+        <mat-icon>picture_as_pdf</mat-icon> Télécharger PDF
+      </button>
+    </div>
+  </div>
+
+  <!-- ══ FACTURE IMPRIMABLE ══ -->
+  <div class="invoice-wrapper">
+    <div class="invoice-paper" id="invoice-print">
+
+      <!-- En-tête -->
+      <div class="inv-header">
+        <div class="inv-brand">
+          <div class="brand-logo">
+            <mat-icon>restaurant_menu</mat-icon>
+          </div>
+          <div class="brand-info">
+            <h2>{{ getEstablishmentName() }}</h2>
+            <span>Système de caisse Menu Pilot</span>
+          </div>
+        </div>
+        <div class="inv-title-block">
+          <div class="inv-title">FACTURE</div>
+          <div class="inv-number">{{ invoice.invoiceNumber }}</div>
+          <div class="inv-date">{{ formatDateShort(invoice.createdAt) }}</div>
+        </div>
+      </div>
+
+      <div class="inv-divider"></div>
+
+      <!-- Infos commande -->
+      <div class="inv-meta-grid">
+        <div class="meta-block">
+          <span class="meta-label">Commande</span>
+          <span class="meta-val">{{ getOrderNumber() }}</span>
+        </div>
+        <div class="meta-block">
+          <span class="meta-label">Table / Type</span>
+          <span class="meta-val">{{ getTableName() }}</span>
+        </div>
+        <div class="meta-block">
+          <span class="meta-label">Serveur</span>
+          <span class="meta-val">{{ getWaiterName() }}</span>
+        </div>
+        <div class="meta-block">
+          <span class="meta-label">Date & heure</span>
+          <span class="meta-val">{{ formatDate(invoice.createdAt) }}</span>
+        </div>
+      </div>
+
+      <div class="inv-divider"></div>
+
+      <!-- Articles -->
+      <table class="items-table">
+        <thead>
+        <tr>
+          <th class="th-name">Article</th>
+          <th class="th-type">Type</th>
+          <th class="th-qty">Qté</th>
+          <th class="th-unit">P.U.</th>
+          <th class="th-total">Total</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let item of invoice.itemsSnapshot">
+          <td class="td-name">
+            {{ item.name }}
+            <span class="item-note" *ngIf="item.notes">— {{ item.notes }}</span>
+            <div class="item-promos" *ngIf="item.promotions?.length">
+                <span *ngFor="let p of item.promotions" class="promo-tag">
+                  🏷 {{ p.name }}
+                </span>
+            </div>
+          </td>
+          <td class="td-type">
+            <span class="type-pill">{{ item.type === 'PACK' ? 'Pack' : 'Produit' }}</span>
+          </td>
+          <td class="td-qty">{{ item.quantity }}</td>
+          <td class="td-unit">
+              <span *ngIf="item.unitPrice !== item.finalPrice" class="price-crossed">
+                {{ item.unitPrice | number:'1.2-2' }}
+              </span>
+            {{ item.finalPrice | number:'1.2-2' }} TND
+          </td>
+          <td class="td-total">{{ item.total | number:'1.2-2' }} TND</td>
+        </tr>
+        </tbody>
+      </table>
+
+      <div class="inv-divider"></div>
+
+      <!-- Récapitulatif -->
+      <div class="inv-summary">
+        <div class="summary-row">
+          <span>Sous-total</span>
+          <span>{{ invoice.subtotal | number:'1.2-2' }} TND</span>
+        </div>
+        <div class="summary-row promo" *ngIf="invoice.discount > 0">
+          <span>🏷 Promotions appliquées</span>
+          <span>−{{ invoice.discount | number:'1.2-2' }} TND</span>
+        </div>
+        <div class="summary-divider"></div>
+        <div class="summary-row total">
+          <span>TOTAL</span>
+          <span>{{ invoice.total | number:'1.2-2' }} TND</span>
+        </div>
+        <div class="payment-method">
+          <mat-icon>{{ getPaymentIcon(invoice.paymentMethod) }}</mat-icon>
+          Payé par {{ paymentLabels[invoice.paymentMethod!] || invoice.paymentMethod }}
+        </div>
+      </div>
+
+      <!-- Pied de page -->
+      <div class="inv-footer">
+        <div class="footer-line"></div>
+        <p>Merci pour votre visite · {{ getEstablishmentName() }}</p>
+        <p class="footer-sub">Facture générée par Menu Pilot Pro</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Boutons bas (masqués à l'impression) -->
+  <div class="bottom-actions no-print">
+    <button mat-stroked-button (click)="printInvoice()">
+      <mat-icon>print</mat-icon> Imprimer la facture
+    </button>
+    <button mat-flat-button color="primary" (click)="downloadPdf()">
+      <mat-icon>picture_as_pdf</mat-icon> Télécharger en PDF
+    </button>
+  </div>
+
+</div>

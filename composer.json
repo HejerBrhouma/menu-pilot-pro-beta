@@ -1,0 +1,5 @@
+{
+    "require": {
+        "symfony/mercure-bundle": "^0.3.9"
+    }
+}
