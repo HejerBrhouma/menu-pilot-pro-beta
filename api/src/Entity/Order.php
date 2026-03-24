@@ -5,6 +5,7 @@ namespace App\Entity;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Core\Annotation\ApiProperty;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -37,16 +38,22 @@ class Order
      */
     private ?int $id = null;
 
-    /**
-     * @ORM\Column(type="string", length=20, unique=true)
-     * @Groups({"order:read"})
-     */
+    /** @ORM\Column(type="string") @Groups({"order:read", "invoice:read"}) */
     private string $orderNumber;
 
+
+
     /**
-     * TABLE | TAKEAWAY
+     * @ORM\ManyToOne(targetEntity=Table::class)
+     * @ORM\JoinColumn(nullable=true)
+     * @Groups({"order:read", "order:write", "invoice:read"})
+     * @ApiProperty(readableLink=true)
+     */
+    private ?Table $table = null;
+
+    /**
      * @ORM\Column(type="string", length=20)
-     * @Groups({"order:read", "order:write"})
+     * @Groups({"order:read", "order:write", "invoice:read"})
      */
     private string $type = self::TYPE_TABLE;
 
@@ -56,13 +63,6 @@ class Order
      * @Groups({"order:read", "order:write"})
      */
     private string $status = self::STATUS_PENDING;
-
-    /**
-     * @ORM\ManyToOne(targetEntity=Table::class)
-     * @ORM\JoinColumn(nullable=true)
-     * @Groups({"order:read", "order:write"})
-     */
-    private ?Table $table = null;
 
     /**
      * @ORM\ManyToOne(targetEntity=User::class)
@@ -108,6 +108,20 @@ class Order
      * @Groups({"order:read"})
      */
     private Establishment $establishment;
+
+    /**
+     * Prénom du client (commande via QR)
+     * @ORM\Column(type="string", length=100, nullable=true)
+     * @Groups({"order:read", "order:write"})
+     */
+    private ?string $customerName = null;
+
+    /**
+     * Commande passée via QR Code client
+     * @ORM\Column(type="boolean")
+     * @Groups({"order:read", "order:write"})
+     */
+    private bool $isQrOrder = false;
 
     /**
      * @ORM\Column(type="datetime_immutable")
@@ -165,6 +179,11 @@ class Order
     }
     public function getEstablishment(): Establishment { return $this->establishment; }
     public function setEstablishment(Establishment $e): self { $this->establishment = $e; return $this; }
+    public function getCustomerName(): ?string { return $this->customerName; }
+    public function setCustomerName(?string $n): self { $this->customerName = $n; return $this; }
+    public function getIsQrOrder(): bool { return $this->isQrOrder; }
+    public function setIsQrOrder(bool $v): self { $this->isQrOrder = $v; return $this; }
+
     public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
     public function getUpdatedAt(): ?\DateTime { return $this->updatedAt; }
 

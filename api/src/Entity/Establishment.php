@@ -41,13 +41,8 @@ class Establishment
      */
     private ?int $id = null;
 
-    /**
-     * Nom commercial du restaurant
-     * @ORM\Column(type="string", length=255)
-     * @Assert\NotBlank()
-     * @Groups({"establishment:read", "establishment:write"})
-     */
-    private string $name;
+    /** @Groups({"establishment:read", "invoice:read"}) */
+    private ?string $name = null;
 
     /**
      * Slug unique pour l'URL publique /r/{slug}
@@ -56,7 +51,7 @@ class Establishment
      * @Assert\Regex("/^[a-z0-9-]+$/")
      * @Groups({"establishment:read", "establishment:write"})
      */
-    private string $slug;
+    private ?string $slug = null;
 
     /**
      * @ORM\Column(type="text", nullable=true)
@@ -195,11 +190,11 @@ class Establishment
 
     public function getId(): ?int { return $this->id; }
 
-    public function getName(): string { return $this->name; }
-    public function setName(string $name): self { $this->name = $name; return $this; }
+    public function getName(): ?string { return $this->name ?? null; }
+    public function setName(?string $name): self { $this->name = $name; return $this; }
 
-    public function getSlug(): string { return $this->slug; }
-    public function setSlug(string $slug): self { $this->slug = $slug; return $this; }
+    public function getSlug(): ?string { return $this->slug; }
+    public function setSlug(?string $slug): self { $this->slug = $slug; return $this; }
 
     public function getDescription(): ?string { return $this->description; }
     public function setDescription(?string $description): self { $this->description = $description; return $this; }

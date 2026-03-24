@@ -27,13 +27,13 @@ class Table
 
     /**
      * @ORM\Column(type="string", length=100)
-     * @Groups({"table:read", "table:write"})
+     * @Groups({"table:read", "table:write", "order:read", "invoice:read"})
      */
     private string $name;
 
     /**
      * @ORM\Column(type="integer")
-     * @Groups({"table:read", "table:write"})
+     * @Groups({"table:read", "table:write", "order:read", "invoice:read"})
      */
     private int $capacity = 4;
 
