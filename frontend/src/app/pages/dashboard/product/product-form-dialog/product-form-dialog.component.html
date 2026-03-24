@@ -1,4 +1,4 @@
-<!-- src/app/pages/dashboard/product/product-form-dialog/product-form-dialog.component.html -->
+<!-- product-form-dialog.component.html -->
 
 <div class="dialog-wrapper">
   <div class="dialog-header">
@@ -12,8 +12,63 @@
   <mat-divider></mat-divider>
 
   <form [formGroup]="form" class="dialog-body">
+
+    <!-- ── IMAGE UPLOAD ── -->
+    <div class="image-section">
+      <label class="image-label">Photo du produit</label>
+
+      <div class="image-zone"
+           [class.has-image]="previewUrl"
+           [class.dragover]="isDragOver"
+           (dragover)="onDragOver($event)"
+           (dragleave)="onDragLeave()"
+           (drop)="onDrop($event)"
+           (click)="!previewUrl && fileInput.click()">
+
+        <!-- Aperçu image -->
+        <ng-container *ngIf="previewUrl && !uploading">
+          <img [src]="previewUrl" class="image-preview" alt="Aperçu">
+          <div class="image-actions">
+            <button type="button" class="img-action-btn change"
+                    (click)="fileInput.click(); $event.stopPropagation()">
+              <mat-icon>photo_camera</mat-icon> Changer
+            </button>
+            <button type="button" class="img-action-btn delete"
+                    (click)="removeImage(); $event.stopPropagation()">
+              <mat-icon>delete</mat-icon> Supprimer
+            </button>
+          </div>
+        </ng-container>
+
+        <!-- Upload en cours -->
+        <div class="upload-progress" *ngIf="uploading">
+          <mat-spinner diameter="28"></mat-spinner>
+          <span>Upload...</span>
+        </div>
+
+        <!-- Zone vide -->
+        <ng-container *ngIf="!previewUrl && !uploading">
+          <mat-icon class="upload-icon">add_photo_alternate</mat-icon>
+          <span class="upload-label">Cliquer ou glisser une photo</span>
+          <span class="upload-hint">JPG · PNG · WebP · Max 5MB</span>
+        </ng-container>
+
+        <input #fileInput type="file" accept="image/*" style="display:none"
+               (change)="onFileSelected($event)">
+      </div>
+
+      <!-- Badge image en attente -->
+      <div class="pending-badge" *ngIf="pendingFile">
+        <mat-icon>schedule</mat-icon>
+        {{ pendingFile.name }} — sera uploadée après sauvegarde
+      </div>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <!-- ── CHAMPS PRODUIT ── -->
     <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Nom du produit *</mat-label>
+      <mat-label>Nom du produit </mat-label>
       <input matInput formControlName="name" placeholder="Ex: Pizza Royale">
       <mat-icon matSuffix>label</mat-icon>
       <mat-error>{{ nameError }}</mat-error>
@@ -21,9 +76,9 @@
 
     <div class="row-fields">
       <mat-form-field appearance="outline" class="price-field">
-        <mat-label>Prix (€) *</mat-label>
+        <mat-label>Prix (TND) </mat-label>
         <input matInput type="number" formControlName="price" step="0.01">
-        <mat-icon matSuffix>euro</mat-icon>
+        <mat-icon matSuffix>payments</mat-icon>
         <mat-error>{{ priceError }}</mat-error>
       </mat-form-field>
 
@@ -35,8 +90,9 @@
 
     <mat-form-field appearance="outline" class="full-width">
       <mat-label>Description</mat-label>
-      <textarea matInput formControlName="description" rows="3" placeholder="Décrivez votre produit…"></textarea>
-      <mat-hint align="end">Optionnel</mat-hint>
+      <textarea matInput formControlName="description" rows="3"
+                placeholder="Ingrédients, allergènes, spécificités..."></textarea>
+      <mat-hint align="end">Optionnel — visible sur le menu client</mat-hint>
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="full-width">
@@ -48,14 +104,16 @@
       </mat-select>
       <mat-icon matSuffix>category</mat-icon>
     </mat-form-field>
+
   </form>
 
   <mat-divider></mat-divider>
 
   <div class="dialog-footer">
     <button mat-stroked-button (click)="cancel()">Annuler</button>
-    <button mat-flat-button color="primary" (click)="submit()" [disabled]="form.invalid">
-      <mat-icon>{{ isEdit ? 'save' : 'add' }}</mat-icon>
+    <button mat-flat-button color="primary" (click)="submit()" [disabled]="form.invalid || uploading || submitting">
+      <mat-spinner diameter="16" *ngIf="uploading"></mat-spinner>
+      <mat-icon *ngIf="!uploading">{{ isEdit ? 'save' : 'add' }}</mat-icon>
       {{ isEdit ? 'Enregistrer' : 'Créer le produit' }}
     </button>
   </div>

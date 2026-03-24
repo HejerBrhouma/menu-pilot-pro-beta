@@ -10,6 +10,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDividerModule } from '@angular/material/divider';
 import { OrderService } from '../../../../core/services/order.service';
+import { PdfService } from '../../../../core/services/pdf.service';
 import { Invoice, PAYMENT_METHOD_LABELS } from '../../../../core/models/order.model';
 
 @Component({
@@ -24,8 +25,8 @@ import { Invoice, PAYMENT_METHOD_LABELS } from '../../../../core/models/order.mo
   styleUrls: ['./invoice-detail.component.scss']
 })
 export class InvoiceDetailComponent implements OnInit {
-  invoice:  Invoice | null = null;
-  loading   = true;
+  invoice: Invoice | null = null;
+  loading  = true;
 
   paymentLabels = PAYMENT_METHOD_LABELS;
 
@@ -34,6 +35,7 @@ export class InvoiceDetailComponent implements OnInit {
   private orderService = inject(OrderService);
   private snackBar     = inject(MatSnackBar);
   private cdr          = inject(ChangeDetectorRef);
+  private pdfService   = inject(PdfService);
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
@@ -56,57 +58,55 @@ export class InvoiceDetailComponent implements OnInit {
     });
   }
 
-  // ── PDF Print ──────────────────────────────────────────────────────
-
   printInvoice(): void {
     window.print();
   }
 
-  downloadPdf(): void {
-    // Utilise window.print() avec CSS @media print pour générer le PDF
-    const originalTitle = document.title;
-    document.title = `Facture-${this.invoice?.invoiceNumber}`;
-    window.print();
-    document.title = originalTitle;
+  async downloadPdf(): Promise<void> {
+    if (!this.invoice) return;
+    const filename = 'Facture-' + this.invoice.invoiceNumber;
+    await this.pdfService.downloadInvoice('invoice-print', filename);
   }
 
-  // ── Helpers ────────────────────────────────────────────────────────
-
   getOrderNumber(): string {
-    const o = this.invoice?.order as any;
-    return o?.orderNumber || '—';
+    const o = this.invoice ? (this.invoice.order as any) : null;
+    return o ? (o.orderNumber || '—') : '—';
   }
 
   getOrderId(): number | null {
-    const o = this.invoice?.order as any;
-    return o?.id || null;
+    const o = this.invoice ? (this.invoice.order as any) : null;
+    return o ? (o.id || null) : null;
   }
 
   getWaiterName(): string {
-    const w = this.invoice?.waiter as any;
+    const w = this.invoice ? (this.invoice.waiter as any) : null;
     if (!w) return '—';
-    return `${w.firstName || ''} ${w.lastName || ''}`.trim() || w.email || '—';
+    const name = ((w.firstName || '') + ' ' + (w.lastName || '')).trim();
+    return name || w.email || '—';
   }
 
   getTableName(): string {
-    const o = this.invoice?.order as any;
+    const o = this.invoice ? (this.invoice.order as any) : null;
     if (!o) return '—';
     if (o.type === 'TAKEAWAY') return 'À emporter';
     const t = o.table as any;
-    return t?.name || '—';
+    return t ? (t.name || '—') : '—';
   }
 
   getEstablishmentName(): string {
-    const e = this.invoice?.establishment as any;
-    return e?.name || 'Menu Pilot';
+    const inv = this.invoice as any;
+    if (!inv || !inv.establishment) return 'Menu Pilot';
+    return inv.establishment.name || 'Menu Pilot';
   }
 
   getPaymentIcon(method?: string): string {
     const icons: Record<string, string> = {
-      CASH: 'payments', CARD: 'credit_card',
-      CHEQUE: 'receipt_long', OTHER: 'more_horiz'
+      CASH:   'payments',
+      CARD:   'credit_card',
+      CHEQUE: 'receipt_long',
+      OTHER:  'more_horiz'
     };
-    return icons[method || ''] || 'payments';
+    return method ? (icons[method] || 'payments') : 'payments';
   }
 
   formatDate(dateStr?: string): string {

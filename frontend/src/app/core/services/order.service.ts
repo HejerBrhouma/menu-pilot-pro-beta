@@ -6,6 +6,7 @@ import { Observable, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { Order, OrderStatus, Invoice, RestaurantTable } from '../models/order.model';
 import { environment } from '../../../environments/environment';
+
 @Injectable({ providedIn: 'root' })
 export class OrderService {
   private readonly ordersUrl  = '/api/orders';
@@ -83,6 +84,12 @@ export class OrderService {
     );
   }
 
+  releaseTable(tableId: number): Observable<{ success: boolean; newToken: string; qrUrl: string }> {
+    return this.http.post<{ success: boolean; newToken: string; qrUrl: string }>(
+      `${this.tablesUrl}/${tableId}/release`, {}
+    ).pipe(catchError(this.handleError));
+  }
+
   // ── Factures ───────────────────────────────────────────────────────
 
   getInvoices(): Observable<Invoice[]> {
@@ -100,7 +107,7 @@ export class OrderService {
 
   // ── Mercure (temps réel) ───────────────────────────────────────────
 
-  subscribeToOrders(establishmentId: number): EventSource {
+  subscribeToOrders(establishmentId: number): any {
     const mercureUrl = environment.mercureUrl;
     const topic      = encodeURIComponent(`orders/${establishmentId}`);
     return new EventSource(`${mercureUrl}?topic=${topic}`);

@@ -12,26 +12,23 @@
         </span>
       </h1>
       <p class="header-sub">
-        {{ allOrders.length }} commande(s) ·
+        {{ allOrders.length }} commande(s)
         <span class="revenue" *ngIf="todayRevenue > 0">
-          {{ todayRevenue | number:'1.2-2' }} TND aujourd'hui
+          · {{ todayRevenue | number:'1.2-2' }} TND aujourd'hui
         </span>
       </p>
     </div>
     <div class="header-actions">
-      <!-- Recherche -->
       <div class="search-box">
         <mat-icon>search</mat-icon>
-        <input [(ngModel)]="searchQuery" placeholder="N° commande, table, serveur...">
+        <input [(ngModel)]="searchQuery" placeholder="N° commande, table...">
         <button *ngIf="searchQuery" (click)="searchQuery = ''">
           <mat-icon>close</mat-icon>
         </button>
       </div>
-      <!-- Rafraîchir -->
       <button mat-icon-button (click)="loadOrders()" matTooltip="Rafraîchir">
         <mat-icon>refresh</mat-icon>
       </button>
-      <!-- Nouvelle commande -->
       <a routerLink="/orders/new" mat-flat-button color="primary" class="new-order-btn">
         <mat-icon>add</mat-icon> Nouvelle commande
       </a>
@@ -73,7 +70,7 @@
   <div class="empty-state" *ngIf="!loading && filteredOrders.length === 0">
     <mat-icon>receipt_long</mat-icon>
     <p *ngIf="activeTab === 'ALL' && !searchQuery">Aucune commande pour le moment</p>
-    <p *ngIf="activeTab !== 'ALL'">Aucune commande {{ tabs[0].label | lowercase }}</p>
+    <p *ngIf="activeTab !== 'ALL' && !searchQuery">Aucune commande dans cet onglet</p>
     <p *ngIf="searchQuery">Aucun résultat pour "{{ searchQuery }}"</p>
     <a routerLink="/orders/new" mat-flat-button color="primary">
       <mat-icon>add</mat-icon> Créer la première
@@ -82,23 +79,25 @@
 
   <!-- ══ LISTE ══ -->
   <div class="orders-list" *ngIf="!loading && filteredOrders.length > 0">
+
     <div class="order-card"
          *ngFor="let order of filteredOrders"
          [class.is-new]="isNewOrder(order)"
          [class.is-cancelled]="order.status === 'CANCELLED'"
          [routerLink]="['/orders', order.id]">
 
-      <!-- Bande couleur statut -->
       <div class="status-stripe" [style.background]="getStatusColor(order.status)"></div>
 
-      <!-- Contenu principal -->
       <div class="card-body">
 
-        <!-- Ligne 1 : numéro + statut + heure -->
+        <!-- Ligne 1 -->
         <div class="card-row-1">
           <div class="order-id">
             <span class="order-number">{{ order.orderNumber }}</span>
             <span class="new-tag" *ngIf="isNewOrder(order)">NOUVEAU</span>
+            <span class="qr-tag" *ngIf="isQrOrder(order)">
+              <mat-icon>qr_code</mat-icon> QR
+            </span>
           </div>
           <div class="order-status-badge"
                [style.background]="getStatusColor(order.status) + '18'"
@@ -112,7 +111,7 @@
           </div>
         </div>
 
-        <!-- Ligne 2 : table + type + serveur + articles -->
+        <!-- Ligne 2 -->
         <div class="card-row-2">
           <div class="order-meta">
             <span class="meta-item">
@@ -130,19 +129,17 @@
               {{ getItemsCount(order) }} article(s)
             </span>
           </div>
-
-          <!-- Aperçu items -->
-          <div class="items-preview">
-            <span *ngFor="let item of (order.items || []).slice(0, 3)" class="item-chip">
+          <div class="items-preview" *ngIf="order.items && order.items.length > 0">
+            <span *ngFor="let item of order.items.slice(0, 3)" class="item-chip">
               {{ item.quantity }}× {{ item.itemName }}
             </span>
-            <span *ngIf="(order.items?.length || 0) > 3" class="item-more">
-              +{{ (order.items?.length || 0) - 3 }}
+            <span *ngIf="order.items.length > 3" class="item-more">
+              +{{ order.items.length - 3 }}
             </span>
           </div>
         </div>
 
-        <!-- Ligne 3 : prix + actions -->
+        <!-- Ligne 3 -->
         <div class="card-row-3">
           <div class="order-price">
             <span class="discount" *ngIf="order.discount > 0">
@@ -153,24 +150,23 @@
 
           <div class="card-actions" (click)="$event.stopPropagation()">
 
-            <!-- Bouton avancer statut -->
             <button class="advance-btn"
                     *ngIf="getNextStatus(order.status) && order.status !== 'CANCELLED'"
                     [style.background]="getStatusColor(getNextStatus(order.status)!) + '18'"
                     [style.color]="getStatusColor(getNextStatus(order.status)!)"
                     [style.border-color]="getStatusColor(getNextStatus(order.status)!) + '40'"
                     (click)="changeStatus(order, getNextStatus(order.status)!, $event)"
-                    [matTooltip]="'→ ' + getNextLabel(order.status)">
+                    [matTooltip]="'Passer à : ' + getNextLabel(order.status)">
               <mat-icon>arrow_forward</mat-icon>
               {{ getNextLabel(order.status) }}
             </button>
 
-            <!-- Menu actions -->
-            <button mat-icon-button [matMenuTriggerFor]="menu" class="more-btn"
-                    *ngIf="order.status !== 'PAID'">
+            <button mat-icon-button [matMenuTriggerFor]="actionsMenu" class="more-btn"
+                    *ngIf="order.status !== 'PAID' && order.status !== 'CANCELLED'">
               <mat-icon>more_vert</mat-icon>
             </button>
-            <mat-menu #menu="matMenu">
+
+            <mat-menu #actionsMenu="matMenu">
               <a mat-menu-item [routerLink]="['/orders', order.id]">
                 <mat-icon>visibility</mat-icon> Voir détail
               </a>
@@ -180,7 +176,7 @@
                 <mat-icon>payments</mat-icon> Marquer payée
               </button>
               <mat-divider></mat-divider>
-              <button mat-menu-item class="cancel-item"
+              <button mat-menu-item
                       *ngIf="order.status !== 'PAID' && order.status !== 'CANCELLED'"
                       (click)="cancelOrder(order, $event)">
                 <mat-icon color="warn">cancel</mat-icon>
@@ -188,7 +184,6 @@
               </button>
             </mat-menu>
 
-            <!-- Lien détail -->
             <a mat-icon-button [routerLink]="['/orders', order.id]" matTooltip="Détail"
                (click)="$event.stopPropagation()">
               <mat-icon>chevron_right</mat-icon>
@@ -199,6 +194,7 @@
 
       </div>
     </div>
+
   </div>
 
 </div>

@@ -27,8 +27,8 @@ import { TableQrDialogComponent } from './table-qr-dialog/table-qr-dialog.compon
     MatSnackBarModule, MatProgressSpinnerModule,
     MatTooltipModule, MatSlideToggleModule
   ],
-  templateUrl: './tables.component.html',
-  styleUrls: ['./tables.component.scss']
+  templateUrl: 'tables.component.html',
+  styleUrls: ['tables.component.scss']
 })
 export class TablesComponent implements OnInit {
   tables:  RestaurantTable[] = [];
@@ -128,6 +128,21 @@ export class TablesComponent implements OnInit {
       duration: 3500,
       panelClass: type === 'error' ? ['snack-error'] : ['snack-success'],
       horizontalPosition: 'end', verticalPosition: 'top'
+    });
+  }
+  releaseTable(table: RestaurantTable): void {
+    if (!confirm(`Libérer "${table.name}" ? Les commandes QR en attente seront annulées et le QR code sera régénéré.`)) return;
+
+    this.orderService.releaseTable(table.id!).subscribe({
+      next: (res) => {
+        this.snackBar.open(`Table libérée ✓ — nouveau QR généré`, '✕', {
+          duration: 3000, panelClass: ['snack-success']
+        });
+        this.loadTables(); // recharger les tables
+      },
+      error: () => {
+        this.snackBar.open('Erreur lors de la libération', '✕', { duration: 3000 });
+      }
     });
   }
 }

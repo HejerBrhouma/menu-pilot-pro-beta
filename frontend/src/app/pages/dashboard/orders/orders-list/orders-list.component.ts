@@ -15,16 +15,14 @@ import { MatDividerModule } from '@angular/material/divider';
 import { OrderService } from '../../../../core/services/order.service';
 import { AuthService } from '../../../../core/services/auth-service';
 import { EstablishmentService } from '../../../../core/services/establishment.service';
+import { AdminNotificationService } from '../../../../core/services/admin-notification.service';
 import {
   Order, OrderStatus,
   ORDER_STATUS_LABELS, ORDER_STATUS_COLORS, ORDER_STATUS_NEXT
 } from '../../../../core/models/order.model';
 
 interface StatusTab {
-  key: string;
-  label: string;
-  count: number;
-  color: string;
+  key: string; label: string; count: number; color: string;
 }
 
 @Component({
@@ -50,23 +48,24 @@ export class OrdersListComponent implements OnInit, OnDestroy {
   statusColors = ORDER_STATUS_COLORS;
   statusNext   = ORDER_STATUS_NEXT;
 
-  private mercureSource:       EventSource | null = null;
+  private mercureSource:       any = null;
   private orderService         = inject(OrderService);
   private authService          = inject(AuthService);
   private establishmentService = inject(EstablishmentService);
   private snackBar             = inject(MatSnackBar);
   private cdr                  = inject(ChangeDetectorRef);
+  private adminNotif           = inject(AdminNotificationService);
 
   // ── Tabs ──────────────────────────────────────────────────────────
 
   get tabs(): StatusTab[] {
     return [
-      { key: 'ALL',       label: 'Toutes',     count: this.allOrders.length,                                    color: '#6b7280' },
-      { key: 'PENDING',   label: 'En attente', count: this.countByStatus('PENDING'),   color: '#f59e0b' },
-      { key: 'CONFIRMED', label: 'Confirmées', count: this.countByStatus('CONFIRMED'), color: '#6366f1' },
-      { key: 'SERVED',    label: 'Servies',    count: this.countByStatus('SERVED'),    color: '#10b981' },
-      { key: 'PAID',      label: 'Payées',     count: this.countByStatus('PAID'),      color: '#059669' },
-      { key: 'CANCELLED', label: 'Annulées',   count: this.countByStatus('CANCELLED'), color: '#ef4444' },
+      { key: 'ALL',       label: 'Toutes',     count: this.allOrders.length,                  color: '#6b7280' },
+      { key: 'PENDING',   label: 'En attente', count: this.countByStatus('PENDING'),           color: '#f59e0b' },
+      { key: 'CONFIRMED', label: 'Confirmées', count: this.countByStatus('CONFIRMED'),         color: '#6366f1' },
+      { key: 'SERVED',    label: 'Servies',    count: this.countByStatus('SERVED'),            color: '#10b981' },
+      { key: 'PAID',      label: 'Payées',     count: this.countByStatus('PAID'),              color: '#059669' },
+      { key: 'CANCELLED', label: 'Annulées',   count: this.countByStatus('CANCELLED'),         color: '#ef4444' },
     ];
   }
 
@@ -83,13 +82,11 @@ export class OrdersListComponent implements OnInit, OnDestroy {
         o.waiter?.firstName?.toLowerCase().includes(q)
       );
     }
-
     return orders.sort((a, b) =>
       new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime()
     );
   }
 
-  // Totaux
   get todayRevenue(): number {
     const today = new Date().toDateString();
     return this.allOrders
@@ -99,7 +96,7 @@ export class OrdersListComponent implements OnInit, OnDestroy {
 
   get pendingCount(): number { return this.countByStatus('PENDING'); }
 
-  // ── Lifecycle ──────────────────────────────────────────────────────
+  // ── Lifecycle ─────────────────────────────────────────────────────
 
   ngOnInit(): void {
     this.loadOrders();
@@ -107,10 +104,10 @@ export class OrdersListComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.mercureSource?.close();
+    if (this.mercureSource) this.mercureSource.close();
   }
 
-  // ── Data ───────────────────────────────────────────────────────────
+  // ── Data ──────────────────────────────────────────────────────────
 
   loadOrders(): void {
     this.loading = true;
@@ -124,26 +121,41 @@ export class OrdersListComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ── Mercure ────────────────────────────────────────────────────────
+  // ── Mercure ───────────────────────────────────────────────────────
 
   subscribeMercure(): void {
     this.establishmentService.getAll().subscribe({
       next: (ests) => {
         if (!ests.length) return;
-        this.mercureSource = this.orderService.subscribeToOrders(ests[0].id!);
-        this.mercureSource.onmessage = (event) => {
+        const source = this.orderService.subscribeToOrders(ests[0].id!);
+        this.mercureSource = source;
+        source.onmessage = (event: MessageEvent) => {
           const data = JSON.parse(event.data);
           if (data.event === 'NEW_ORDER') {
             this.newOrdersCount++;
-            this.notify(`🔔 Nouvelle commande ${data.orderNumber}`, 'success');
+            if (data.isQrOrder) {
+              this.adminNotif.notifyNewQrOrder(
+                data.orderNumber,
+                data.tableName || 'Table',
+                data.customerName
+              );
+            } else {
+              this.notify(`🔔 Nouvelle commande ${data.orderNumber}`, 'success');
+            }
           }
           this.loadOrders();
+        };
+        source.onerror = () => {
+          if (this.mercureSource) {
+            this.mercureSource.close();
+            this.mercureSource = null;
+          }
         };
       }
     });
   }
 
-  // ── Actions ────────────────────────────────────────────────────────
+  // ── Actions ───────────────────────────────────────────────────────
 
   changeStatus(order: Order, status: OrderStatus, event: Event): void {
     event.stopPropagation();
@@ -169,7 +181,11 @@ export class OrdersListComponent implements OnInit, OnDestroy {
     this.changeStatus(order, 'CANCELLED', event);
   }
 
-  // ── Helpers ────────────────────────────────────────────────────────
+  // ── Helpers ───────────────────────────────────────────────────────
+
+  isQrOrder(order: Order): boolean {
+    return !!(order as any).isQrOrder;
+  }
 
   countByStatus(status: string): number {
     return this.allOrders.filter(o => o.status === status).length;

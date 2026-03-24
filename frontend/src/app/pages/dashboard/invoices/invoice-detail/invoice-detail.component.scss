@@ -1,7 +1,14 @@
 // invoice-detail.component.scss
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@500&display=swap');
 
-:host { display: block; font-family: 'DM Sans', sans-serif; background: #f7f8fc; min-height: 100vh; }
+:host {
+  display: block;
+  font-family: 'DM Sans', sans-serif;
+  background: #f7f8fc;
+  min-height: 100vh;
+  overflow-x: hidden;
+  max-width: 100%;
+}
 .page-loader { display: flex; justify-content: center; align-items: center; height: 60vh; }
 
 // ── Topbar ────────────────────────────────────
@@ -36,20 +43,33 @@
 
 // ── Invoice Wrapper ───────────────────────────
 .invoice-wrapper {
-  padding: 2rem; display: flex; justify-content: center;
+  padding: 1.5rem;
+  display: flex;
+  justify-content: center;
+  overflow-x: hidden;
 }
 
 .invoice-paper {
-  background: white; width: 100%; max-width: 720px;
-  border-radius: 16px; border: 1.5px solid #f1f5f9;
+  background: white;
+  width: 100%;
+  max-width: 720px;
+  min-width: 0;
+  border-radius: 16px;
+  border: 1.5px solid #f1f5f9;
   box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-  padding: 2.5rem;
+  padding: 2rem;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 // ── En-tête ───────────────────────────────────
 .inv-header {
-  display: flex; justify-content: space-between; align-items: flex-start;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
   margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
 .inv-brand {
@@ -85,7 +105,11 @@
 
 // ── Table articles ────────────────────────────
 .items-table {
-  width: 100%; border-collapse: collapse; margin-bottom: 0.5rem;
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  margin-bottom: 0.5rem;
+  word-break: break-word;
 
   th {
     padding: 0.625rem 0.75rem; text-align: left;
@@ -121,7 +145,11 @@
 .price-crossed { text-decoration: line-through; color: #9ca3af; margin-right: 4px; font-size: 0.8rem; }
 
 // ── Récap ─────────────────────────────────────
-.inv-summary { margin-left: auto; max-width: 280px; }
+.inv-summary {
+  margin-left: auto;
+  max-width: 300px;
+  min-width: 200px;
+}
 
 .summary-row {
   display: flex; justify-content: space-between;
@@ -161,43 +189,110 @@
 // ── IMPRESSION PDF ────────────────────────────
 // ══════════════════════════════════════════════
 @media print {
-  // Masquer tout sauf la facture
-  .no-print,
-  .detail-topbar,
-  .bottom-actions,
-  app-impersonation-banner,
-  app-promo-conflict-banner,
-  .mat-sidenav,
-  .mat-sidenav-container > .mat-sidenav-content > *:not(.detail-page) {
-    display: none !important;
-  }
-
-  :host { background: white; }
-
-  .invoice-wrapper {
-    padding: 0;
-  }
-
-  .invoice-paper {
-    max-width: 100%;
-    border: none;
-    box-shadow: none;
-    border-radius: 0;
-    padding: 1.5rem;
-  }
-
-  // Forcer les couleurs à l'impression
-  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-
-  // Eviter les coupures de page dans les rows
-  .item-row, tr { page-break-inside: avoid; }
-
-  // En-tête sur chaque page
-  thead { display: table-header-group; }
-
-  // Forcer page A4
   @page {
     size: A4;
     margin: 1.5cm;
   }
+
+  // Masquer TOUT le layout Angular Material
+  mat-sidenav-container,
+  mat-sidenav,
+  .mat-sidenav,
+  .mat-sidenav-container,
+  .mat-drawer,
+  .mat-drawer-container,
+  .mat-drawer-content,
+  app-header,
+  app-impersonation-banner,
+  app-promo-conflict-banner,
+  .no-print,
+  .detail-topbar,
+  .bottom-actions {
+    display: none !important;
+  }
+
+  // Afficher uniquement la facture
+  body, html {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+  }
+
+  // Forcer la visibilité du composant
+  :host {
+    display: block !important;
+    background: white !important;
+  }
+
+  .detail-page {
+    display: block !important;
+  }
+
+  .invoice-wrapper {
+    padding: 0 !important;
+    display: block !important;
+  }
+
+  .invoice-paper {
+    max-width: 100% !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  // Forcer les couleurs à l'impression
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  // Eviter les coupures dans les lignes
+  tr, .item-row { page-break-inside: avoid; }
+  thead { display: table-header-group; }
+}
+
+// ══════════════════════════════════════════════
+// OVERRIDE GLOBAL PRINT — masquer tout le layout
+// ══════════════════════════════════════════════
+@media print {
+  // Masquer sidebar Angular Material
+  mat-sidenav,
+  mat-sidenav-container > mat-sidenav,
+  .mat-sidenav,
+  .mat-sidenav-container .mat-drawer,
+  .mat-drawer-container .mat-drawer { display: none !important; }
+
+  // Forcer le contenu principal à occuper toute la page
+  mat-sidenav-content,
+  .mat-sidenav-content,
+  .mat-drawer-content {
+    margin-left: 0 !important;
+    padding: 0 !important;
+  }
+
+  // Masquer topbar, boutons, bannières
+  .no-print,
+  .detail-topbar,
+  .bottom-actions,
+  app-impersonation-banner,
+  app-promo-conflict-banner { display: none !important; }
+
+  // Fond blanc
+  body, :host { background: white !important; }
+
+  // Facture pleine page
+  .invoice-wrapper { padding: 0 !important; }
+  .invoice-paper {
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    max-width: 100% !important;
+    padding: 1cm !important;
+  }
+
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+  @page { size: A4; margin: 0; }
 }

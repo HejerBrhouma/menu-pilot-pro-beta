@@ -445,3 +445,29 @@
   font-size: 0.72rem; color: #9ca3af; justify-content: center;
   mat-icon { font-size: 0.85rem; width: 0.85rem; height: 0.85rem; }
 }
+
+// ── Images produit dans tiles et panier ───────
+.tile-avatar {
+  overflow: hidden;
+  &.has-image { background: transparent !important; }
+}
+
+.tile-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  display: block;
+}
+
+.crow-avatar {
+  overflow: hidden;
+}
+
+.crow-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  display: block;
+}

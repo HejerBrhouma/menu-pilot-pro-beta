@@ -130,24 +130,42 @@ class OrderService
     {
         if (!$this->hub) return;
 
-        $topic = sprintf(
-            'orders/%d',
-            $order->getEstablishment()->getId()
-        );
+        try {
+            $topic = sprintf('orders/%d', $order->getEstablishment()->getId());
 
-        $data = json_encode([
-            'event'       => $event,
-            'orderId'     => $order->getId(),
-            'orderNumber' => $order->getOrderNumber(),
-            'status'      => $order->getStatus(),
-            'table'       => $order->getTable() ? $order->getTable()->getName() : null,
-            'type'        => $order->getType(),
-            'total'       => $order->getTotal(),
-            'waiter'      => $order->getWaiter()->getFirstName(),
-            'createdAt'   => $order->getCreatedAt()->format('H:i'),
-        ]);
+            $waiterName = null;
+            if ($order->getWaiter()) {
+                $w = $order->getWaiter();
+                $waiterName = trim(($w->getFirstName() ?? '') . ' ' . ($w->getLastName() ?? ''));
+                if (empty($waiterName)) $waiterName = $w->getEmail();
+            }
 
-        $update = new Update($topic, $data);
-        $this->hub->publish($update);
+            $tableName = null;
+            if ($order->getTable()) {
+                $tableName = $order->getTable()->getName() ?? null;
+            }
+
+            $data = json_encode([
+                'event'        => $event,
+                'orderId'      => $order->getId(),
+                'orderNumber'  => $order->getOrderNumber(),
+                'status'       => $order->getStatus(),
+                'tableName'    => $tableName,
+                'type'         => $order->getType(),
+                'total'        => $order->getTotal(),
+                'waiter'       => $waiterName,
+                'customerName' => $order->getCustomerName() ?? null,
+                'isQrOrder'    => $order->getIsQrOrder(),
+                'createdAt'    => $order->getCreatedAt()
+                    ? $order->getCreatedAt()->format('H:i')
+                    : null,
+            ]);
+
+            $update = new \Symfony\Component\Mercure\Update($topic, $data);
+            $this->hub->publish($update);
+
+        } catch (\Exception $e) {
+            // Ne pas bloquer l'action si Mercure échoue
+        }
     }
 }

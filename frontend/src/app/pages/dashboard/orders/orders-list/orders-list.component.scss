@@ -226,3 +226,28 @@
 
 .more-btn { width: 32px; height: 32px; }
 .cancel-item { color: #ef4444; }
+
+// ── Badge QR ──────────────────────────────────
+.qr-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  mat-icon { font-size: 0.75rem; width: 0.75rem; height: 0.75rem; }
+}
+
+// ── Snackbar commande QR ──────────────────────
+::ng-deep .snack-qr-order {
+  background: #1a1a2e !important;
+  color: white !important;
+  font-weight: 600;
+  .mat-mdc-snack-bar-action { color: #10b981 !important; }
+}

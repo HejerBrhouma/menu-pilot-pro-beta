@@ -74,36 +74,37 @@
 
   <!-- Liste -->
   <div class="invoices-list" *ngIf="!loading && filtered.length > 0">
-    <a class="invoice-row" *ngFor="let inv of filtered"
+    <a class="invoice-row"
+       *ngFor="let inv of filtered"
        [routerLink]="['/invoices', inv.id]">
 
-      <!-- Icône paiement -->
-      <div class="inv-icon" [class]="'method-' + (inv.paymentMethod || 'CASH').toLowerCase()">
+      <div class="inv-icon" [ngClass]="'method-' + (inv.paymentMethod || 'CASH').toLowerCase()">
         <mat-icon>{{ getPaymentIcon(inv.paymentMethod) }}</mat-icon>
       </div>
 
-      <!-- Infos -->
       <div class="inv-main">
         <div class="inv-numbers">
           <span class="inv-num">{{ inv.invoiceNumber }}</span>
           <span class="inv-order">Cmd: {{ getOrderNumber(inv) }}</span>
         </div>
         <div class="inv-meta">
-          <span><mat-icon>person</mat-icon>{{ getWaiterName(inv) }}</span>
+          <span>
+            <mat-icon>person</mat-icon>{{ getWaiterName(inv) }}
+          </span>
           <span class="sep">·</span>
-          <span><mat-icon>schedule</mat-icon>{{ formatDate(inv.createdAt) }}</span>
+          <span>
+            <mat-icon>schedule</mat-icon>{{ formatDate(inv.createdAt) }}
+          </span>
         </div>
       </div>
 
-      <!-- Méthode paiement -->
       <div class="inv-method">
-        <span class="method-badge" [class]="'method-' + (inv.paymentMethod || 'CASH').toLowerCase()">
+        <span class="method-badge" [ngClass]="'method-' + (inv.paymentMethod || 'CASH').toLowerCase()">
           <mat-icon>{{ getPaymentIcon(inv.paymentMethod) }}</mat-icon>
           {{ paymentLabels[inv.paymentMethod!] || inv.paymentMethod }}
         </span>
       </div>
 
-      <!-- Montant -->
       <div class="inv-amount">
         <span class="amount-val">{{ inv.total | number:'1.2-2' }}</span>
         <span class="amount-cur">TND</span>

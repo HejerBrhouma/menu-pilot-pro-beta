@@ -1,6 +1,6 @@
 // src/app/pages/dashboard/product/product-list/product-list.component.ts
 
-import { Component, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core';
+import {Component, OnInit, ViewChild, ChangeDetectorRef, inject} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
@@ -21,9 +21,9 @@ import { ProductService } from '../../../../core/services/product.service';
 import { CategoryService } from '../../../../core/services/category.service';
 import { ProductRead } from '../../../../core/models/product.model';
 import { Category } from '../../../../core/models/category.model';
-import { ProductFormDialogComponent } from '../product-form-dialog/ product-form-dialog.component';
+import { ProductFormDialogComponent } from '../product-form-dialog/product-form-dialog.component';
 import { ConfirmDialogComponent } from '../../../../shared/confirm-dialog/confirm-dialog.component';
-
+import { ProductImageService } from '../../../../core/services/product-image.service';
 @Component({
   selector: 'app-product-list',
   standalone: true,
@@ -49,8 +49,9 @@ export class ProductListComponent implements OnInit {
   totalItems = 0;
   currentPage = 1;
   pageSize = 10;
-
+  private imageService = inject(ProductImageService);
   searchControl = new FormControl('');
+  private dialogOpen = false;
 
   constructor(
     private productService: ProductService,
@@ -110,29 +111,70 @@ export class ProductListComponent implements OnInit {
   }
 
   openAddDialog(): void {
+    if (this.dialogOpen) return;
+    this.dialogOpen = true;
+
     const ref = this.dialog.open(ProductFormDialogComponent, {
       width: '600px',
       data: { product: null, categories: this.categories }
     });
+
     ref.afterClosed().subscribe(result => {
+      this.dialogOpen = false;
       if (!result) return;
-      this.productService.create(result).subscribe({
-        next: () => { this.notify('Produit ajouté ✓'); this.loadProducts(); },
-        error: (err) => this.notify(err.message, 'error')
+      const { _pendingImageFile, _removeImage, ...productData } = result;
+      this.productService.create(productData).subscribe({
+        next: (created: any) => {
+          // Upload image si fichier en attente
+          if (_pendingImageFile && created.id) {
+            this.imageService.uploadImage(created.id, _pendingImageFile).subscribe({
+              next: () => { this.notify('Produit ajouté ✓'); this.loadProducts(); },
+              error: () => { this.notify('Produit créé mais erreur image', 'error'); this.loadProducts(); }
+            });
+          } else {
+            this.notify('Produit ajouté ✓');
+            this.loadProducts();
+          }
+        },
+        error: (err: any) => this.notify(err.message, 'error')
       });
     });
   }
 
+
   openEditDialog(product: ProductRead): void {
+    if (this.dialogOpen) return;
+    this.dialogOpen = true;
+
     const ref = this.dialog.open(ProductFormDialogComponent, {
       width: '600px',
       data: { product, categories: this.categories }
     });
+
     ref.afterClosed().subscribe(result => {
+      this.dialogOpen = false;
       if (!result || !product.id) return;
-      this.productService.update(product.id, result).subscribe({
-        next: () => { this.notify('Produit mis à jour ✓'); this.loadProducts(); },
-        error: (err) => this.notify(err.message, 'error')
+      const { _pendingImageFile, _removeImage, ...productData } = result;
+      this.productService.update(product.id, productData).subscribe({
+        next: () => {
+          if (_pendingImageFile) {
+            // Nouvelle image
+            this.imageService.uploadImage(product.id!, _pendingImageFile).subscribe({
+              next: () => { this.notify('Produit mis à jour ✓'); this.loadProducts(); },
+              error: () => { this.notify('Produit mis à jour mais erreur image', 'error'); this.loadProducts(); }
+            });
+          } else if (_removeImage) {
+            // Supprimer l'image
+            this.imageService.deleteImage(product.id!).subscribe({
+              next: () => { this.notify('Produit mis à jour ✓'); this.loadProducts(); },
+              error: () => { this.notify('Produit mis à jour ✓'); this.loadProducts(); }
+            });
+          } else {
+            this.notify('Produit mis à jour ✓');
+            this.loadProducts();
+          }
+        },
+        error: (err: any) => this.notify(err.message, 'error')
       });
     });
   }

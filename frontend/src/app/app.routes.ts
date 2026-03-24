@@ -28,6 +28,16 @@ export const routes: Routes = [
       import('./pages/establishment-public/establishment-public.component')
         .then(m => m.EstablishmentPublicComponent)
   },
+  {
+    path: 'table/:token',
+    loadComponent: () => import('./pages/public/table-menu/table-menu.component')
+      .then(m => m.TableMenuComponent)
+  },
+  {
+    path: 'order-confirmed',
+    loadComponent: () => import('./pages/public/order-confirmed/order-confirmed.component')
+      .then(m => m.OrderConfirmedComponent)
+  },
 
   // ── SUPER ADMIN ───────────────────────────────────────────────────────
   {
@@ -147,6 +157,7 @@ export const routes: Routes = [
           .then(m => m.OrderDetailComponent)
       },
       { path: 'invoices',
+        title: 'Factures',
         loadComponent: () => import('./pages/dashboard/invoices/invoices-list/invoices-list.component')
           .then(m => m.InvoicesListComponent) },
       { path: 'invoices/:id',
@@ -180,13 +191,6 @@ export const routes: Routes = [
           import('./pages/dashboard/staff/staff.component')
             .then(m => m.StaffComponent)
       },
-      /*{
-        path: 'promotions',
-        title: 'Promotions',
-        loadComponent: () =>
-          import('./pages/dashboard/promotions/promotions.component')
-            .then(m => m.PromotionsComponent)
-      }*/
     ]
   },
 

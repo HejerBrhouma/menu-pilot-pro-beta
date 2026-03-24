@@ -57,10 +57,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     /**
-     * @ORM\Column(type="string", length=180, unique=true)
-     * @Groups({"user:read", "user:write", "invoice:read"})
+     * @ORM\Column(type="string", length=180, unique=true, nullable=true)
+     * @Groups({"user:read", "user:write", "invoice:read", "order:read"})
      */
-    private string $email;
+    private ?string $email = null;
 
     /**
      * @ORM\Column(type="string", length=100, nullable=true)
@@ -132,7 +132,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->email;
     }
 
-    public function setEmail(string $email): self
+    public function setEmail(?string $email): self
     {
         $this->email = $email;
         return $this;

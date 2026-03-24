@@ -42,7 +42,6 @@ export interface RestaurantTable {
   capacity:  number;
   isActive:  boolean;
   qrToken?:  string;
-  iri?: string;
 }
 
 export interface Invoice {
@@ -59,6 +58,7 @@ export interface Invoice {
   status:          'PENDING' | 'PAID' | 'CANCELLED';
   paidAt?:         string;
   notes?:          string;
+  establishment?:  any;
   createdAt?:      string;
 }
 

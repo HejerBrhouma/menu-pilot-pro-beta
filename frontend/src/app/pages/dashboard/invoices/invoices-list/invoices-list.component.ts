@@ -20,14 +20,14 @@ import { Invoice, PAYMENT_METHOD_LABELS } from '../../../../core/models/order.mo
     MatIconModule, MatButtonModule,
     MatProgressSpinnerModule, MatSnackBarModule, MatTooltipModule
   ],
-  templateUrl: 'invoices-list.component.html',
-  styleUrls: ['invoices-list.component.scss']
+  templateUrl: './invoices-list.component.html',
+  styleUrls: ['./invoices-list.component.scss']
 })
 export class InvoicesListComponent implements OnInit {
-  allInvoices:   Invoice[] = [];
-  loading        = true;
-  searchQuery    = '';
-  activeFilter   = 'ALL';
+  allInvoices: Invoice[] = [];
+  loading      = true;
+  searchQuery  = '';
+  activeFilter = 'ALL';
 
   paymentLabels = PAYMENT_METHOD_LABELS;
 
@@ -37,9 +37,11 @@ export class InvoicesListComponent implements OnInit {
 
   get filters() {
     return [
-      { key: 'ALL',  label: 'Toutes',  count: this.allInvoices.length },
-      { key: 'CASH', label: 'Espèces', count: this.countByMethod('CASH') },
-      { key: 'CARD', label: 'Carte',   count: this.countByMethod('CARD') },
+      { key: 'ALL',    label: 'Toutes',   count: this.allInvoices.length },
+      { key: 'CASH',   label: 'Espèces',  count: this.countByMethod('CASH') },
+      { key: 'CARD',   label: 'Carte',    count: this.countByMethod('CARD') },
+      { key: 'CHEQUE', label: 'Chèque',   count: this.countByMethod('CHEQUE') },
+      { key: 'OTHER',  label: 'Autre',    count: this.countByMethod('OTHER') },
     ];
   }
 
@@ -51,8 +53,8 @@ export class InvoicesListComponent implements OnInit {
     if (this.searchQuery.trim()) {
       const q = this.searchQuery.toLowerCase();
       list = list.filter(i =>
-        i.invoiceNumber?.toLowerCase().includes(q) ||
-        (i.order as any)?.orderNumber?.toLowerCase().includes(q)
+        (i.invoiceNumber || '').toLowerCase().includes(q) ||
+        ((i.order as any)?.orderNumber || '').toLowerCase().includes(q)
       );
     }
     return list.sort((a, b) =>
@@ -61,14 +63,14 @@ export class InvoicesListComponent implements OnInit {
   }
 
   get totalRevenue(): number {
-    return this.allInvoices.reduce((s, i) => s + i.total, 0);
+    return Math.round(this.allInvoices.reduce((s, i) => s + i.total, 0) * 100) / 100;
   }
 
   get todayRevenue(): number {
     const today = new Date().toDateString();
-    return this.allInvoices
+    return Math.round(this.allInvoices
       .filter(i => new Date(i.createdAt!).toDateString() === today)
-      .reduce((s, i) => s + i.total, 0);
+      .reduce((s, i) => s + i.total, 0) * 100) / 100;
   }
 
   ngOnInit(): void {
@@ -93,27 +95,30 @@ export class InvoicesListComponent implements OnInit {
 
   getPaymentIcon(method?: string): string {
     const icons: Record<string, string> = {
-      CASH: 'payments', CARD: 'credit_card',
-      CHEQUE: 'receipt_long', OTHER: 'more_horiz'
+      CASH:   'payments',
+      CARD:   'credit_card',
+      CHEQUE: 'receipt_long',
+      OTHER:  'more_horiz'
     };
-    return icons[method || ''] || 'payments';
+    return method ? (icons[method] || 'payments') : 'payments';
   }
 
   getOrderNumber(invoice: Invoice): string {
     const o = invoice.order as any;
-    return o?.orderNumber || '—';
+    return o ? (o.orderNumber || '—') : '—';
   }
 
   getWaiterName(invoice: Invoice): string {
     const w = invoice.waiter as any;
     if (!w) return '—';
-    return `${w.firstName || ''} ${w.lastName || ''}`.trim() || w.email || '—';
+    return ((w.firstName || '') + ' ' + (w.lastName || '')).trim() || w.email || '—';
   }
 
   formatDate(dateStr?: string): string {
     if (!dateStr) return '—';
     return new Date(dateStr).toLocaleDateString('fr-FR', {
-      day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+      day: '2-digit', month: 'short', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
     });
   }
 }

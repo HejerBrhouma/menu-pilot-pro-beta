@@ -67,8 +67,10 @@
              *ngFor="let p of filteredProducts"
              [class.selected]="isInCart(p.id, 'PRODUCT')"
              (click)="addToCart(p, 'PRODUCT')">
-          <div class="tile-avatar" [style.background]="getAvatarColor(p.name)">
-            {{ p.name[0].toUpperCase() }}
+          <div class="tile-avatar" [class.has-image]="getProductImageUrl(p)"
+               [style.background]="getProductImageUrl(p) ? 'transparent' : getAvatarColor(p.name)">
+            <img *ngIf="getProductImageUrl(p)" [src]="getProductImageUrl(p)!" [alt]="p.name" class="tile-img">
+            <span *ngIf="!getProductImageUrl(p)">{{ p.name[0].toUpperCase() }}</span>
           </div>
           <div class="tile-info">
             <span class="tile-name">{{ p.name }}</span>
@@ -143,11 +145,18 @@
       <div class="cart-items-list" *ngIf="cart.length > 0">
         <div class="cart-row" *ngFor="let item of cart; let i = index"
         >
-          <div class="crow-avatar" [style.background]="item.itemType === 'PACK' ? '#f59e0b22' : '#6366f122'">
+          <div class="crow-avatar"
+               [style.background]="item.itemType === 'PACK' ? '#f59e0b22' : (getProductImageByName(item.itemName) ? 'transparent' : '#6366f122')">
             <mat-icon *ngIf="item.itemType === 'PACK'" style="color:#f59e0b">layers</mat-icon>
-            <span *ngIf="item.itemType !== 'PACK'" [style.color]="getAvatarColor(item.itemName)">
-              {{ item.itemName[0].toUpperCase() }}
-            </span>
+            <ng-container *ngIf="item.itemType !== 'PACK'">
+              <img *ngIf="getProductImageByName(item.itemName)"
+                   [src]="getProductImageByName(item.itemName)!"
+                   [alt]="item.itemName" class="crow-img">
+              <span *ngIf="!getProductImageByName(item.itemName)"
+                    [style.color]="getAvatarColor(item.itemName)">
+                {{ item.itemName[0].toUpperCase() }}
+              </span>
+            </ng-container>
           </div>
 
           <div class="crow-info">
