@@ -1,0 +1,75 @@
+<!-- order-confirmed.component.html -->
+<div class="confirmed-page">
+
+  <!-- Header -->
+  <div class="conf-header">
+    <div class="brand-badge">
+      <mat-icon>restaurant_menu</mat-icon>
+    </div>
+    <span class="table-name">{{ tableName }}</span>
+  </div>
+
+  <!-- Status principal -->
+  <div class="status-hero" [style.--status-color]="currentStatus.color">
+    <div class="status-icon-wrap">
+      <mat-icon>{{ currentStatus.icon }}</mat-icon>
+    </div>
+    <h1>{{ currentStatus.label }}</h1>
+    <p class="status-message">{{ currentStatus.message }}</p>
+    <div class="updated-at" *ngIf="updatedAt">
+      Mis à jour à {{ updatedAt }}
+    </div>
+  </div>
+
+  <!-- Infos commande -->
+  <div class="order-info-card">
+    <div class="info-row">
+      <span class="info-label">Commande</span>
+      <span class="info-val order-num">{{ orderNumber }}</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Table</span>
+      <span class="info-val">{{ tableName }}</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Total</span>
+      <span class="info-val total">{{ total | number:'1.2-2' }} TND</span>
+    </div>
+  </div>
+
+  <!-- Workflow progress -->
+  <div class="progress-card" *ngIf="status !== 'CANCELLED'">
+    <p class="progress-title">Suivi de votre commande</p>
+    <div class="progress-steps">
+      <div class="ps-step" *ngFor="let step of progressSteps; let i = index"
+           [class.done]="step.done"
+           [class.active]="step.active">
+        <div class="ps-dot">
+          <mat-icon *ngIf="step.done && !step.active">check</mat-icon>
+          <mat-icon *ngIf="step.active">{{ step.icon }}</mat-icon>
+          <span *ngIf="!step.done && !step.active">{{ i + 1 }}</span>
+        </div>
+        <div class="ps-line" *ngIf="i < progressSteps.length - 1"></div>
+        <span class="ps-label">{{ step.label }}</span>
+      </div>
+    </div>
+    <p class="live-indicator">
+      <span class="live-dot"></span>
+      Suivi en temps réel
+    </p>
+  </div>
+
+  <!-- Annulée -->
+  <div class="cancelled-card" *ngIf="status === 'CANCELLED'">
+    <mat-icon>cancel</mat-icon>
+    <p>Commande annulée</p>
+    <small>Veuillez contacter votre serveur</small>
+  </div>
+
+  <!-- Footer -->
+  <div class="conf-footer">
+    <p>Merci de votre confiance 🙏</p>
+    <small>Votre serveur s'occupe de vous</small>
+  </div>
+
+</div>

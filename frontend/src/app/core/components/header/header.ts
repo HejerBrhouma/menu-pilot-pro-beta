@@ -1,11 +1,12 @@
 // src/app/core/components/header/header.ts
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../services/auth-service';
 import { EstablishmentService } from '../../services/establishment.service';
 import { PromotionService } from '../../services/promotion.service';
+import { OrderService } from '../../services/order.service';
 import { ImpersonationBannerComponent } from '../../../shared/impersonation-banner/impersonation-banner.component';
 import { PromoConflictBannerComponent } from '../../../shared/promo-conflict-banner/promo-conflict-banner.component';
 import { Establishment } from '../../models/establishment.model';
@@ -31,20 +32,23 @@ import { MatRippleModule } from '@angular/material/core';
   styleUrls: ['./header.scss']
 })
 export class Header implements OnInit {
-  userName          = 'Admin';
-  userInitial       = 'A';
-  userRole          = 'Administrateur';
-  hasNotifications  = false;
-  hasPromoConflicts = false;
+  userName           = 'Admin';
+  userInitial        = 'A';
+  userRole           = 'Administrateur';
+  hasNotifications   = false;
+  hasPromoConflicts  = false;
+  pendingOrdersCount = 0;
 
   establishment: Establishment | null = null;
   logoUrl: string | null = null;
 
   constructor(
-    private authService: AuthService,
+    private authService:          AuthService,
     private establishmentService: EstablishmentService,
-    private promotionService: PromotionService,
-    private router: Router
+    private promotionService:     PromotionService,
+    private orderService:         OrderService,
+    private router:               Router,
+    private cdr:                  ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -57,7 +61,7 @@ export class Header implements OnInit {
       }
     } catch {}
 
-    // Charger l'enseigne
+    // Logo enseigne
     this.establishmentService.getAll().subscribe({
       next: (items) => {
         if (items?.length > 0) {
@@ -65,16 +69,27 @@ export class Header implements OnInit {
           if (this.establishment.logo) {
             this.logoUrl = this.establishmentService.getLogoUrl(this.establishment.logo);
           }
+          this.cdr.detectChanges();
         }
       }
     });
 
-    // Vérifier les conflits de promos → badge orange sur le lien Promotions
+    // Conflits promos → badge orange
     this.promotionService.getUnresolvedConflicts().subscribe({
       next: (conflicts) => {
         this.hasPromoConflicts = conflicts.length > 0;
+        this.cdr.detectChanges();
       },
       error: () => { this.hasPromoConflicts = false; }
+    });
+
+    // Commandes en attente → point rouge
+    this.orderService.getAll({ status: 'PENDING' }).subscribe({
+      next: (orders) => {
+        this.pendingOrdersCount = orders.length;
+        this.cdr.detectChanges();
+      },
+      error: () => { this.pendingOrdersCount = 0; }
     });
   }
 

@@ -1,8 +1,6 @@
 <!-- src/app/core/components/header/header.html -->
 
 <mat-sidenav-container class="sidenav-container">
-
-  <!-- ══════════ SIDEBAR ══════════ -->
   <mat-sidenav mode="side" opened class="sidenav">
 
     <!-- Logo -->
@@ -27,13 +25,37 @@
 
     <div class="sidebar-content">
 
-      <!-- ── Dashboard ── -->
+      <!-- Dashboard -->
       <nav class="nav-section">
         <a mat-ripple class="nav-item" routerLink="/dashboard" routerLinkActive="active">
           <div class="nav-icon"><mat-icon>dashboard</mat-icon></div>
           <span>Dashboard</span>
         </a>
       </nav>
+
+      <!-- ── Commandes ── -->
+      <div class="nav-group">
+        <div class="nav-group-label">Commandes</div>
+        <nav class="nav-section">
+          <a mat-ripple class="nav-item" routerLink="/orders" routerLinkActive="active">
+            <div class="nav-icon"><mat-icon>receipt_long</mat-icon></div>
+            <span>Commandes</span>
+            <span class="nav-dot" *ngIf="pendingOrdersCount > 0"></span>
+          </a>
+          <a mat-ripple class="nav-item" routerLink="/orders/new" routerLinkActive="active">
+            <div class="nav-icon"><mat-icon>add_shopping_cart</mat-icon></div>
+            <span>Nouvelle commande</span>
+          </a>
+          <a mat-ripple class="nav-item" routerLink="/tables" routerLinkActive="active">
+            <div class="nav-icon"><mat-icon>table_restaurant</mat-icon></div>
+            <span>Tables</span>
+          </a>
+          <a mat-ripple class="nav-item" routerLink="/invoices" routerLinkActive="active">
+            <div class="nav-icon"><mat-icon>receipt</mat-icon></div>
+            <span>Factures</span>
+          </a>
+        </nav>
+      </div>
 
       <!-- ── Gestion ── -->
       <div class="nav-group">
@@ -55,15 +77,14 @@
             <div class="nav-icon"><mat-icon>layers</mat-icon></div>
             <span>Packs</span>
           </a>
-          <a mat-ripple class="nav-item" routerLink="/staff" routerLinkActive="active">
-            <div class="nav-icon"><mat-icon>badge</mat-icon></div>
-            <span>Mon Équipe</span>
-          </a>
           <a mat-ripple class="nav-item" routerLink="/promotions" routerLinkActive="active">
             <div class="nav-icon"><mat-icon>local_offer</mat-icon></div>
             <span>Promotions</span>
-            <!-- Badge si conflits -->
             <span class="nav-badge conflict" *ngIf="hasPromoConflicts">!</span>
+          </a>
+          <a mat-ripple class="nav-item" routerLink="/staff" routerLinkActive="active">
+            <div class="nav-icon"><mat-icon>badge</mat-icon></div>
+            <span>Mon Équipe</span>
           </a>
         </nav>
       </div>
@@ -113,7 +134,7 @@
 
     </div>
 
-    <!-- ── User card + Logout ── -->
+    <!-- User card -->
     <div class="sidebar-footer">
       <div class="user-card">
         <div class="user-avatar">{{ userInitial }}</div>
@@ -129,7 +150,6 @@
 
   </mat-sidenav>
 
-  <!-- ══════════ CONTENU PRINCIPAL ══════════ -->
   <mat-sidenav-content class="main-content">
     <app-impersonation-banner></app-impersonation-banner>
     <app-promo-conflict-banner></app-promo-conflict-banner>

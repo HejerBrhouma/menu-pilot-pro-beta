@@ -1,0 +1,145 @@
+<!-- tables.component.html -->
+<div class="tables-page">
+
+  <!-- ══ HEADER ══ -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1><mat-icon>table_restaurant</mat-icon> Tables</h1>
+      <p class="subtitle">
+        {{ activeTables.length }} active(s) · {{ tables.length }} au total
+      </p>
+    </div>
+    <button mat-flat-button color="primary" (click)="openAdd()" *ngIf="canManage">
+      <mat-icon>add</mat-icon> Nouvelle table
+    </button>
+  </div>
+
+  <!-- ══ LOADER ══ -->
+  <div class="loader" *ngIf="loading">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+
+  <!-- ══ EMPTY ══ -->
+  <div class="empty-state" *ngIf="!loading && tables.length === 0">
+    <div class="empty-icon"><mat-icon>table_restaurant</mat-icon></div>
+    <h2>Aucune table configurée</h2>
+    <p>Ajoutez vos tables pour gérer les commandes</p>
+    <button mat-flat-button color="primary" (click)="openAdd()" *ngIf="canManage">
+      <mat-icon>add</mat-icon> Ajouter une table
+    </button>
+  </div>
+
+  <!-- ══ TABLES ACTIVES ══ -->
+  <div class="section" *ngIf="!loading && activeTables.length > 0">
+    <div class="section-label">
+      <span class="dot active"></span> Tables actives
+    </div>
+
+    <div class="tables-grid">
+      <div class="table-card" *ngFor="let t of activeTables">
+
+        <!-- Bande couleur gauche -->
+        <div class="card-stripe"></div>
+
+        <div class="card-content">
+          <!-- Ligne 1 : icône + nom + badge -->
+          <div class="card-top">
+            <div class="table-icon">
+              <mat-icon>table_restaurant</mat-icon>
+            </div>
+            <div class="table-meta">
+              <h3>{{ t.name }}</h3>
+              <div class="table-sub">
+                <mat-icon>people</mat-icon>
+                <span>{{ t.capacity }} pers.</span>
+              </div>
+            </div>
+            <span class="status-badge active">Active</span>
+          </div>
+
+          <!-- Ligne 2 : actions -->
+          <div class="card-actions">
+
+            <!-- Commander -->
+            <a [routerLink]="['/orders/new']" [queryParams]="{table: t.id}"
+               class="action-primary" matTooltip="Nouvelle commande">
+              <mat-icon>add_shopping_cart</mat-icon>
+              <span>Commander</span>
+            </a>
+
+            <!-- Groupe boutons icônes -->
+            <div class="icon-actions">
+              <button class="icon-btn qr" (click)="openQr(t)" matTooltip="QR Code">
+                <mat-icon>qr_code_2</mat-icon>
+              </button>
+              <button class="icon-btn release" *ngIf="canManage"
+                      (click)="releaseTable(t); $event.stopPropagation()"
+                      matTooltip="Libérer la table">
+                <mat-icon>lock_open</mat-icon>
+              </button>
+              <button class="icon-btn edit" *ngIf="canManage"
+                      (click)="openEdit(t)" matTooltip="Modifier">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button class="icon-btn toggle" *ngIf="canManage"
+                      (click)="toggleActive(t)" matTooltip="Désactiver">
+                <mat-icon>toggle_on</mat-icon>
+              </button>
+              <button class="icon-btn delete" *ngIf="canManage"
+                      (click)="confirmDelete(t)" matTooltip="Supprimer">
+                <mat-icon>delete_outline</mat-icon>
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TABLES INACTIVES ══ -->
+  <div class="section inactive-section" *ngIf="!loading && inactiveTables.length > 0">
+    <div class="section-label">
+      <span class="dot inactive"></span> Tables inactives
+    </div>
+
+    <div class="tables-grid faded">
+      <div class="table-card inactive" *ngFor="let t of inactiveTables">
+        <div class="card-stripe inactive"></div>
+        <div class="card-content">
+          <div class="card-top">
+            <div class="table-icon inactive">
+              <mat-icon>table_restaurant</mat-icon>
+            </div>
+            <div class="table-meta">
+              <h3>{{ t.name }}</h3>
+              <div class="table-sub">
+                <mat-icon>people</mat-icon>
+                <span>{{ t.capacity }} pers.</span>
+              </div>
+            </div>
+            <span class="status-badge inactive">Inactive</span>
+          </div>
+          <div class="card-actions">
+            <button class="action-secondary" *ngIf="canManage" (click)="toggleActive(t)">
+              <mat-icon>toggle_off</mat-icon>
+              <span>Réactiver</span>
+            </button>
+            <div class="icon-actions">
+              <button class="icon-btn edit" *ngIf="canManage"
+                      (click)="openEdit(t)" matTooltip="Modifier">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button class="icon-btn delete" *ngIf="canManage"
+                      (click)="confirmDelete(t)" matTooltip="Supprimer">
+                <mat-icon>delete_outline</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

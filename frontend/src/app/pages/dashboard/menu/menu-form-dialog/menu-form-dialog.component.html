@@ -19,7 +19,7 @@
     <div class="form-section-title">Informations générales</div>
 
     <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Nom du menu *</mat-label>
+      <mat-label>Nom du menu </mat-label>
       <input matInput formControlName="name" placeholder="Ex: Menu Midi, Carte du Soir…">
       <mat-icon matSuffix>restaurant_menu</mat-icon>
       <mat-error>{{ nameError }}</mat-error>
@@ -91,7 +91,7 @@
           <!-- Titre + Ordre -->
           <div class="section-row">
             <mat-form-field appearance="outline" class="flex-grow">
-              <mat-label>Titre de la section *</mat-label>
+              <mat-label>Titre de la section </mat-label>
               <input matInput formControlName="title" placeholder="Ex: Entrées, Plats, Desserts…">
               <mat-error *ngIf="section.get('title')?.hasError('required')">Titre requis</mat-error>
             </mat-form-field>

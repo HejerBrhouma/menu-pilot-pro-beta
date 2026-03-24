@@ -28,6 +28,16 @@ export const routes: Routes = [
       import('./pages/establishment-public/establishment-public.component')
         .then(m => m.EstablishmentPublicComponent)
   },
+  {
+    path: 'table/:token',
+    loadComponent: () => import('./pages/public/table-menu/table-menu.component')
+      .then(m => m.TableMenuComponent)
+  },
+  {
+    path: 'order-confirmed',
+    loadComponent: () => import('./pages/public/order-confirmed/order-confirmed.component')
+      .then(m => m.OrderConfirmedComponent)
+  },
 
   // ── SUPER ADMIN ───────────────────────────────────────────────────────
   {
@@ -128,6 +138,39 @@ export const routes: Routes = [
             .then(m => m.MenuComponent)
       },
       {
+        path: 'orders',
+        title: 'Commandes',
+        loadComponent: () =>
+          import('./pages/dashboard/orders/orders-list/orders-list.component')
+            .then(m => m.OrdersListComponent)
+      },
+      {
+        path: 'orders/new',
+        title: 'Commandes',
+        loadComponent: () =>
+          import('./pages/dashboard/orders/order-new/order-new.component')
+            .then(m => m.OrderNewComponent)
+      },
+      {
+        path: 'orders/:id',
+        loadComponent: () => import('./pages/dashboard/orders/order-detail/order-detail.component')
+          .then(m => m.OrderDetailComponent)
+      },
+      { path: 'invoices',
+        title: 'Factures',
+        loadComponent: () => import('./pages/dashboard/invoices/invoices-list/invoices-list.component')
+          .then(m => m.InvoicesListComponent) },
+      { path: 'invoices/:id',
+        loadComponent: () => import('./pages/dashboard/invoices/invoice-detail/invoice-detail.component')
+          .then(m => m.InvoiceDetailComponent) },
+      {
+        path: 'tables',
+        title: 'Tables',
+        loadComponent: () =>
+          import('./pages/dashboard/tables/tables.component')
+            .then(m => m.TablesComponent)
+      },
+      {
         path: 'qr-code',
         title: 'QR Code',
         loadComponent: () =>
@@ -148,13 +191,6 @@ export const routes: Routes = [
           import('./pages/dashboard/staff/staff.component')
             .then(m => m.StaffComponent)
       },
-      {
-        path: 'promotions',
-        title: 'Promotions',
-        loadComponent: () =>
-          import('./pages/dashboard/promotions/promotions.component')
-            .then(m => m.PromotionsComponent)
-      }
     ]
   },
 

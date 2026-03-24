@@ -1,0 +1,241 @@
+<!-- src/app/pages/dashboard/orders/order-new/order-new.component.html -->
+<div class="pos-shell">
+
+  <!-- ══ TOP BAR ══ -->
+  <div class="pos-topbar">
+    <div class="topbar-left">
+      <a routerLink="/orders" class="back-btn">
+        <mat-icon>arrow_back_ios</mat-icon>
+      </a>
+      <div class="topbar-title">
+        <span class="topbar-label">Nouvelle commande</span>
+        <span class="topbar-sub">{{ currentTime | date:'HH:mm' }} · {{ currentDate | date:'d MMM yyyy' }}</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <!-- Type toggle -->
+      <div class="type-pill">
+        <button class="pill-btn" [class.active]="!isTakeaway" (click)="isTakeaway = false">
+          <mat-icon>table_restaurant</mat-icon> Sur place
+        </button>
+        <button class="pill-btn" [class.active]="isTakeaway" (click)="isTakeaway = true">
+          <mat-icon>takeout_dining</mat-icon> À emporter
+        </button>
+      </div>
+      <!-- Table selector -->
+      <mat-form-field appearance="outline" class="table-select" *ngIf="!isTakeaway">
+        <mat-label>Table</mat-label>
+        <mat-select [formControl]="tableControl">
+          <mat-option *ngFor="let t of tables" [value]="'/api/tables/' + t.id">
+            {{ t.name }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </div>
+
+  <!-- ══ MAIN LAYOUT ══ -->
+  <div class="pos-body">
+
+    <!-- ── CATALOGUE ── -->
+    <div class="catalog-col">
+
+      <!-- Tabs + Search -->
+      <div class="catalog-header">
+        <div class="catalog-tabs">
+          <button class="ctab" [class.active]="activeTab === 'products'" (click)="activeTab = 'products'">
+            Produits
+            <span class="ctab-count">{{ filteredProducts.length }}</span>
+          </button>
+          <button class="ctab" [class.active]="activeTab === 'packs'" (click)="activeTab = 'packs'">
+            Packs
+            <span class="ctab-count">{{ filteredPacks.length }}</span>
+          </button>
+        </div>
+        <div class="search-box">
+          <mat-icon>search</mat-icon>
+          <input [(ngModel)]="searchQuery" placeholder="Rechercher...">
+          <button class="clear-btn" *ngIf="searchQuery" (click)="searchQuery = ''">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      </div>
+
+      <!-- Grid produits -->
+      <div class="catalog-grid" *ngIf="activeTab === 'products'">
+        <div class="product-tile"
+             *ngFor="let p of filteredProducts"
+             [class.selected]="isInCart(p.id, 'PRODUCT')"
+             (click)="addToCart(p, 'PRODUCT')">
+          <div class="tile-avatar" [class.has-image]="getProductImageUrl(p)"
+               [style.background]="getProductImageUrl(p) ? 'transparent' : getAvatarColor(p.name)">
+            <img *ngIf="getProductImageUrl(p)" [src]="getProductImageUrl(p)!" [alt]="p.name" class="tile-img">
+            <span *ngIf="!getProductImageUrl(p)">{{ p.name[0].toUpperCase() }}</span>
+          </div>
+          <div class="tile-info">
+            <span class="tile-name">{{ p.name }}</span>
+            <span class="tile-price">{{ p.price | number:'1.2-2' }} TND</span>
+          </div>
+          <div class="tile-qty" *ngIf="isInCart(p.id, 'PRODUCT')">
+            {{ getCartQty(p.id, 'PRODUCT') }}
+          </div>
+          <div class="tile-add" *ngIf="!isInCart(p.id, 'PRODUCT')">
+            <mat-icon>add</mat-icon>
+          </div>
+        </div>
+
+        <div class="catalog-empty" *ngIf="filteredProducts.length === 0">
+          <mat-icon>search_off</mat-icon>
+          <p>Aucun produit trouvé</p>
+        </div>
+      </div>
+
+      <!-- Grid packs -->
+      <div class="catalog-grid" *ngIf="activeTab === 'packs'">
+        <div class="product-tile pack-tile"
+             *ngFor="let pk of filteredPacks"
+             [class.selected]="isInCart(pk.id, 'PACK')"
+             (click)="addToCart(pk, 'PACK')">
+          <div class="tile-avatar pack-av">
+            <mat-icon>layers</mat-icon>
+          </div>
+          <div class="tile-info">
+            <span class="tile-name">{{ pk.name }}</span>
+            <span class="tile-price">{{ pk.price | number:'1.2-2' }} TND</span>
+          </div>
+          <div class="tile-qty" *ngIf="isInCart(pk.id, 'PACK')">
+            {{ getCartQty(pk.id, 'PACK') }}
+          </div>
+          <div class="tile-add" *ngIf="!isInCart(pk.id, 'PACK')">
+            <mat-icon>add</mat-icon>
+          </div>
+        </div>
+
+        <div class="catalog-empty" *ngIf="filteredPacks.length === 0">
+          <mat-icon>search_off</mat-icon>
+          <p>Aucun pack trouvé</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PANIER ── -->
+    <div class="cart-col">
+
+      <!-- Cart header -->
+      <div class="cart-top">
+        <div class="cart-title">
+          <span>Commande</span>
+          <span class="cart-badge" *ngIf="cartItemsCount > 0">{{ cartItemsCount }}</span>
+        </div>
+        <button class="clear-cart-btn" *ngIf="cart.length > 0" (click)="clearCart()">
+          Vider
+        </button>
+      </div>
+
+      <!-- Empty state -->
+      <div class="cart-empty-state" *ngIf="cart.length === 0">
+        <div class="empty-icon">
+          <mat-icon>shopping_cart</mat-icon>
+        </div>
+        <p class="empty-title">Panier vide</p>
+        <p class="empty-sub">Ajoutez des articles depuis le catalogue</p>
+      </div>
+
+      <!-- Items -->
+      <div class="cart-items-list" *ngIf="cart.length > 0">
+        <div class="cart-row" *ngFor="let item of cart; let i = index"
+        >
+          <div class="crow-avatar"
+               [style.background]="item.itemType === 'PACK' ? '#f59e0b22' : (getProductImageByName(item.itemName) ? 'transparent' : '#6366f122')">
+            <mat-icon *ngIf="item.itemType === 'PACK'" style="color:#f59e0b">layers</mat-icon>
+            <ng-container *ngIf="item.itemType !== 'PACK'">
+              <img *ngIf="getProductImageByName(item.itemName)"
+                   [src]="getProductImageByName(item.itemName)!"
+                   [alt]="item.itemName" class="crow-img">
+              <span *ngIf="!getProductImageByName(item.itemName)"
+                    [style.color]="getAvatarColor(item.itemName)">
+                {{ item.itemName[0].toUpperCase() }}
+              </span>
+            </ng-container>
+          </div>
+
+          <div class="crow-info">
+            <span class="crow-name">{{ item.itemName }}</span>
+            <input class="crow-note" [(ngModel)]="item.notes"
+                   placeholder="Note (ex: sans sauce, bien cuit...)">
+          </div>
+
+          <div class="crow-controls">
+            <button class="qty-btn minus" (click)="updateQty(item, item.quantity - 1)">
+              <mat-icon>remove</mat-icon>
+            </button>
+            <span class="crow-qty">{{ item.quantity }}</span>
+            <button class="qty-btn plus" (click)="updateQty(item, item.quantity + 1)">
+              <mat-icon>add</mat-icon>
+            </button>
+          </div>
+
+          <div class="crow-price">
+            {{ item.finalPrice * item.quantity | number:'1.2-2' }}
+            <span class="crow-currency">TND</span>
+          </div>
+
+          <button class="remove-btn" (click)="removeFromCart(item)">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      </div>
+
+      <!-- Notes globales -->
+      <div class="cart-notes" *ngIf="cart.length > 0">
+        <mat-icon>edit_note</mat-icon>
+        <textarea [formControl]="notesControl"
+                  placeholder="Instructions pour la cuisine..."
+                  rows="2"></textarea>
+      </div>
+
+      <!-- Récap prix -->
+      <div class="cart-summary" *ngIf="cart.length > 0">
+        <div class="summary-row">
+          <span>Sous-total</span>
+          <span>{{ cartSubtotal | number:'1.2-2' }} TND</span>
+        </div>
+        <div class="summary-row promo-row" *ngIf="cartDiscount > 0">
+          <span>
+            <mat-icon>local_offer</mat-icon>
+            Promotions
+          </span>
+          <span class="discount-val">−{{ cartDiscount | number:'1.2-2' }} TND</span>
+        </div>
+        <div class="summary-divider"></div>
+        <div class="summary-row total-row">
+          <span>Total</span>
+          <span>{{ cartTotal | number:'1.2-2' }} TND</span>
+        </div>
+      </div>
+
+      <!-- Bouton commander -->
+      <div class="cart-actions">
+        <button class="order-btn"
+                [class.disabled]="cart.length === 0 || saving"
+                [disabled]="cart.length === 0 || saving"
+                (click)="submit()">
+          <mat-spinner diameter="20" *ngIf="saving"></mat-spinner>
+          <ng-container *ngIf="!saving">
+            <mat-icon>check_circle</mat-icon>
+            Passer la commande
+            <span class="order-total" *ngIf="cart.length > 0">
+              {{ cartTotal | number:'1.2-2' }} TND
+            </span>
+          </ng-container>
+        </button>
+
+        <div class="promo-hint" *ngIf="cart.length > 0">
+          <mat-icon>info</mat-icon>
+          Les promotions actives sont appliquées automatiquement
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

@@ -17,7 +17,7 @@
 
     <!-- Nom -->
     <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Nom du pack *</mat-label>
+      <mat-label>Nom du pack </mat-label>
       <input matInput formControlName="name" placeholder="Ex: Menu Midi, Offre Famille…">
       <mat-icon matSuffix>layers</mat-icon>
       <mat-error>{{ nameError }}</mat-error>
@@ -57,7 +57,7 @@
     <!-- Prix + Toggle actif -->
     <div class="row-fields">
       <mat-form-field appearance="outline" class="price-field">
-        <mat-label>Prix du pack (€) *</mat-label>
+        <mat-label>Prix du pack (€) </mat-label>
         <input matInput type="number" formControlName="price" step="0.01">
         <mat-icon matSuffix>euro</mat-icon>
         <mat-error>{{ priceError }}</mat-error>

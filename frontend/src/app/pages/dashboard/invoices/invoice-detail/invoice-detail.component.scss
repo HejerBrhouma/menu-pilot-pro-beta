@@ -1,0 +1,298 @@
+// invoice-detail.component.scss
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@500&display=swap');
+
+:host {
+  display: block;
+  font-family: 'DM Sans', sans-serif;
+  background: #f7f8fc;
+  min-height: 100vh;
+  overflow-x: hidden;
+  max-width: 100%;
+}
+.page-loader { display: flex; justify-content: center; align-items: center; height: 60vh; }
+
+// ── Topbar ────────────────────────────────────
+.detail-topbar {
+  display: flex; align-items: center; gap: 1rem;
+  background: white; padding: 1rem 2rem;
+  border-bottom: 1px solid #f1f5f9;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  flex-wrap: wrap;
+}
+
+.back-btn {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: #f4f6fb; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: #6b7280; text-decoration: none; transition: all 0.15s; flex-shrink: 0;
+  &:hover { background: #e8ecf4; }
+  mat-icon { font-size: 1rem; width: 1rem; height: 1rem; }
+}
+
+.topbar-info {
+  flex: 1;
+  h1 { font-family: 'DM Mono', monospace; font-size: 1rem; font-weight: 500; margin: 0; color: #1a1a2e; }
+  .topbar-date { font-size: 0.75rem; color: #9ca3af; }
+}
+
+.topbar-actions { display: flex; gap: 0.625rem; flex-wrap: wrap; }
+.topbar-actions a, .topbar-actions button {
+  border-radius: 10px; display: flex; align-items: center; gap: 5px;
+  font-size: 0.82rem; text-decoration: none;
+}
+
+// ── Invoice Wrapper ───────────────────────────
+.invoice-wrapper {
+  padding: 1.5rem;
+  display: flex;
+  justify-content: center;
+  overflow-x: hidden;
+}
+
+.invoice-paper {
+  background: white;
+  width: 100%;
+  max-width: 720px;
+  min-width: 0;
+  border-radius: 16px;
+  border: 1.5px solid #f1f5f9;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  padding: 2rem;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+// ── En-tête ───────────────────────────────────
+.inv-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.inv-brand {
+  display: flex; align-items: center; gap: 0.875rem;
+  .brand-logo {
+    width: 48px; height: 48px; border-radius: 14px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    display: flex; align-items: center; justify-content: center;
+    mat-icon { color: white; font-size: 1.5rem; width: 1.5rem; height: 1.5rem; }
+  }
+  .brand-info {
+    h2 { font-size: 1.1rem; font-weight: 700; color: #1a1a2e; margin: 0 0 2px; }
+    span { font-size: 0.72rem; color: #9ca3af; }
+  }
+}
+
+.inv-title-block { text-align: right; }
+.inv-title { font-size: 1.5rem; font-weight: 800; color: #1a1a2e; letter-spacing: 2px; }
+.inv-number { font-family: 'DM Mono', monospace; font-size: 0.875rem; color: #6366f1; font-weight: 500; margin-top: 4px; }
+.inv-date { font-size: 0.75rem; color: #9ca3af; margin-top: 2px; }
+
+.inv-divider { height: 1px; background: #f1f5f9; margin: 1.25rem 0; }
+
+// ── Meta grid ─────────────────────────────────
+.inv-meta-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.meta-block { display: flex; flex-direction: column; gap: 2px; }
+.meta-label { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #9ca3af; }
+.meta-val   { font-size: 0.875rem; font-weight: 600; color: #1a1a2e; }
+
+// ── Table articles ────────────────────────────
+.items-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  margin-bottom: 0.5rem;
+  word-break: break-word;
+
+  th {
+    padding: 0.625rem 0.75rem; text-align: left;
+    font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.5px; color: #9ca3af; background: #f8fafc;
+    &:first-child { border-radius: 8px 0 0 8px; }
+    &:last-child  { border-radius: 0 8px 8px 0; text-align: right; }
+  }
+
+  td {
+    padding: 0.75rem; border-bottom: 1px solid #f8fafc;
+    font-size: 0.875rem; color: #374151; vertical-align: top;
+    &:last-child { text-align: right; }
+  }
+
+  .th-qty, .td-qty { text-align: center; }
+  .th-unit, .td-unit, .th-total, .td-total { text-align: right; }
+}
+
+.td-name { font-weight: 600; color: #1a1a2e; }
+.item-note { font-weight: 400; color: #9ca3af; font-style: italic; font-size: 0.8rem; }
+.item-promos { margin-top: 4px; }
+.promo-tag {
+  display: inline-block; font-size: 0.68rem; background: #fef3c7;
+  color: #92400e; padding: 1px 6px; border-radius: 4px; margin-right: 4px;
+}
+
+.type-pill {
+  font-size: 0.68rem; background: #eef2ff; color: #6366f1;
+  padding: 2px 6px; border-radius: 4px; font-weight: 600;
+}
+
+.price-crossed { text-decoration: line-through; color: #9ca3af; margin-right: 4px; font-size: 0.8rem; }
+
+// ── Récap ─────────────────────────────────────
+.inv-summary {
+  margin-left: auto;
+  max-width: 300px;
+  min-width: 200px;
+}
+
+.summary-row {
+  display: flex; justify-content: space-between;
+  padding: 0.375rem 0; font-size: 0.875rem; color: #6b7280;
+  &.promo { color: #10b981; font-weight: 500; }
+  &.total {
+    font-size: 1.1rem; font-weight: 800; color: #1a1a2e;
+    padding: 0.625rem 0;
+  }
+}
+
+.summary-divider { height: 2px; background: #1a1a2e; margin: 0.375rem 0; border-radius: 2px; }
+
+.payment-method {
+  display: flex; align-items: center; gap: 5px; margin-top: 0.875rem;
+  font-size: 0.78rem; color: #6b7280;
+  background: #f8fafc; padding: 6px 12px; border-radius: 8px;
+  mat-icon { font-size: 0.9rem; width: 0.9rem; height: 0.9rem; color: #10b981; }
+}
+
+// ── Footer ────────────────────────────────────
+.inv-footer {
+  margin-top: 2rem; text-align: center;
+  .footer-line { height: 2px; background: linear-gradient(to right, #6366f1, #8b5cf6, #ec4899); border-radius: 2px; margin-bottom: 1rem; }
+  p { margin: 0; font-size: 0.82rem; color: #6b7280; font-weight: 500; }
+  .footer-sub { font-size: 0.72rem; color: #d1d5db; margin-top: 4px; }
+}
+
+// ── Bottom actions ────────────────────────────
+.bottom-actions {
+  display: flex; justify-content: center; gap: 1rem;
+  padding: 1rem 2rem 2rem;
+  a, button { border-radius: 10px; display: flex; align-items: center; gap: 6px; }
+}
+
+// ══════════════════════════════════════════════
+// ── IMPRESSION PDF ────────────────────────────
+// ══════════════════════════════════════════════
+@media print {
+  @page {
+    size: A4;
+    margin: 1.5cm;
+  }
+
+  // Masquer TOUT le layout Angular Material
+  mat-sidenav-container,
+  mat-sidenav,
+  .mat-sidenav,
+  .mat-sidenav-container,
+  .mat-drawer,
+  .mat-drawer-container,
+  .mat-drawer-content,
+  app-header,
+  app-impersonation-banner,
+  app-promo-conflict-banner,
+  .no-print,
+  .detail-topbar,
+  .bottom-actions {
+    display: none !important;
+  }
+
+  // Afficher uniquement la facture
+  body, html {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+  }
+
+  // Forcer la visibilité du composant
+  :host {
+    display: block !important;
+    background: white !important;
+  }
+
+  .detail-page {
+    display: block !important;
+  }
+
+  .invoice-wrapper {
+    padding: 0 !important;
+    display: block !important;
+  }
+
+  .invoice-paper {
+    max-width: 100% !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  // Forcer les couleurs à l'impression
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  // Eviter les coupures dans les lignes
+  tr, .item-row { page-break-inside: avoid; }
+  thead { display: table-header-group; }
+}
+
+// ══════════════════════════════════════════════
+// OVERRIDE GLOBAL PRINT — masquer tout le layout
+// ══════════════════════════════════════════════
+@media print {
+  // Masquer sidebar Angular Material
+  mat-sidenav,
+  mat-sidenav-container > mat-sidenav,
+  .mat-sidenav,
+  .mat-sidenav-container .mat-drawer,
+  .mat-drawer-container .mat-drawer { display: none !important; }
+
+  // Forcer le contenu principal à occuper toute la page
+  mat-sidenav-content,
+  .mat-sidenav-content,
+  .mat-drawer-content {
+    margin-left: 0 !important;
+    padding: 0 !important;
+  }
+
+  // Masquer topbar, boutons, bannières
+  .no-print,
+  .detail-topbar,
+  .bottom-actions,
+  app-impersonation-banner,
+  app-promo-conflict-banner { display: none !important; }
+
+  // Fond blanc
+  body, :host { background: white !important; }
+
+  // Facture pleine page
+  .invoice-wrapper { padding: 0 !important; }
+  .invoice-paper {
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    max-width: 100% !important;
+    padding: 1cm !important;
+  }
+
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+  @page { size: A4; margin: 0; }
+}

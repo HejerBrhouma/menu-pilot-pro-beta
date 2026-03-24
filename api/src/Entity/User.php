@@ -57,10 +57,22 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     /**
-     * @ORM\Column(type="string", length=180, unique=true)
-     * @Groups({"user:read", "user:write"})
+     * @ORM\Column(type="string", length=180, unique=true, nullable=true)
+     * @Groups({"user:read", "user:write", "invoice:read", "order:read"})
      */
-    private string $email;
+    private ?string $email = null;
+
+    /**
+     * @ORM\Column(type="string", length=100, nullable=true)
+     * @Groups({"user:read", "user:write", "invoice:read", "order:read"})
+     */
+    private ?string $firstName = null;
+
+    /**
+     * @ORM\Column(type="string", length=100, nullable=true)
+     * @Groups({"user:read", "user:write", "invoice:read", "order:read"})
+     */
+    private ?string $lastName = null;
 
     /**
      * @ORM\Column(type="json")
@@ -79,17 +91,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     private ?string $plainPassword = null;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     * @Groups({"user:read", "user:write"})
-     */
-    private string $firstName;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"user:read", "user:write"})
-     */
-    private ?string $lastName = null;
 
     /**
      * @ORM\Column(type="boolean")
@@ -130,7 +132,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->email;
     }
 
-    public function setEmail(string $email): self
+    public function setEmail(?string $email): self
     {
         $this->email = $email;
         return $this;

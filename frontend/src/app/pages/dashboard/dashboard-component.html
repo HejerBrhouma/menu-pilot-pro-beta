@@ -23,20 +23,35 @@
         <span>Menu Manager</span>
       </div>
     </div>
+
+    <!-- Alertes commandes en attente -->
+    <div class="hero-alerts" *ngIf="!loading && (pendingOrders > 0 || confirmedOrders > 0)">
+      <a routerLink="/orders" class="alert-chip pending" *ngIf="pendingOrders > 0">
+        <mat-icon>notification_important</mat-icon>
+        {{ pendingOrders }} commande(s) en attente
+      </a>
+      <a routerLink="/orders" class="alert-chip confirmed" *ngIf="confirmedOrders > 0">
+        <mat-icon>restaurant</mat-icon>
+        {{ confirmedOrders }} en cours
+      </a>
+      <div class="alert-chip revenue" *ngIf="todayRevenue > 0">
+        <mat-icon>payments</mat-icon>
+        {{ todayRevenue | number:'1.2-2' }} TND aujourd'hui
+      </div>
+    </div>
   </div>
 
   <!-- ══ STAT CARDS ══ -->
   <section class="section">
     <h2 class="section-title">Vue d'ensemble</h2>
     <div class="stats-grid">
-      <a
-        *ngFor="let stat of stats; let i = index"
-        [routerLink]="stat.route"
-        class="stat-card"
-        [style.--card-color]="stat.color"
-        [style.--card-accent]="stat.accent"
-        [style.animation-delay]="(i * 80) + 'ms'"
-        matRipple>
+      <a *ngFor="let stat of stats; let i = index"
+         [routerLink]="stat.route"
+         class="stat-card"
+         [style.--card-color]="stat.color"
+         [style.--card-accent]="stat.accent"
+         [style.animation-delay]="(i * 80) + 'ms'"
+         matRipple>
 
         <div class="stat-icon-wrap">
           <mat-icon>{{ stat.icon }}</mat-icon>
@@ -48,6 +63,7 @@
             <span *ngIf="loading" class="skeleton"></span>
           </span>
           <span class="stat-label">{{ stat.label }}</span>
+          <span class="stat-badge" *ngIf="stat.badge">{{ stat.badge }}</span>
         </div>
 
         <div class="stat-arrow">
@@ -61,13 +77,12 @@
   <section class="section">
     <h2 class="section-title">Actions rapides</h2>
     <div class="actions-grid">
-      <a
-        *ngFor="let action of quickActions; let i = index"
-        [routerLink]="action.route"
-        class="action-card"
-        [style.--action-color]="action.color"
-        [style.animation-delay]="(i * 60 + 200) + 'ms'"
-        matRipple>
+      <a *ngFor="let action of quickActions; let i = index"
+         [routerLink]="action.route"
+         class="action-card"
+         [style.--action-color]="action.color"
+         [style.animation-delay]="(i * 60 + 200) + 'ms'"
+         matRipple>
         <div class="action-icon">
           <mat-icon>{{ action.icon }}</mat-icon>
         </div>
@@ -81,6 +96,62 @@
     <h2 class="section-title">Modules disponibles</h2>
     <div class="modules-grid">
 
+      <a routerLink="/orders" class="module-card" matRipple>
+        <div class="module-header" style="background: linear-gradient(135deg, #ec4899, #db2777)">
+          <mat-icon>receipt_long</mat-icon>
+        </div>
+        <div class="module-body">
+          <h3>Commandes</h3>
+          <p>Gérez les commandes en temps réel, suivez leur statut</p>
+        </div>
+        <div class="module-footer">
+          <span>Accéder</span>
+          <mat-icon>chevron_right</mat-icon>
+        </div>
+      </a>
+
+      <a routerLink="/tables" class="module-card" matRipple>
+        <div class="module-header" style="background: linear-gradient(135deg, #10b981, #059669)">
+          <mat-icon>table_restaurant</mat-icon>
+        </div>
+        <div class="module-body">
+          <h3>Tables</h3>
+          <p>Configurez vos tables et générez les QR codes par table</p>
+        </div>
+        <div class="module-footer">
+          <span>Accéder</span>
+          <mat-icon>chevron_right</mat-icon>
+        </div>
+      </a>
+
+      <a routerLink="/invoices" class="module-card" matRipple>
+        <div class="module-header" style="background: linear-gradient(135deg, #14b8a6, #0d9488)">
+          <mat-icon>receipt</mat-icon>
+        </div>
+        <div class="module-body">
+          <h3>Factures</h3>
+          <p>Consultez et imprimez les factures de vos commandes</p>
+        </div>
+        <div class="module-footer">
+          <span>Accéder</span>
+          <mat-icon>chevron_right</mat-icon>
+        </div>
+      </a>
+
+      <a routerLink="/promotions" class="module-card" matRipple>
+        <div class="module-header" style="background: linear-gradient(135deg, #ef4444, #dc2626)">
+          <mat-icon>local_offer</mat-icon>
+        </div>
+        <div class="module-body">
+          <h3>Promotions</h3>
+          <p>Créez des promos par période, événement ou récurrence</p>
+        </div>
+        <div class="module-footer">
+          <span>Accéder</span>
+          <mat-icon>chevron_right</mat-icon>
+        </div>
+      </a>
+
       <a routerLink="/products" class="module-card" matRipple>
         <div class="module-header" style="background: linear-gradient(135deg, #6366f1, #8b5cf6)">
           <mat-icon>inventory_2</mat-icon>
@@ -88,34 +159,6 @@
         <div class="module-body">
           <h3>Produits</h3>
           <p>Gérez votre catalogue, prix et disponibilités</p>
-        </div>
-        <div class="module-footer">
-          <span>Accéder</span>
-          <mat-icon>chevron_right</mat-icon>
-        </div>
-      </a>
-
-      <a routerLink="/categories" class="module-card" matRipple>
-        <div class="module-header" style="background: linear-gradient(135deg, #10b981, #059669)">
-          <mat-icon>category</mat-icon>
-        </div>
-        <div class="module-body">
-          <h3>Catégories</h3>
-          <p>Organisez vos produits par familles</p>
-        </div>
-        <div class="module-footer">
-          <span>Accéder</span>
-          <mat-icon>chevron_right</mat-icon>
-        </div>
-      </a>
-
-      <a routerLink="/pack" class="module-card" matRipple>
-        <div class="module-header" style="background: linear-gradient(135deg, #f59e0b, #d97706)">
-          <mat-icon>layers</mat-icon>
-        </div>
-        <div class="module-body">
-          <h3>Packs & Offres</h3>
-          <p>Créez des formules et offres spéciales</p>
         </div>
         <div class="module-footer">
           <span>Accéder</span>
@@ -137,13 +180,13 @@
         </div>
       </a>
 
-      <a routerLink="/reviews" class="module-card" matRipple>
-        <div class="module-header" style="background: linear-gradient(135deg, #ec4899, #db2777)">
-          <mat-icon>star_rate</mat-icon>
+      <a routerLink="/staff" class="module-card" matRipple>
+        <div class="module-header" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed)">
+          <mat-icon>badge</mat-icon>
         </div>
         <div class="module-body">
-          <h3>Avis clients</h3>
-          <p>Consultez et gérez les avis de vos clients</p>
+          <h3>Mon Équipe</h3>
+          <p>Gérez votre personnel et leurs accès</p>
         </div>
         <div class="module-footer">
           <span>Accéder</span>
@@ -151,13 +194,13 @@
         </div>
       </a>
 
-      <a routerLink="/notifications" class="module-card" matRipple>
-        <div class="module-header" style="background: linear-gradient(135deg, #14b8a6, #0d9488)">
-          <mat-icon>notifications_active</mat-icon>
+      <a routerLink="/reviews" class="module-card" matRipple>
+        <div class="module-header" style="background: linear-gradient(135deg, #f59e0b, #d97706)">
+          <mat-icon>star_rate</mat-icon>
         </div>
         <div class="module-body">
-          <h3>Notifications</h3>
-          <p>Gérez vos alertes et communications</p>
+          <h3>Avis clients</h3>
+          <p>Consultez et gérez les avis de vos clients</p>
         </div>
         <div class="module-footer">
           <span>Accéder</span>
