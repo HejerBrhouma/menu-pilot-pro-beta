@@ -1,6 +1,6 @@
 // src/app/pages/dashboard/orders/orders-list/orders-list.component.ts
 
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -48,12 +48,16 @@ export class OrdersListComponent implements OnInit, OnDestroy {
   statusColors = ORDER_STATUS_COLORS;
   statusNext   = ORDER_STATUS_NEXT;
 
-  private mercureSource:       any = null;
+  private mercureSource:        any = null;
+  private mercureRetryTimer:    any = null;
+  private pollTimer:            any = null;
+  private mercureEstId:         number | null = null;
   private orderService         = inject(OrderService);
   private authService          = inject(AuthService);
   private establishmentService = inject(EstablishmentService);
   private snackBar             = inject(MatSnackBar);
   private cdr                  = inject(ChangeDetectorRef);
+  private zone                 = inject(NgZone);
   private adminNotif           = inject(AdminNotificationService);
 
   // ── Tabs ──────────────────────────────────────────────────────────
@@ -101,10 +105,14 @@ export class OrdersListComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadOrders();
     this.subscribeMercure();
+    // Polling de secours toutes les 15s si Mercure ne fonctionne pas
+    this.pollTimer = setInterval(() => this.loadOrders(), 15000);
   }
 
   ngOnDestroy(): void {
     if (this.mercureSource) this.mercureSource.close();
+    if (this.mercureRetryTimer) clearTimeout(this.mercureRetryTimer);
+    if (this.pollTimer) clearInterval(this.pollTimer);
   }
 
   // ── Data ──────────────────────────────────────────────────────────
@@ -127,32 +135,55 @@ export class OrdersListComponent implements OnInit, OnDestroy {
     this.establishmentService.getAll().subscribe({
       next: (ests) => {
         if (!ests.length) return;
-        const source = this.orderService.subscribeToOrders(ests[0].id!);
-        this.mercureSource = source;
-        source.onmessage = (event: MessageEvent) => {
-          const data = JSON.parse(event.data);
-          if (data.event === 'NEW_ORDER') {
-            this.newOrdersCount++;
-            if (data.isQrOrder) {
-              this.adminNotif.notifyNewQrOrder(
-                data.orderNumber,
-                data.tableName || 'Table',
-                data.customerName
-              );
-            } else {
-              this.notify(`🔔 Nouvelle commande ${data.orderNumber}`, 'success');
-            }
-          }
-          this.loadOrders();
-        };
-        source.onerror = () => {
-          if (this.mercureSource) {
-            this.mercureSource.close();
-            this.mercureSource = null;
-          }
-        };
-      }
+        this.mercureEstId = ests[0].id!;
+        this.connectMercure(this.mercureEstId);
+      },
+      error: () => {}
     });
+  }
+
+  private connectMercure(estId: number): void {
+    if (this.mercureSource) {
+      this.mercureSource.close();
+      this.mercureSource = null;
+    }
+
+    const source = this.orderService.subscribeToOrders(estId);
+    this.mercureSource = source;
+
+    // EventSource s'exécute hors Angular zone → NgZone.run() obligatoire
+    source.onmessage = (event: MessageEvent) => {
+      this.zone.run(() => {
+        const data = JSON.parse(event.data);
+        if (data.event === 'NEW_ORDER') {
+          this.newOrdersCount++;
+          if (data.isQrOrder) {
+            this.adminNotif.notifyNewQrOrder(
+              data.orderNumber,
+              data.tableName || 'Table',
+              data.customerName
+            );
+          } else {
+            this.notify(`🔔 Nouvelle commande ${data.orderNumber}`, 'success');
+          }
+        }
+        this.loadOrders();
+      });
+    };
+
+    source.onerror = () => {
+      this.zone.run(() => {
+        if (this.mercureSource) {
+          this.mercureSource.close();
+          this.mercureSource = null;
+        }
+        // Reconnexion automatique après 5 secondes
+        if (this.mercureRetryTimer) clearTimeout(this.mercureRetryTimer);
+        this.mercureRetryTimer = setTimeout(() => {
+          if (this.mercureEstId) this.connectMercure(this.mercureEstId);
+        }, 5000);
+      });
+    };
   }
 
   // ── Actions ───────────────────────────────────────────────────────

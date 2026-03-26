@@ -26,7 +26,13 @@ export class AuthService {
   }
 
   socialLogin(provider: string, token: string): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`/api/auth/${provider}`, { token }).pipe(
+    // Google utilise /api/login/google (GoogleAuthController existant)
+    // Facebook utilise /api/auth/facebook (SocialAuthController nouveau)
+    const url = provider === 'google'
+      ? '/api/login/google'
+      : `/api/auth/${provider}`;
+
+    return this.http.post<AuthResponse>(url, { accessToken: token }).pipe(
       tap(res => this.handleAuthSuccess(res)),
       catchError(this.handleError)
     );
@@ -72,9 +78,14 @@ export class AuthService {
     return this.getCurrentUser()?.roles?.includes('ROLE_WAITER') ?? false;
   }
 
-  /** Peut gérer l'équipe et l'enseigne (ADMIN uniquement) */
+  /** Peut gérer l'équipe et l'enseigne (ADMIN + MANAGER) */
   canManage(): boolean {
     return this.isAdmin() || this.isManager();
+  }
+
+  /** Peut gérer les commandes et le workflow (ADMIN + MANAGER + WAITER) */
+  canManageOrders(): boolean {
+    return this.isAdmin() || this.isManager() || this.isWaiter();
   }
 
   /** Peut voir sans modifier (MANAGER + WAITER) */

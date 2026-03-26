@@ -58,7 +58,7 @@
       </div>
 
       <!-- ── Gestion ── -->
-      <div class="nav-group">
+      <div class="nav-group" *ngIf="!isWaiter">
         <div class="nav-group-label">Gestion</div>
         <nav class="nav-section">
           <a mat-ripple class="nav-item" routerLink="/establishment" routerLinkActive="active">
@@ -90,7 +90,7 @@
       </div>
 
       <!-- ── Menu Digital ── -->
-      <div class="nav-group">
+      <div class="nav-group" *ngIf="!isWaiter">
         <div class="nav-group-label">Menu Digital</div>
         <nav class="nav-section">
           <a mat-ripple class="nav-item" routerLink="/menu" routerLinkActive="active">
@@ -106,7 +106,7 @@
       </div>
 
       <!-- ── Interactions ── -->
-      <div class="nav-group">
+      <div class="nav-group" *ngIf="!isWaiter">
         <div class="nav-group-label">Interactions</div>
         <nav class="nav-section">
           <a mat-ripple class="nav-item" routerLink="/reviews" routerLinkActive="active">
@@ -122,7 +122,7 @@
       </div>
 
       <!-- ── Système ── -->
-      <div class="nav-group">
+      <div class="nav-group" *ngIf="!isWaiter">
         <div class="nav-group-label">Système</div>
         <nav class="nav-section">
           <a mat-ripple class="nav-item" routerLink="/settings" routerLinkActive="active">

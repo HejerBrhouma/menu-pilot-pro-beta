@@ -58,7 +58,7 @@ export class OrderDetailComponent implements OnInit {
   private cdr          = inject(ChangeDetectorRef);
 
   ngOnInit(): void {
-    this.canManage = this.authService.canManage();
+    this.canManage = this.authService.canManageOrders();
     const id = Number(this.route.snapshot.paramMap.get('id'));
     this.loadOrder(id);
   }

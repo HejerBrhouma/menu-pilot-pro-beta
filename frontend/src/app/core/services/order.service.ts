@@ -18,8 +18,9 @@ export class OrderService {
   // ── Commandes ──────────────────────────────────────────────────────
 
   getAll(filters?: { status?: string }): Observable<Order[]> {
-    let url = this.ordersUrl;
-    if (filters?.status) url += `?status=${filters.status}`;
+    const params: string[] = ['order[createdAt]=desc'];
+    if (filters?.status) params.push(`status=${filters.status}`);
+    const url = `${this.ordersUrl}?${params.join('&')}`;
     return this.http.get<any>(url).pipe(
       map(res => res['hydra:member']),
       catchError(this.handleError)

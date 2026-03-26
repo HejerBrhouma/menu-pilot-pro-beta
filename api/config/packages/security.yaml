@@ -53,6 +53,15 @@ security:
     # Note: Only the *first* access control that matches will be used
     access_control:
         # ACCÈS PUBLICS (Indispensable pour pouvoir se connecter)
+        - { path: ^/api/auth/google,   roles: PUBLIC_ACCESS }
+        - { path: ^/api/auth/facebook, roles: PUBLIC_ACCESS }
+        - { path: ^/api/public/customer/register, roles: PUBLIC_ACCESS }
+        - { path: ^/api/public/customer/login,    roles: PUBLIC_ACCESS }
+        - { path: ^/api/public/customer/oauth,    roles: PUBLIC_ACCESS }
+        - { path: ^/api/public/customer/me,       roles: ROLE_CUSTOMER }
+        - { path: ^/api/public/customer/orders,   roles: ROLE_CUSTOMER }
+        - { path: ^/api/public/reviews,           roles: PUBLIC_ACCESS }
+        - { path: ^/api/reviews,                  roles: ROLE_ADMIN }
         - { path: ^/api/public, roles: PUBLIC_ACCESS }
         - { path: ^/api/menus,methods: [ GET ], roles: PUBLIC_ACCESS }
         - { path: ^/api/products, methods: [ GET ], roles: PUBLIC_ACCESS }

@@ -6,14 +6,14 @@ import { AdminGuard, SuperAdminGuard } from './core/guards/auth-guard';
 
 export const routes: Routes = [
 
-  // ── Authentification ──────────────────────────────────────────────────
+  // ── Auth admin ────────────────────────────────────────────────────────
   {
     path: 'login',
     component: LoginComponent,
     title: 'Connexion'
   },
 
-  // ── Pages publiques (sans auth) ───────────────────────────────────────
+  // ── Pages publiques ───────────────────────────────────────────────────
   {
     path: 'menu/:token',
     title: 'Menu Digital',
@@ -28,15 +28,33 @@ export const routes: Routes = [
       import('./pages/establishment-public/establishment-public.component')
         .then(m => m.EstablishmentPublicComponent)
   },
+
+  // ── QR Table → menu client ────────────────────────────────────────────
   {
     path: 'table/:token',
+    title: 'Commander',
     loadComponent: () => import('./pages/public/table-menu/table-menu.component')
       .then(m => m.TableMenuComponent)
   },
   {
     path: 'order-confirmed',
+    title: 'Commande envoyée',
     loadComponent: () => import('./pages/public/order-confirmed/order-confirmed.component')
       .then(m => m.OrderConfirmedComponent)
+  },
+
+  // ── Espace client ─────────────────────────────────────────────────────
+  {
+    path: 'account',
+    title: 'Mon Compte',
+    loadComponent: () => import('./pages/public/account/customer-account.component')
+      .then(m => m.CustomerAccountComponent)
+  },
+  {
+    path: 'account/review/:orderId',
+    title: 'Laisser un avis',
+    loadComponent: () => import('./pages/public/review-form/review-form.component')
+      .then(m => m.ReviewFormComponent)
   },
 
   // ── SUPER ADMIN ───────────────────────────────────────────────────────
@@ -47,11 +65,7 @@ export const routes: Routes = [
       import('./layout/super-admin-layout/super-admin-layout')
         .then(m => m.SuperAdminLayout),
     children: [
-      {
-        path: '',
-        redirectTo: 'dashboard',
-        pathMatch: 'full'
-      },
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       {
         path: 'dashboard',
         title: 'Super Admin — Dashboard',
@@ -87,14 +101,9 @@ export const routes: Routes = [
   {
     path: '',
     canActivate: [AdminGuard],
-    loadComponent: () =>
-      import('./layout/layout').then(m => m.Layout),
+    loadComponent: () => import('./layout/layout').then(m => m.Layout),
     children: [
-      {
-        path: '',
-        redirectTo: 'dashboard',
-        pathMatch: 'full'
-      },
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       {
         path: 'dashboard',
         title: 'Dashboard',
@@ -146,7 +155,7 @@ export const routes: Routes = [
       },
       {
         path: 'orders/new',
-        title: 'Commandes',
+        title: 'Nouvelle commande',
         loadComponent: () =>
           import('./pages/dashboard/orders/order-new/order-new.component')
             .then(m => m.OrderNewComponent)
@@ -156,13 +165,17 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/dashboard/orders/order-detail/order-detail.component')
           .then(m => m.OrderDetailComponent)
       },
-      { path: 'invoices',
+      {
+        path: 'invoices',
         title: 'Factures',
         loadComponent: () => import('./pages/dashboard/invoices/invoices-list/invoices-list.component')
-          .then(m => m.InvoicesListComponent) },
-      { path: 'invoices/:id',
+          .then(m => m.InvoicesListComponent)
+      },
+      {
+        path: 'invoices/:id',
         loadComponent: () => import('./pages/dashboard/invoices/invoice-detail/invoice-detail.component')
-          .then(m => m.InvoiceDetailComponent) },
+          .then(m => m.InvoiceDetailComponent)
+      },
       {
         path: 'tables',
         title: 'Tables',
@@ -191,10 +204,15 @@ export const routes: Routes = [
           import('./pages/dashboard/staff/staff.component')
             .then(m => m.StaffComponent)
       },
+      {
+        path: 'reviews',
+        title: 'Avis clients',
+        loadComponent: () =>
+          import('./pages/dashboard/reviews/reviews-moderation.component')
+            .then(m => m.ReviewsModerationComponent)
+      },
     ]
   },
 
-  // ── Fallback ──────────────────────────────────────────────────────────
   { path: '**', redirectTo: 'login' }
-
 ];

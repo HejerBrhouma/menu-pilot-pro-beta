@@ -1,0 +1,87 @@
+// reviews-moderation.component.scss
+
+.moderation-page { padding: 2rem; max-width: 900px; }
+
+.page-header {
+  display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 2rem;
+  h1 { display: flex; align-items: center; gap: 8px; font-size: 1.5rem; font-weight: 800; margin: 0; color: #1a1a2e;
+    mat-icon { color: #6366f1; } }
+  .subtitle { color: #6b7280; font-size: 0.875rem; margin: 4px 0 0; }
+}
+
+.loader { display: flex; justify-content: center; padding: 4rem; }
+
+.empty-state {
+  text-align: center; padding: 5rem 2rem;
+  .empty-icon { width: 80px; height: 80px; border-radius: 50%; background: #dcfce7;
+    display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;
+    mat-icon { font-size: 2.5rem; width: 2.5rem; height: 2.5rem; color: #16a34a; } }
+  h2 { font-size: 1.2rem; font-weight: 700; color: #1a1a2e; margin: 0 0 0.5rem; }
+  p  { color: #6b7280; margin: 0; }
+}
+
+.reviews-list { display: flex; flex-direction: column; gap: 1rem; }
+
+.review-card {
+  background: white; border-radius: 16px; border: 1.5px solid #f1f5f9;
+  padding: 1.25rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  display: flex; flex-direction: column; gap: 0.875rem;
+}
+
+.card-header { display: flex; align-items: center; gap: 12px; }
+.target-icon {
+  width: 42px; height: 42px; border-radius: 11px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  mat-icon { font-size: 1.25rem; width: 1.25rem; height: 1.25rem; }
+  &.establishment { background: #eef2ff; mat-icon { color: #6366f1; } }
+  &.product        { background: #f0fdf4; mat-icon { color: #10b981; } }
+  &.pack           { background: #fef3c7; mat-icon { color: #f59e0b; } }
+}
+.card-meta { flex: 1; }
+.target-type    { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; color: #9ca3af; display: block; }
+.customer-name  { font-size: 0.875rem; font-weight: 700; color: #1a1a2e; }
+.review-date    { font-size: 0.72rem; color: #9ca3af; flex-shrink: 0; }
+
+.stars-row {
+  display: flex; align-items: center; gap: 3px;
+  mat-icon { font-size: 1.25rem; width: 1.25rem; height: 1.25rem; color: #e5e7eb;
+    &.filled { color: #f59e0b; } }
+}
+.rating-num { font-size: 0.78rem; font-weight: 700; color: #f59e0b; margin-left: 4px; }
+.like-badge {
+  display: flex; align-items: center; padding: 2px 8px; border-radius: 99px;
+  margin-left: 8px;
+  mat-icon { font-size: 0.875rem; width: 0.875rem; height: 0.875rem; }
+  &.liked    { background: #dcfce7; color: #16a34a; }
+  &.disliked { background: #fee2e2; color: #ef4444; }
+}
+
+.comment {
+  font-size: 0.875rem; color: #374151; margin: 0;
+  background: #f8f9fa; border-radius: 10px; padding: 10px 12px;
+  border-left: 3px solid #6366f1; line-height: 1.5;
+}
+
+.review-photo {
+  width: 100%; max-height: 200px; object-fit: cover;
+  border-radius: 12px;
+}
+
+.card-actions {
+  display: flex; gap: 10px; padding-top: 0.5rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+.approve-btn {
+  flex: 1; border-radius: 10px; background: #16a34a !important; color: white !important;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  font-weight: 600;
+  mat-icon { font-size: 1rem; width: 1rem; height: 1rem; }
+}
+
+.reject-btn {
+  border-radius: 10px; color: #ef4444 !important; border-color: #fecaca !important;
+  display: flex; align-items: center; gap: 6px; font-weight: 600;
+  mat-icon { font-size: 1rem; width: 1rem; height: 1rem; }
+  &:hover { background: #fef2f2 !important; }
+}

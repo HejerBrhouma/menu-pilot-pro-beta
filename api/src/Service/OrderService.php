@@ -33,7 +33,12 @@ class OrderService
      */
     public function generateOrderNumber(Establishment $establishment): string
     {
-        $year  = date('Y');
+        $year = date('Y');
+
+        // Préfixe : 2 premières lettres du slug + ID enseigne → unicité globale garantie
+        $slug   = preg_replace('/[^a-zA-Z]/', '', $establishment->getSlug() ?? '');
+        $prefix = strtoupper(substr($slug ?: 'OR', 0, 2)) . $establishment->getId();
+
         $count = $this->em->createQueryBuilder()
             ->select('COUNT(o.id)')
             ->from(Order::class, 'o')
@@ -44,7 +49,7 @@ class OrderService
             ->getQuery()
             ->getSingleScalarResult();
 
-        return sprintf('CMD-%s-%04d', $year, (int)$count + 1);
+        return sprintf('%s-%s-%04d', $prefix, $year, (int)$count + 1);
     }
 
     /**

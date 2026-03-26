@@ -113,6 +113,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $googleId = null;
 
     /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"user:read", "user:write"})
+     */
+    private ?string $facebookId = null;
+
+    /**
+     * URL ou nom fichier avatar (Google photo ou upload)
+     * @ORM\Column(type="string", length=500, nullable=true)
+     * @Groups({"user:read", "user:write", "review:read"})
+     */
+    private ?string $avatar = null;
+
+    /**
      * Enseigne à laquelle appartient cet utilisateur (null = SUPER_ADMIN)
      * @ORM\ManyToOne(targetEntity=Establishment::class)
      * @ORM\JoinColumn(nullable=true)
@@ -257,5 +270,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->maxUsers = $maxUsers;
         return $this;
+    }
+
+
+    public function getFacebookId(): ?string { return $this->facebookId; }
+    public function setFacebookId(?string $id): self { $this->facebookId = $id; return $this; }
+
+    public function getAvatar(): ?string { return $this->avatar; }
+    public function setAvatar(?string $a): self { $this->avatar = $a; return $this; }
+
+    public function getFullName(): string
+    {
+        $name = trim(($this->firstName ?? '') . ' ' . ($this->lastName ?? ''));
+        return $name ?: ($this->email ?? 'Anonyme');
+    }
+
+    public function isCustomer(): bool
+    {
+        return in_array('ROLE_CUSTOMER', $this->roles, true);
     }
 }

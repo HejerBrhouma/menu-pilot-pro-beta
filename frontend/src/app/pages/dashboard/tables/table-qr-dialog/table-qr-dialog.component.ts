@@ -1,92 +1,194 @@
 // src/app/pages/dashboard/tables/table-qr-dialog/table-qr-dialog.component.ts
 
-import { Component, OnInit, Inject, inject } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialogModule, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { RestaurantTable } from '../../../../core/models/order.model';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-table-qr-dialog',
   standalone: true,
-  imports: [CommonModule, MatDialogModule, MatButtonModule, MatIconModule],
+  imports: [CommonModule, MatDialogModule, MatButtonModule, MatIconModule, MatSnackBarModule, MatTooltipModule],
   template: `
     <div class="qr-dialog">
+
+      <!-- Header with close X -->
       <div class="qr-header">
-        <mat-icon>qr_code_2</mat-icon>
-        <h2>QR Code — {{ data.table.name }}</h2>
+        <div class="qr-header-title">
+          <mat-icon>qr_code_2</mat-icon>
+          <h2>QR Code — {{ data.table.name }}</h2>
+        </div>
+        <button mat-icon-button class="close-btn" (click)="dialogRef.close()" matTooltip="Fermer">
+          <mat-icon>close</mat-icon>
+        </button>
       </div>
 
       <mat-dialog-content>
         <div class="qr-body">
 
           <div class="table-info">
-            <span><mat-icon>people</mat-icon> {{ data.table.capacity }} personnes</span>
+            <mat-icon>people</mat-icon>
+            <span>{{ data.table.capacity }} personnes</span>
           </div>
 
-          <!-- QR Code affiché via API Google Charts -->
+          <!-- QR Code -->
           <div class="qr-image-wrap">
-            <img [src]="qrUrl" [alt]="'QR Code ' + data.table.name" class="qr-image">
+            <img [src]="qrImageUrl" [alt]="'QR Code ' + data.table.name" class="qr-image">
           </div>
 
-          <div class="qr-token">
-            <mat-icon>token</mat-icon>
-            <span>{{ data.table.qrToken }}</span>
+          <!-- URL avec bouton copier -->
+          <div class="qr-url-block">
+            <span class="qr-url-text">{{ tableUrl }}</span>
+            <button class="copy-btn" (click)="copyUrl()" [class.copied]="urlCopied"
+                    [matTooltip]="urlCopied ? 'Copié !' : 'Copier le lien'">
+              <mat-icon>{{ urlCopied ? 'check' : 'content_copy' }}</mat-icon>
+            </button>
           </div>
 
-          <div class="qr-url">
-            <mat-icon>link</mat-icon>
-            <span>{{ tableUrl }}</span>
+          <!-- Hint mobile -->
+          <div class="mobile-hint">
+            <mat-icon>smartphone</mat-icon>
+            <span>Scannez depuis un téléphone sur le même réseau WiFi</span>
           </div>
 
         </div>
       </mat-dialog-content>
 
-      <mat-dialog-actions align="center">
-        <button mat-stroked-button mat-dialog-close>Fermer</button>
-        <button mat-flat-button color="primary" (click)="print()">
-          <mat-icon>print</mat-icon> Imprimer
+      <mat-dialog-actions align="end">
+        <button mat-icon-button (click)="download()" matTooltip="Télécharger" class="action-btn">
+          <mat-icon>download</mat-icon>
         </button>
-        <button mat-flat-button (click)="download()">
-          <mat-icon>download</mat-icon> Télécharger
+        <button mat-icon-button color="primary" (click)="print()" matTooltip="Imprimer" class="action-btn">
+          <mat-icon>print</mat-icon>
         </button>
       </mat-dialog-actions>
     </div>
   `,
   styles: [`
-    .qr-dialog { font-family: 'DM Sans', sans-serif; }
-    .qr-header { display:flex; align-items:center; gap:10px; padding:1.5rem 1.5rem 0; }
-    .qr-header mat-icon { color:#6366f1; font-size:1.75rem; width:1.75rem; height:1.75rem; }
-    .qr-header h2 { margin:0; font-size:1.1rem; font-weight:700; }
-    mat-dialog-content { padding:1.25rem 1.5rem !important; }
-    .qr-body { display:flex; flex-direction:column; align-items:center; gap:1rem; }
-    .table-info { display:flex; align-items:center; gap:6px; color:#6b7280; font-size:0.875rem; }
-    .table-info mat-icon { font-size:1rem; width:1rem; height:1rem; }
+    .qr-dialog { font-family: 'DM Sans', sans-serif; min-width: 360px; }
+
+    .qr-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 1rem 0 1.5rem;
+    }
+    .qr-header-title {
+      display: flex; align-items: center; gap: 10px;
+      mat-icon { color: #6366f1; font-size: 1.75rem; width: 1.75rem; height: 1.75rem; }
+      h2 { margin: 0; font-size: 1.1rem; font-weight: 700; color: #1a1a2e; }
+    }
+    .close-btn { color: #9ca3af; &:hover { color: #1a1a2e; } }
+
+    mat-dialog-content {
+      padding: 1rem 1.5rem !important;
+      max-height: none !important;
+      overflow: hidden !important;
+    }
+
+    .qr-body {
+      display: flex; flex-direction: column; align-items: center; gap: 0.85rem;
+    }
+
+    .table-info {
+      display: flex; align-items: center; gap: 6px;
+      color: #6b7280; font-size: 0.875rem;
+      mat-icon { font-size: 1rem; width: 1rem; height: 1rem; }
+    }
+
     .qr-image-wrap {
       background: white; padding: 1rem; border-radius: 16px;
       border: 2px solid #f1f5f9; box-shadow: 0 4px 16px rgba(0,0,0,0.08);
     }
-    .qr-image { width:200px; height:200px; display:block; }
-    .qr-token, .qr-url {
-      display:flex; align-items:center; gap:6px;
-      font-size:0.72rem; color:#9ca3af; word-break:break-all; text-align:center;
-      mat-icon { font-size:0.875rem; width:0.875rem; height:0.875rem; flex-shrink:0; }
+    .qr-image { width: 170px; height: 170px; display: block; }
+
+    /* URL + bouton copier */
+    .qr-url-block {
+      display: flex; align-items: center; gap: 8px;
+      background: #f8f9fa; border-radius: 10px; padding: 8px 12px;
+      width: 100%; box-sizing: border-box;
     }
-    mat-dialog-actions { padding:1rem 1.5rem !important; gap:0.75rem; justify-content:center !important; }
-    mat-dialog-actions button { border-radius:10px; display:flex; align-items:center; gap:6px; }
+    .qr-url-text {
+      flex: 1; font-size: 0.72rem; color: #6b7280;
+      word-break: break-all; line-height: 1.4;
+    }
+    .copy-btn {
+      display: flex; align-items: center; justify-content: center;
+      width: 30px; height: 30px; border-radius: 8px; border: 1.5px solid #e5e7eb;
+      background: white; cursor: pointer; color: #6366f1;
+      transition: all 0.15s; flex-shrink: 0;
+      mat-icon { font-size: 1rem; width: 1rem; height: 1rem; }
+      &.copied { background: #dcfce7; border-color: #10b981; color: #16a34a; }
+      &:hover:not(.copied) { background: #eef2ff; }
+    }
+
+    /* Hint mobile */
+    .mobile-hint {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 0.72rem; color: #9ca3af; text-align: center;
+      mat-icon { font-size: 0.875rem; width: 0.875rem; height: 0.875rem; flex-shrink: 0; }
+    }
+
+    mat-dialog-actions {
+      padding: 0.5rem 1rem !important; gap: 4px; border-top: 1px solid #f1f5f9;
+    }
+    .action-btn { color: #6b7280; &:hover { color: #6366f1; background: #eef2ff; } }
   `]
 })
 export class TableQrDialogComponent implements OnInit {
-  qrUrl    = '';
-  tableUrl = '';
+  qrImageUrl = '';
+  tableUrl   = '';
+  urlCopied  = false;
 
-  constructor(@Inject(MAT_DIALOG_DATA) public data: { table: RestaurantTable }) {}
+  constructor(
+    @Inject(MAT_DIALOG_DATA) public data: { table: RestaurantTable },
+    public dialogRef: MatDialogRef<TableQrDialogComponent>,
+    private snackBar: MatSnackBar
+  ) {}
 
   ngOnInit(): void {
-    this.tableUrl = `${window.location.origin}/table/${this.data.table.qrToken}`;
-    const encoded = encodeURIComponent(this.tableUrl);
-    this.qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encoded}`;
+    // Utiliser l'IP réelle (window.location.hostname) au lieu de localhost
+    // Ainsi le QR fonctionne sur mobile sur le même réseau WiFi
+    const host     = window.location.hostname;
+    const port     = window.location.port ? ':' + window.location.port : '';
+    const protocol = window.location.protocol;
+
+    this.tableUrl  = `${protocol}//${host}${port}/table/${this.data.table.qrToken}`;
+    const encoded  = encodeURIComponent(this.tableUrl);
+    this.qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encoded}`;
+  }
+
+  copyUrl(): void {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(this.tableUrl).then(() => {
+        this.urlCopied = true;
+        setTimeout(() => this.urlCopied = false, 2500);
+      }).catch(() => this.copyFallback());
+    } else {
+      this.copyFallback();
+    }
+  }
+
+  private copyFallback(): void {
+    // Fallback pour les navigateurs sans Clipboard API
+    const textarea = document.createElement('textarea');
+    textarea.value = this.tableUrl;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity  = '0';
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    try {
+      document.execCommand('copy');
+      this.urlCopied = true;
+      setTimeout(() => this.urlCopied = false, 2500);
+    } catch (e) {
+      this.snackBar.open('Impossible de copier', '✕', { duration: 2000 });
+    }
+    document.body.removeChild(textarea);
   }
 
   print(): void {
@@ -96,25 +198,27 @@ export class TableQrDialogComponent implements OnInit {
       <html><head><title>QR - ${this.data.table.name}</title>
       <style>
         body { font-family: sans-serif; text-align: center; padding: 2rem; }
-        h1 { font-size: 1.5rem; margin-bottom: 0.5rem; }
-        p { color: #666; margin-bottom: 1.5rem; }
-        img { width: 250px; height: 250px; }
+        h1   { font-size: 1.5rem; margin-bottom: 0.5rem; color: #1a1a2e; }
+        p    { color: #666; margin-bottom: 1.5rem; }
+        img  { width: 250px; height: 250px; }
+        .url { font-size: 0.7rem; color: #999; margin-top: 1rem; word-break: break-all; }
       </style></head>
       <body>
         <h1>${this.data.table.name}</h1>
         <p>Scannez pour commander · ${this.data.table.capacity} personnes</p>
-        <img src="${this.qrUrl}" />
-        <p style="font-size:0.75rem;color:#999;margin-top:1rem">${this.tableUrl}</p>
+        <img src="${this.qrImageUrl}" />
+        <p class="url">${this.tableUrl}</p>
+        <script>window.onload = () => { window.print(); window.close(); }</script>
       </body></html>
     `);
     win.document.close();
-    win.print();
   }
 
   download(): void {
-    const a  = document.createElement('a');
-    a.href   = this.qrUrl;
+    const a    = document.createElement('a');
+    a.href     = this.qrImageUrl;
     a.download = `qr-${this.data.table.name}.png`;
+    a.target   = '_blank';
     a.click();
   }
 }

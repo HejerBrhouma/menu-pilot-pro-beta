@@ -41,6 +41,7 @@ export class Header implements OnInit {
 
   establishment: Establishment | null = null;
   logoUrl: string | null = null;
+  isWaiter = false;
 
   constructor(
     private authService:          AuthService,
@@ -58,6 +59,7 @@ export class Header implements OnInit {
         this.userName    = `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim() || user.email || 'Admin';
         this.userInitial = (user.firstName ?? user.email ?? 'A').charAt(0).toUpperCase();
         this.userRole    = this.getRoleLabel(user.roles);
+        this.isWaiter    = this.authService.isWaiter();
       }
     } catch {}
 

@@ -5,6 +5,7 @@ namespace App\Entity;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -14,9 +15,13 @@ use Symfony\Component\Serializer\Annotation\Groups;
 /**
  * @ApiResource(
  *   normalizationContext={"groups"={"order:read"}},
- *   denormalizationContext={"groups"={"order:write"}}
+ *   denormalizationContext={"groups"={"order:write"}},
+ *   order={"createdAt": "DESC"},
+ *   paginationItemsPerPage=200,
+ *   paginationMaximumItemsPerPage=500
  * )
  * @ApiFilter(SearchFilter::class, properties={"status": "exact", "waiter": "exact", "table": "exact"})
+ * @ApiFilter(OrderFilter::class, properties={"createdAt": "DESC"})
  * @ORM\Entity()
  * @ORM\Table(name="orders")
  * @ORM\HasLifecycleCallbacks()
