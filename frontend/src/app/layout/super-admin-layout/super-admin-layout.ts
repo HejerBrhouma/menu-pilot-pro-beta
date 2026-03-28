@@ -15,11 +15,7 @@ import { User } from '../../core/models/auth.model';
   template: `
     <div class="sa-shell">
       <aside class="sa-sidebar">
-        <div class="sa-logo">
-          <mat-icon>admin_panel_settings</mat-icon>
-          <span>Super Admin</span>
-        </div>
-        <nav class="sa-nav">
+        <nav class="sa-nav" style="padding-top:1.25rem">
           <a routerLink="/super-admin/dashboard" routerLinkActive="active" class="sa-nav-item">
             <mat-icon>dashboard</mat-icon><span>Dashboard</span>
           </a>
@@ -37,13 +33,6 @@ import { User } from '../../core/models/auth.model';
         </div>
       </aside>
       <main class="sa-main">
-        <div class="sa-topbar">
-          <span class="sa-badge">SUPER ADMIN</span>
-          <div class="sa-topbar-right">
-            <span>{{ user?.firstName }} {{ user?.lastName }}</span>
-            <mat-icon>account_circle</mat-icon>
-          </div>
-        </div>
         <div class="sa-content">
           <router-outlet></router-outlet>
         </div>
@@ -51,11 +40,9 @@ import { User } from '../../core/models/auth.model';
     </div>
   `,
   styles: [`
-    .sa-shell { display:flex; min-height:100vh; background:#f1f5f9; }
-    .sa-sidebar { width:240px; flex-shrink:0; background:#0f1629; display:flex; flex-direction:column; position:sticky; top:0; height:100vh; }
-    .sa-logo { display:flex; align-items:center; gap:10px; padding:1.5rem 1.25rem; border-bottom:1px solid rgba(255,255,255,0.08); color:white; font-weight:700; font-size:1rem; }
-    .sa-logo mat-icon { color:#f59e0b; font-size:1.5rem; width:1.5rem; height:1.5rem; }
-    .sa-nav { flex:1; padding:1rem 0.75rem; display:flex; flex-direction:column; gap:4px; }
+    .sa-shell { display:flex; min-height:calc(100vh - 56px); margin-top:56px; background:#f1f5f9; }
+    .sa-sidebar { width:240px; flex-shrink:0; background:#0f1629; display:flex; flex-direction:column; position:sticky; top:56px; height:calc(100vh - 56px); }
+.sa-nav { flex:1; padding:1rem 0.75rem; display:flex; flex-direction:column; gap:4px; }
     .sa-nav-item { display:flex; align-items:center; gap:10px; padding:0.625rem 0.875rem; border-radius:10px; color:#94a3b8; font-size:0.875rem; font-weight:500; text-decoration:none; cursor:pointer; border:none; background:none; width:100%; text-align:left; transition:all 0.15s; }
     .sa-nav-item mat-icon { font-size:1.1rem; width:1.1rem; height:1.1rem; }
     .sa-nav-item:hover { background:rgba(255,255,255,0.06); color:white; }
@@ -64,10 +51,7 @@ import { User } from '../../core/models/auth.model';
     .sa-nav-item.logout:hover { background:rgba(239,68,68,0.1); }
     .sa-sidebar-footer { padding:0.75rem; border-top:1px solid rgba(255,255,255,0.08); }
     .sa-main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
-    .sa-topbar { display:flex; align-items:center; justify-content:space-between; padding:0.875rem 2rem; background:white; border-bottom:1px solid #e8ecf4; }
-    .sa-badge { background:#fef3c7; color:#d97706; font-size:0.7rem; font-weight:800; padding:3px 10px; border-radius:99px; letter-spacing:0.8px; }
-    .sa-topbar-right { display:flex; align-items:center; gap:8px; color:#374151; font-size:0.875rem; }
-    .sa-content { flex:1; padding:2rem; overflow-y:auto; }
+    .sa-content { flex:1; overflow-y:auto; }
   `]
 })
 export class SuperAdminLayout implements OnInit {

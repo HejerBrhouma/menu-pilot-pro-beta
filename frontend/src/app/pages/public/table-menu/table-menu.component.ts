@@ -123,8 +123,8 @@ export class TableMenuComponent implements OnInit, OnDestroy {
       next: (info) => {
         this.tableInfo = info;
         forkJoin({
-          products:   this.publicSvc.getProducts(info.establishment.slug).pipe(catchError(() => of({ 'hydra:member': [] }))),
-          packs:      this.publicSvc.getPacks().pipe(catchError(() => of({ 'hydra:member': [] }))),
+          products:   this.publicSvc.getProducts(info.establishment.id).pipe(catchError(() => of({ 'hydra:member': [] }))),
+          packs:      this.publicSvc.getPacks(info.establishment.id).pipe(catchError(() => of({ 'hydra:member': [] }))),
           categories: this.publicSvc.getCategories().pipe(catchError(() => of({ 'hydra:member': [] }))),
         }).subscribe({
           next: ({ products, packs, categories }) => {

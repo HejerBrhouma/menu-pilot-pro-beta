@@ -17,6 +17,8 @@ import { OrderService } from '../../../../core/services/order.service';
 import { ProductService } from '../../../../core/services/product.service';
 import { AdminCartService, AdminCartItem } from '../../../../core/services/admin-cart.service';
 import { ProductImageService } from '../../../../core/services/product-image.service';
+import { RatingCacheService } from '../../../../core/services/rating-cache.service';
+import { StarRatingComponent } from '../../../../shared/star-rating/star-rating.component';
 import { Order, RestaurantTable } from '../../../../core/models/order.model';
 
 @Component({
@@ -26,7 +28,8 @@ import { Order, RestaurantTable } from '../../../../core/models/order.model';
     CommonModule, FormsModule, ReactiveFormsModule, RouterModule,
     MatIconModule, MatButtonModule, MatFormFieldModule,
     MatInputModule, MatSelectModule, MatProgressSpinnerModule,
-    MatSnackBarModule, MatTooltipModule
+    MatSnackBarModule, MatTooltipModule,
+    StarRatingComponent
   ],
   templateUrl: './order-new.component.html',
   styleUrls: ['./order-new.component.scss']
@@ -49,6 +52,7 @@ export class OrderNewComponent implements OnInit, OnDestroy {
   currentTime   = new Date();
   currentDate   = new Date();
 
+  private ratingsMap = new Map<string, { avg: number; count: number }>();
   private clockInterval: any;
 
   private readonly avatarColors = [
@@ -56,11 +60,11 @@ export class OrderNewComponent implements OnInit, OnDestroy {
     '#ec4899', '#8b5cf6', '#14b8a6', '#ef4444'
   ];
 
-  // ── Services ──────────────────────────────────────────────────────
   private orderService     = inject(OrderService);
   private productService   = inject(ProductService);
   private adminCartService = inject(AdminCartService);
   private imageService     = inject(ProductImageService);
+  private ratingCache      = inject(RatingCacheService);
   private http             = inject(HttpClient);
   private fb               = inject(FormBuilder);
   private router           = inject(Router);
@@ -68,11 +72,9 @@ export class OrderNewComponent implements OnInit, OnDestroy {
   private cdr              = inject(ChangeDetectorRef);
   private route            = inject(ActivatedRoute);
 
-  // ── Getters formulaire ────────────────────────────────────────────
   get tableControl(): FormControl { return this.form.get('table') as FormControl; }
   get notesControl(): FormControl { return this.form.get('notes') as FormControl; }
 
-  // ── Lifecycle ─────────────────────────────────────────────────────
   ngOnInit(): void {
     this.form = this.fb.group({ table: [null], notes: [''] });
     this.clockInterval = setInterval(() => { this.currentTime = new Date(); }, 60000);
@@ -83,7 +85,6 @@ export class OrderNewComponent implements OnInit, OnDestroy {
     if (this.clockInterval) clearInterval(this.clockInterval);
   }
 
-  // ── Chargement ────────────────────────────────────────────────────
   loadData(): void {
     this.orderService.getTables().subscribe({
       next: (tables) => {
@@ -101,6 +102,7 @@ export class OrderNewComponent implements OnInit, OnDestroy {
     this.productService.getAll(1, 100).subscribe({
       next: ({ items }) => {
         this.products = items.filter((p: any) => p.isAvailable);
+        this.loadRatings();
         this.cdr.detectChanges();
       }
     });
@@ -108,12 +110,36 @@ export class OrderNewComponent implements OnInit, OnDestroy {
     this.http.get<any>('/api/packs?isActive=true').subscribe({
       next: (res: any) => {
         this.packs = res['hydra:member'] || [];
+        this.loadRatings();
         this.cdr.detectChanges();
       }
     });
   }
 
+  // ── Ratings ───────────────────────────────────────────────────────
+
+  loadRatings(): void {
+    [
+      ...this.products.map((p: any) => ({ type: 'PRODUCT', id: p.id })),
+      ...this.packs.map((p: any)    => ({ type: 'PACK',    id: p.id })),
+    ].forEach(item => {
+      this.ratingCache.getRating(item.type, item.id).subscribe(r => {
+        this.ratingsMap.set(`${item.type}:${item.id}`, { avg: r.avgRating, count: r.count });
+        this.cdr.detectChanges();
+      });
+    });
+  }
+
+  getRating(type: string, id: number): number {
+    return this.ratingsMap.get(`${type}:${id}`)?.avg || 0;
+  }
+
+  getRatingCount(type: string, id: number): number {
+    return this.ratingsMap.get(`${type}:${id}`)?.count || 0;
+  }
+
   // ── Persistance panier ────────────────────────────────────────────
+
   restoreCart(): void {
     const draft = this.adminCartService.load();
     if (!draft || draft.cart.length === 0) return;
@@ -149,6 +175,7 @@ export class OrderNewComponent implements OnInit, OnDestroy {
   onFormChange():     void { this.persistCart(); }
 
   // ── Filtres ───────────────────────────────────────────────────────
+
   get filteredProducts(): any[] {
     if (!this.searchQuery) return this.products;
     const q = this.searchQuery.toLowerCase();
@@ -162,6 +189,7 @@ export class OrderNewComponent implements OnInit, OnDestroy {
   }
 
   // ── Helpers visuels ───────────────────────────────────────────────
+
   getAvatarColor(name: string): string {
     return this.avatarColors[name.charCodeAt(0) % this.avatarColors.length];
   }
@@ -176,6 +204,7 @@ export class OrderNewComponent implements OnInit, OnDestroy {
   }
 
   // ── Panier ────────────────────────────────────────────────────────
+
   addToCart(item: any, type: 'PRODUCT' | 'PACK'): void {
     const existing = this.cart.find(c => c.itemId === item.id && c.itemType === type);
     if (existing) { this.updateQty(existing, existing.quantity + 1); return; }
@@ -248,6 +277,7 @@ export class OrderNewComponent implements OnInit, OnDestroy {
   }
 
   // ── Soumission ────────────────────────────────────────────────────
+
   submit(): void {
     if (this.cart.length === 0) {
       this.notify('Le panier est vide', 'error'); return;

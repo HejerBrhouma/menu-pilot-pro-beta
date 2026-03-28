@@ -1,94 +1,156 @@
-<!-- src/app/pages/super-admin/establishments/establishment-form-dialog/establishment-form-dialog.component.html -->
+<!-- establishment-form-dialog.component.html -->
 
-<div class="dialog-header">
-  <mat-icon>{{ isEdit ? 'edit' : 'add_business' }}</mat-icon>
-  <h2>{{ isEdit ? 'Modifier l\'enseigne' : 'Nouvelle enseigne' }}</h2>
-</div>
+<div class="dialog-wrapper">
 
-<mat-dialog-content>
-  <form [formGroup]="form" class="est-form">
+  <!-- ══ HEADER ════════════════════════════════════════════════════════ -->
+  <div class="dialog-header">
+    <div class="dialog-header-left">
+      <div class="dialog-header-icon amber">
+        <mat-icon>{{ isEdit ? 'edit' : 'add_business' }}</mat-icon>
+      </div>
+      <div class="dialog-title-block">
+        <h2 class="dialog-title-text">{{ isEdit ? 'Modifier l\'enseigne' : 'Nouvelle enseigne' }}</h2>
+        <p class="dialog-subtitle-text">{{ isEdit ? 'Mettez à jour les informations de l\'enseigne' : 'Créez une nouvelle enseigne sur la plateforme' }}</p>
+      </div>
+    </div>
+    <button class="dialog-close-btn" mat-dialog-close>
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
 
-    <!-- Nom + Slug -->
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Nom de l'enseigne </mat-label>
-      <input matInput formControlName="name" (blur)="!isEdit && generateSlug()">
+  <!-- ══ BODY ══════════════════════════════════════════════════════════ -->
+  <form *ngIf="form" [formGroup]="form" class="dialog-body">
+
+    <!-- ── Logo ── -->
+    <div class="dlg-section"><mat-icon>image</mat-icon>Logo</div>
+
+    <div class="est-logo-zone">
+      <div class="est-logo-preview">
+        <img *ngIf="logoPreview" [src]="logoPreview" alt="Aperçu logo">
+        <img *ngIf="!logoPreview && data.establishment?.logo"
+             [src]="getLogoUrl(data.establishment?.logo)" alt="Logo actuel">
+        <div *ngIf="!logoPreview && !data.establishment?.logo" class="est-logo-placeholder">
+          <mat-icon>store</mat-icon>
+        </div>
+      </div>
+      <div class="est-logo-actions">
+        <label class="ds-btn ds-btn-outline est-logo-btn" for="est-logo-input">
+          <mat-icon>upload</mat-icon>
+          {{ (logoPreview || data.establishment?.logo) ? 'Changer le logo' : 'Ajouter un logo' }}
+        </label>
+        <input type="file" id="est-logo-input" hidden accept="image/*"
+               (change)="onLogoSelected($event)">
+        <button *ngIf="logoPreview" type="button" class="est-logo-remove" (click)="removeLogo()"
+                matTooltip="Annuler la sélection">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      <p class="est-logo-hint">JPG, PNG ou WebP · max 2 Mo</p>
+    </div>
+
+    <!-- ── Identité ── -->
+    <div class="dlg-section"><mat-icon>store</mat-icon>Identité</div>
+
+    <mat-form-field appearance="outline" class="dlg-full">
+      <mat-label>Nom de l'enseigne</mat-label>
+      <input matInput formControlName="name"
+             placeholder="Ex : Le Petit Bistrot"
+             (blur)="!isEdit && generateSlug()">
       <mat-icon matSuffix>store</mat-icon>
-      <mat-error *ngIf="form.get('name')?.hasError('required')">Requis</mat-error>
+      <mat-error *ngIf="form.get('name')?.hasError('required')">Le nom est requis</mat-error>
     </mat-form-field>
 
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Slug URL</mat-label>
-      <span matTextPrefix>/r/&nbsp;</span>
-      <input matInput formControlName="slug">
-      <mat-hint>Lettres minuscules, chiffres et tirets uniquement</mat-hint>
-      <mat-error *ngIf="form.get('slug')?.hasError('pattern')">Format invalide (ex: mon-enseigne)</mat-error>
-    </mat-form-field>
+    <div class="dlg-row">
+      <mat-form-field appearance="outline">
+        <mat-label>Slug URL</mat-label>
+        <span matTextPrefix>/r/&nbsp;</span>
+        <input matInput formControlName="slug" placeholder="mon-enseigne">
+        <mat-error *ngIf="form.get('slug')?.hasError('pattern')">Lettres minuscules, chiffres et tirets</mat-error>
+        <mat-hint>Identifiant unique dans l'URL</mat-hint>
+      </mat-form-field>
 
-    <mat-form-field appearance="outline" class="full-width">
+      <mat-form-field appearance="outline">
+        <mat-label>Max utilisateurs</mat-label>
+        <input matInput formControlName="maxUsers" type="number" min="1">
+        <mat-icon matSuffix>group</mat-icon>
+        <mat-error *ngIf="form.get('maxUsers')?.hasError('min')">Minimum 1</mat-error>
+      </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline" class="dlg-full">
       <mat-label>Description</mat-label>
-      <textarea matInput formControlName="description" rows="2"></textarea>
+      <textarea matInput formControlName="description" rows="2"
+                placeholder="Décrivez brièvement cette enseigne…"></textarea>
     </mat-form-field>
 
-    <!-- Contact -->
-    <div class="two-cols">
+    <!-- ── Contact ── -->
+    <div class="dlg-section"><mat-icon>contact_mail</mat-icon>Contact</div>
+
+    <div class="dlg-row">
       <mat-form-field appearance="outline">
         <mat-label>Email</mat-label>
-        <input matInput formControlName="email" type="email">
+        <input matInput formControlName="email" type="email" placeholder="contact@enseigne.com">
         <mat-icon matSuffix>email</mat-icon>
+        <mat-error *ngIf="form.get('email')?.hasError('email')">Format invalide</mat-error>
       </mat-form-field>
+
       <mat-form-field appearance="outline">
         <mat-label>Téléphone</mat-label>
-        <input matInput formControlName="phone">
+        <input matInput formControlName="phone" placeholder="+216 XX XXX XXX">
         <mat-icon matSuffix>phone</mat-icon>
       </mat-form-field>
     </div>
 
-    <!-- Adresse -->
-    <mat-form-field appearance="outline" class="full-width">
+    <!-- ── Localisation ── -->
+    <div class="dlg-section"><mat-icon>location_on</mat-icon>Localisation</div>
+
+    <mat-form-field appearance="outline" class="dlg-full">
       <mat-label>Adresse</mat-label>
-      <input matInput formControlName="address">
+      <input matInput formControlName="address" placeholder="Rue, numéro…">
       <mat-icon matSuffix>location_on</mat-icon>
     </mat-form-field>
 
-    <div class="two-cols">
+    <div class="dlg-row">
       <mat-form-field appearance="outline">
         <mat-label>Ville</mat-label>
-        <input matInput formControlName="city">
+        <input matInput formControlName="city" placeholder="Tunis">
+        <mat-icon matSuffix>location_city</mat-icon>
       </mat-form-field>
+
       <mat-form-field appearance="outline">
         <mat-label>Pays</mat-label>
-        <input matInput formControlName="country">
+        <input matInput formControlName="country" placeholder="Tunisie">
+        <mat-icon matSuffix>flag</mat-icon>
       </mat-form-field>
     </div>
 
-    <!-- Config -->
-    <div class="two-cols">
-      <mat-form-field appearance="outline">
-        <mat-label>Max utilisateurs </mat-label>
-        <input matInput formControlName="maxUsers" type="number" min="1">
-        <mat-icon matSuffix>group</mat-icon>
+    <!-- ── Couleur principale ── -->
+    <div class="dlg-section"><mat-icon>palette</mat-icon>Couleur principale</div>
+
+    <div class="est-color-row">
+      <input type="color"
+             [value]="form.get('primaryColor')?.value"
+             (input)="form.get('primaryColor')?.setValue($any($event.target).value)"
+             class="est-color-picker"
+             title="Choisir la couleur principale">
+      <mat-form-field appearance="outline" class="est-color-input">
+        <mat-label>Code couleur</mat-label>
+        <input matInput formControlName="primaryColor" placeholder="#6366f1">
+        <mat-icon matSuffix>colorize</mat-icon>
       </mat-form-field>
-      <div class="color-fields">
-        <div class="color-field">
-          <label>Couleur principale</label>
-          <div class="color-row">
-            <input type="color" formControlName="primaryColor" class="color-picker">
-            <mat-form-field appearance="outline">
-              <input matInput formControlName="primaryColor">
-            </mat-form-field>
-          </div>
-        </div>
-      </div>
+      <div class="est-color-preview" [style.background]="form.get('primaryColor')?.value"></div>
     </div>
 
   </form>
-</mat-dialog-content>
 
-<mat-dialog-actions align="end">
-  <button mat-stroked-button mat-dialog-close [disabled]="saving">Annuler</button>
-  <button mat-flat-button color="primary" (click)="save()" [disabled]="saving || form.invalid">
-    <mat-spinner diameter="16" *ngIf="saving"></mat-spinner>
-    <mat-icon *ngIf="!saving">save</mat-icon>
-    {{ isEdit ? 'Enregistrer' : 'Créer' }}
-  </button>
-</mat-dialog-actions>
+  <!-- ══ FOOTER ════════════════════════════════════════════════════════ -->
+  <div class="dialog-footer">
+    <button class="ds-btn ds-btn-outline" mat-dialog-close [disabled]="saving">Annuler</button>
+    <button class="ds-btn ds-btn-amber" (click)="save()" [disabled]="saving">
+      <mat-spinner diameter="16" *ngIf="saving"></mat-spinner>
+      <mat-icon *ngIf="!saving">{{ isEdit ? 'save' : 'add_business' }}</mat-icon>
+      {{ isEdit ? 'Enregistrer' : 'Créer l\'enseigne' }}
+    </button>
+  </div>
+
+</div>

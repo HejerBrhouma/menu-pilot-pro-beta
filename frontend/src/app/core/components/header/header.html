@@ -3,26 +3,6 @@
 <mat-sidenav-container class="sidenav-container">
   <mat-sidenav mode="side" opened class="sidenav">
 
-    <!-- Logo -->
-    <div class="sidebar-logo" routerLink="/dashboard">
-      <ng-container *ngIf="logoUrl; else defaultLogo">
-        <div class="logo-establishment">
-          <img [src]="logoUrl" [alt]="establishment?.name" class="establishment-img">
-        </div>
-        <div class="logo-text">
-          <span class="logo-name">{{ establishment?.name }}</span>
-          <span class="logo-version">Menu Pilot</span>
-        </div>
-      </ng-container>
-      <ng-template #defaultLogo>
-        <div class="logo-icon"><mat-icon>restaurant_menu</mat-icon></div>
-        <div class="logo-text">
-          <span class="logo-name">{{ establishment?.name || 'Menu Pilot' }}</span>
-          <span class="logo-version">Pro</span>
-        </div>
-      </ng-template>
-    </div>
-
     <div class="sidebar-content">
 
       <!-- Dashboard -->

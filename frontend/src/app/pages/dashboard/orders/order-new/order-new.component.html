@@ -75,6 +75,9 @@
           <div class="tile-info">
             <span class="tile-name">{{ p.name }}</span>
             <span class="tile-price">{{ p.price | number:'1.2-2' }} TND</span>
+            <app-star-rating [rating]="getRating('PRODUCT', p.id)"
+                             [count]="getRatingCount('PRODUCT', p.id)" [showEmpty]="false">
+            </app-star-rating>
           </div>
           <div class="tile-qty" *ngIf="isInCart(p.id, 'PRODUCT')">
             {{ getCartQty(p.id, 'PRODUCT') }}
@@ -102,6 +105,9 @@
           <div class="tile-info">
             <span class="tile-name">{{ pk.name }}</span>
             <span class="tile-price">{{ pk.price | number:'1.2-2' }} TND</span>
+            <app-star-rating [rating]="getRating('PACK', pk.id)"
+                             [count]="getRatingCount('PACK', pk.id)" [showEmpty]="false">
+            </app-star-rating>
           </div>
           <div class="tile-qty" *ngIf="isInCart(pk.id, 'PACK')">
             {{ getCartQty(pk.id, 'PACK') }}

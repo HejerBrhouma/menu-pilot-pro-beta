@@ -1,102 +1,106 @@
-<!-- src/app/pages/dashboard/menu/menu-form-dialog/menu-form-dialog.component.html -->
+<!-- menu-form-dialog.component.html -->
 
 <div class="dialog-wrapper">
 
-  <!-- Header -->
+  <!-- ══ HEADER ════════════════════════════════════════════════════════ -->
   <div class="dialog-header">
-    <div class="dialog-title">
-      <mat-icon>{{ isEdit ? 'edit' : 'restaurant_menu' }}</mat-icon>
-      <h2>{{ isEdit ? 'Modifier le menu' : 'Nouveau menu' }}</h2>
+    <div class="dialog-header-left">
+      <div class="dialog-header-icon green">
+        <mat-icon>{{ isEdit ? 'edit' : 'restaurant_menu' }}</mat-icon>
+      </div>
+      <div class="dialog-title-block">
+        <h2 class="dialog-title-text">{{ isEdit ? 'Modifier le menu' : 'Nouveau menu' }}</h2>
+        <p class="dialog-subtitle-text">{{ isEdit ? 'Modifiez le contenu et les horaires' : 'Créez un menu avec ses sections' }}</p>
+      </div>
     </div>
-    <button mat-icon-button (click)="cancel()"><mat-icon>close</mat-icon></button>
+    <button class="dialog-close-btn" (click)="cancel()">
+      <mat-icon>close</mat-icon>
+    </button>
   </div>
 
-  <mat-divider></mat-divider>
-
+  <!-- ══ BODY ══════════════════════════════════════════════════════════ -->
   <form [formGroup]="form" class="dialog-body">
 
-    <!-- ── Infos générales ── -->
-    <div class="form-section-title">Informations générales</div>
+    <!-- ── Informations générales ── -->
+    <div class="dlg-section"><mat-icon>info</mat-icon>Informations générales</div>
 
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Nom du menu </mat-label>
-      <input matInput formControlName="name" placeholder="Ex: Menu Midi, Carte du Soir…">
+    <mat-form-field appearance="outline" class="dlg-full">
+      <mat-label>Nom du menu</mat-label>
+      <input matInput formControlName="name" placeholder="Ex : Menu Midi, Carte du Soir…">
       <mat-icon matSuffix>restaurant_menu</mat-icon>
       <mat-error>{{ nameError }}</mat-error>
     </mat-form-field>
 
-    <mat-form-field appearance="outline" class="full-width">
+    <mat-form-field appearance="outline" class="dlg-full">
       <mat-label>Description</mat-label>
       <textarea matInput formControlName="description" rows="2"
                 placeholder="Décrivez ce menu…"></textarea>
     </mat-form-field>
 
     <!-- Horaires + Toggle -->
-    <div class="row-fields">
-      <mat-form-field appearance="outline" class="time-field">
+    <div class="dlg-row menu-time-row">
+      <mat-form-field appearance="outline">
         <mat-label>Heure de début</mat-label>
         <input matInput type="time" formControlName="timeStart">
         <mat-icon matSuffix>schedule</mat-icon>
       </mat-form-field>
 
-      <mat-form-field appearance="outline" class="time-field">
+      <mat-form-field appearance="outline">
         <mat-label>Heure de fin</mat-label>
         <input matInput type="time" formControlName="timeEnd">
         <mat-icon matSuffix>schedule</mat-icon>
       </mat-form-field>
 
-      <div class="toggle-field">
-        <label class="toggle-label">Menu actif</label>
+      <div class="dlg-toggle">
+        <span class="dlg-toggle-label">Menu actif</span>
         <mat-slide-toggle formControlName="isActive" color="primary"></mat-slide-toggle>
       </div>
     </div>
 
-    <mat-divider class="section-divider"></mat-divider>
-
     <!-- ── Sections ── -->
-    <div class="sections-header">
-      <div class="form-section-title">Sections du menu</div>
-      <button type="button" mat-stroked-button (click)="addSection()" class="add-section-btn">
-        <mat-icon>add</mat-icon>
-        Ajouter une section
+    <div class="dlg-section" style="margin-top: 0.5rem"><mat-icon>segment</mat-icon>Sections du menu</div>
+
+    <div class="dlg-sections-header">
+      <span style="font-size:0.82rem;color:var(--clr-text-soft);">
+        {{ sections.length }} section{{ sections.length !== 1 ? 's' : '' }}
+      </span>
+      <button type="button" class="dlg-add-section-btn" (click)="addSection()">
+        <mat-icon>add</mat-icon>Ajouter une section
       </button>
     </div>
 
-    <div class="sections-empty" *ngIf="sections.length === 0">
+    <div class="dlg-sections-empty" *ngIf="sections.length === 0">
       <mat-icon>layers</mat-icon>
       <p>Aucune section. Ajoutez des sections pour organiser votre menu.</p>
     </div>
 
-    <mat-accordion class="sections-accordion" formArrayName="sections">
+    <mat-accordion class="menu-sections-accordion" formArrayName="sections">
       <mat-expansion-panel
         *ngFor="let section of sections.controls; let i = index"
         [formGroupName]="i"
-        class="section-panel">
+        class="menu-section-panel">
 
         <mat-expansion-panel-header>
           <mat-panel-title>
-            <mat-icon>segment</mat-icon>
+            <mat-icon class="panel-icon">segment</mat-icon>
             {{ section.get('title')?.value || 'Nouvelle section' }}
           </mat-panel-title>
           <mat-panel-description>
-            {{ section.get('products')?.value?.length || 0 }} produits •
-            {{ section.get('packs')?.value?.length || 0 }} packs •
+            {{ section.get('products')?.value?.length || 0 }} produits ·
+            {{ section.get('packs')?.value?.length || 0 }} packs ·
             {{ section.get('categories')?.value?.length || 0 }} catégories
           </mat-panel-description>
         </mat-expansion-panel-header>
 
-        <!-- Contenu section -->
-        <div class="section-content">
+        <div class="menu-section-content">
 
-          <!-- Titre + Ordre -->
-          <div class="section-row">
-            <mat-form-field appearance="outline" class="flex-grow">
-              <mat-label>Titre de la section </mat-label>
-              <input matInput formControlName="title" placeholder="Ex: Entrées, Plats, Desserts…">
+          <div class="menu-section-row">
+            <mat-form-field appearance="outline" class="section-title-field">
+              <mat-label>Titre de la section</mat-label>
+              <input matInput formControlName="title" placeholder="Ex : Entrées, Plats, Desserts…">
               <mat-error *ngIf="section.get('title')?.hasError('required')">Titre requis</mat-error>
             </mat-form-field>
-
-            <div class="order-btns">
+            <div class="section-order-btns">
               <button type="button" mat-icon-button (click)="moveSection(i, 'up')"
                       [disabled]="i === 0" matTooltip="Monter">
                 <mat-icon>keyboard_arrow_up</mat-icon>
@@ -111,36 +115,33 @@
             </div>
           </div>
 
-          <!-- Produits -->
-          <mat-form-field appearance="outline" class="full-width">
+          <mat-form-field appearance="outline" class="dlg-full">
             <mat-label>Produits</mat-label>
             <mat-select formControlName="products" multiple>
               <mat-option *ngFor="let p of data.products" [value]="p['@id']">
-                <span class="select-option">
+                <span class="dlg-select-opt">
                   <span>{{ p.name }}</span>
-                  <span class="option-price">{{ p.price | number:'1.2-2' }} €</span>
+                  <span class="dlg-opt-price">{{ p.price | number:'1.2-2' }} TND</span>
                 </span>
               </mat-option>
             </mat-select>
             <mat-icon matSuffix>inventory_2</mat-icon>
           </mat-form-field>
 
-          <!-- Packs -->
-          <mat-form-field appearance="outline" class="full-width">
+          <mat-form-field appearance="outline" class="dlg-full">
             <mat-label>Packs</mat-label>
             <mat-select formControlName="packs" multiple>
               <mat-option *ngFor="let p of data.packs" [value]="p['@id']">
-                <span class="select-option">
+                <span class="dlg-select-opt">
                   <span>{{ p.name }}</span>
-                  <span class="option-price">{{ p.price | number:'1.2-2' }} €</span>
+                  <span class="dlg-opt-price">{{ p.price | number:'1.2-2' }} TND</span>
                 </span>
               </mat-option>
             </mat-select>
             <mat-icon matSuffix>layers</mat-icon>
           </mat-form-field>
 
-          <!-- Catégories -->
-          <mat-form-field appearance="outline" class="full-width">
+          <mat-form-field appearance="outline" class="dlg-full">
             <mat-label>Catégories entières</mat-label>
             <mat-select formControlName="categories" multiple>
               <mat-option *ngFor="let c of data.categories" [value]="c['@id']">
@@ -157,12 +158,10 @@
 
   </form>
 
-  <mat-divider></mat-divider>
-
-  <!-- Footer -->
+  <!-- ══ FOOTER ════════════════════════════════════════════════════════ -->
   <div class="dialog-footer">
-    <button mat-stroked-button (click)="cancel()">Annuler</button>
-    <button mat-flat-button color="primary" (click)="submit()" [disabled]="form.invalid">
+    <button class="ds-btn ds-btn-outline" (click)="cancel()">Annuler</button>
+    <button class="ds-btn ds-btn-green" (click)="submit()" [disabled]="form.invalid">
       <mat-icon>{{ isEdit ? 'save' : 'add' }}</mat-icon>
       {{ isEdit ? 'Enregistrer' : 'Créer le menu' }}
     </button>

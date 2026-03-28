@@ -1,63 +1,83 @@
-// src/app/pages/super-admin/users/users-list.component.scss
+// users-list.component.scss
+// Base layout & shared classes from styles.scss
 
-.page-header {
-  display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1.5rem;
-  h1 { display: flex; align-items: center; gap: 8px; font-size: 1.75rem; font-weight: 700; margin: 0; color: #1a1a2e; }
-  h1 mat-icon { color: #f59e0b; }
-  .subtitle { color: #6b7280; font-size: 0.875rem; margin: 4px 0 0; }
-  button { border-radius: 10px; display: flex; align-items: center; gap: 6px; }
+// ── Establishment filter select ────────────────────────────────────────────
+.users-est-filter {
+  flex-shrink: 0;
 }
 
-.filters-bar {
-  display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;
-  .search-field { flex: 1; min-width: 220px; }
-  .filter-field { width: 220px; }
+.est-select {
+  height       : 40px;
+  padding      : 0 12px;
+  border       : 1px solid var(--clr-border);
+  border-radius: var(--radius-md);
+  background   : var(--clr-surface);
+  font-size    : 0.85rem;
+  color        : var(--clr-text);
+  cursor       : pointer;
+  min-width    : 200px;
 }
 
-.loader { display: flex; justify-content: center; padding: 4rem; }
-
-.table-card {
-  background: white; border-radius: 16px; border: 1px solid #e8ecf4;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.06); overflow: hidden;
+.est-count-opt {
+  color    : var(--clr-text-soft);
+  font-size: 0.75rem;
+  margin-left: 4px;
 }
 
-.users-table { width: 100%; }
-
-.user-cell { display: flex; align-items: center; gap: 0.875rem; padding: 0.5rem 0; }
-
-.avatar {
-  width: 38px; height: 38px; border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  color: white; font-weight: 700; font-size: 0.8rem; flex-shrink: 0;
+// ── User avatar ───────────────────────────────────────────────────────────
+.user-cell {
+  display    : flex;
+  align-items: center;
+  gap        : 0.875rem;
+  padding    : 0.375rem 0;
 }
 
-.user-name { font-weight: 600; font-size: 0.875rem; color: #1a1a2e; display: block; }
-.user-email { font-size: 0.78rem; color: #9ca3af; }
-
-.est-badge {
-  display: inline-flex; align-items: center; gap: 4px;
-  background: #f1f5f9; color: #374151;
-  font-size: 0.78rem; font-weight: 500;
-  padding: 3px 10px; border-radius: 99px;
-  mat-icon { font-size: 0.85rem; width: 0.85rem; height: 0.85rem; }
+.user-avatar {
+  width          : 38px;
+  height         : 38px;
+  border-radius  : var(--radius-sm);
+  display        : flex;
+  align-items    : center;
+  justify-content: center;
+  color          : white;
+  font-weight    : 700;
+  font-size      : 0.8rem;
+  flex-shrink    : 0;
 }
 
-.no-est { color: #d1d5db; }
+.user-name  { font-weight: 600; font-size: 0.875rem; color: var(--clr-text); display: block; }
+.user-email { font-size: 0.78rem; color: var(--clr-text-soft); }
 
-.role-badge {
-  font-size: 0.75rem; font-weight: 700;
-  padding: 3px 10px; border-radius: 99px;
+// ── Establishment chip ────────────────────────────────────────────────────
+.est-chip {
+  display    : inline-flex;
+  align-items: center;
+  gap        : 4px;
+  background : var(--clr-bg-alt);
+  color      : var(--clr-text-mid);
+  font-size  : 0.78rem;
+  font-weight: 500;
+  padding    : 3px 10px;
+  border-radius: 99px;
+  border     : 1px solid var(--clr-border);
+
+  mat-icon { font-size: 0.85rem !important; width: 0.85rem !important; height: 0.85rem !important; }
 }
 
-.actions-cell { display: flex; gap: 4px; justify-content: flex-end; }
-
-.inactive-row { opacity: 0.5; }
-
-.empty-table {
-  display: flex; flex-direction: column; align-items: center;
-  padding: 4rem; color: #9ca3af; gap: 0.5rem;
-  mat-icon { font-size: 2.5rem; width: 2.5rem; height: 2.5rem; opacity: 0.3; }
-  p { margin: 0; }
+// ── Role pill ─────────────────────────────────────────────────────────────
+.role-pill {
+  font-size    : 0.72rem;
+  font-weight  : 700;
+  padding      : 3px 10px;
+  border-radius: 99px;
+  border       : 1px solid transparent;
 }
 
-.user-count { color: #9ca3af; font-size: 0.75rem; margin-left: 4px; }
+// ── Inactive row ──────────────────────────────────────────────────────────
+.row-inactive { opacity: 0.45; }
+
+// ── Impersonate button ────────────────────────────────────────────────────
+.row-btn.impersonate {
+  color: #7c3aed;
+  &:hover { background: #ede9fe; color: #6d28d9; }
+}

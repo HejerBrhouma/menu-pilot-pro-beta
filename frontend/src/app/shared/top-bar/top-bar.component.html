@@ -1,0 +1,143 @@
+<!-- src/app/shared/top-bar/top-bar.component.html -->
+
+<header class="topbar" *ngIf="visible">
+
+  <!-- ══ GAUCHE : Logo ════════════════════════════════════════════════ -->
+  <div class="topbar-left">
+
+    <!-- Logo enseigne (admin avec logo) -->
+    <ng-container *ngIf="isAdmin && !isSuperAdmin && establishmentLogo">
+      <div class="brand-logo">
+        <img [src]="establishmentLogo" [alt]="establishmentName" class="brand-logo-img">
+      </div>
+      <div class="brand-text">
+        <span class="brand-name">{{ establishmentName }}</span>
+        <span class="brand-tag">Menu Pilot Pro</span>
+      </div>
+    </ng-container>
+
+    <!-- Logo app (super admin, client, ou admin sans logo) -->
+    <ng-container *ngIf="!isAdmin || isSuperAdmin || !establishmentLogo">
+      <div class="brand-icon-wrap">
+        <mat-icon class="brand-icon">restaurant_menu</mat-icon>
+      </div>
+      <div class="brand-text">
+        <span class="brand-name">Menu Pilot</span>
+        <span class="brand-tag" [class.super]="isSuperAdmin">
+          {{ isSuperAdmin ? 'Super Admin' : 'Pro' }}
+        </span>
+      </div>
+    </ng-container>
+
+  </div>
+
+  <!-- ══ DROITE : Actions ═════════════════════════════════════════════ -->
+  <div class="topbar-right">
+
+    <!-- ─── Admin / Manager / Serveur ─── -->
+    <ng-container *ngIf="isAdmin && !isSuperAdmin">
+
+      <!-- Commandes en attente -->
+      <button class="action-icon-btn" routerLink="/orders" matTooltip="Commandes en attente">
+        <span class="icon-wrap">
+          <mat-icon>receipt_long</mat-icon>
+          <span class="icon-badge red" *ngIf="pendingOrdersCount > 0">
+            {{ pendingOrdersCount > 99 ? '99+' : pendingOrdersCount }}
+          </span>
+        </span>
+      </button>
+
+      <!-- Avis à modérer -->
+      <button class="action-icon-btn" routerLink="/reviews" matTooltip="Avis en attente">
+        <span class="icon-wrap">
+          <mat-icon>star_rate</mat-icon>
+          <span class="icon-badge amber" *ngIf="pendingReviewsCount > 0">
+            {{ pendingReviewsCount > 99 ? '99+' : pendingReviewsCount }}
+          </span>
+        </span>
+      </button>
+
+      <div class="sep"></div>
+
+      <!-- Chip profil + dropdown -->
+      <button class="profile-chip" [matMenuTriggerFor]="adminMenu">
+        <div class="avatar admin">{{ adminInitial }}</div>
+        <div class="profile-info">
+          <span class="profile-name">{{ adminName }}</span>
+          <span class="profile-role">{{ adminRole }}</span>
+        </div>
+        <mat-icon class="chevron">expand_more</mat-icon>
+      </button>
+
+    </ng-container>
+
+    <!-- ─── Super Admin ─── -->
+    <ng-container *ngIf="isSuperAdmin">
+
+      <div class="sa-badge">Super Admin</div>
+      <div class="sep"></div>
+
+      <button class="profile-chip" [matMenuTriggerFor]="adminMenu">
+        <div class="avatar super">{{ adminInitial }}</div>
+        <div class="profile-info">
+          <span class="profile-name">{{ adminName }}</span>
+          <span class="profile-role">Super Administrateur</span>
+        </div>
+        <mat-icon class="chevron">expand_more</mat-icon>
+      </button>
+
+    </ng-container>
+
+    <!-- ─── Client connecté ─── -->
+    <ng-container *ngIf="isCustomer">
+
+      <button class="profile-chip" [matMenuTriggerFor]="customerMenu">
+        <div class="avatar customer">{{ customerInitial }}</div>
+        <div class="profile-info">
+          <span class="profile-name">{{ customerName }}</span>
+          <span class="profile-role">Mon compte</span>
+        </div>
+        <mat-icon class="chevron">expand_more</mat-icon>
+      </button>
+
+    </ng-container>
+
+  </div>
+
+</header>
+
+<!-- ══ Menu dropdown Admin / Super Admin ═══════════════════════════════ -->
+<mat-menu #adminMenu="matMenu" class="profile-dropdown">
+  <button mat-menu-item (click)="goToProfile()">
+    <mat-icon>manage_accounts</mat-icon>
+    <span>Voir le profil</span>
+  </button>
+  <button mat-menu-item disabled>
+    <mat-icon>notifications_none</mat-icon>
+    <span>Configurer les notifications</span>
+    <span class="soon-tag">Bientôt</span>
+  </button>
+  <mat-divider></mat-divider>
+  <button mat-menu-item class="logout-item" (click)="logoutAdmin()">
+    <mat-icon>logout</mat-icon>
+    <span>Se déconnecter</span>
+  </button>
+</mat-menu>
+
+<!-- ══ Menu dropdown Client ═════════════════════════════════════════════ -->
+<mat-menu #customerMenu="matMenu" class="profile-dropdown">
+  <button mat-menu-item routerLink="/account">
+    <mat-icon>person</mat-icon>
+    <span>Voir le profil</span>
+  </button>
+  <button mat-menu-item disabled>
+    <mat-icon>notifications_none</mat-icon>
+    <span>Configurer les notifications</span>
+    <span class="soon-tag">Bientôt</span>
+  </button>
+  <mat-divider></mat-divider>
+  <button mat-menu-item class="logout-item" (click)="logoutCustomer()">
+    <mat-icon>logout</mat-icon>
+    <span>Se déconnecter</span>
+  </button>
+</mat-menu>

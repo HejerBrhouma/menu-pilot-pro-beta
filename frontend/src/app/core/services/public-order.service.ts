@@ -55,13 +55,13 @@ export class PublicOrderService {
       .pipe(catchError(this.handleError));
   }
 
-  getProducts(establishmentSlug: string): Observable<any> {
-    return this.http.get<any>(`/api/products?isAvailable=true`)
+  getProducts(establishmentId: number): Observable<any> {
+    return this.http.get<any>(`/api/products?isAvailable=true&establishment=${establishmentId}`)
       .pipe(catchError(this.handleError));
   }
 
-  getPacks(): Observable<any> {
-    return this.http.get<any>(`/api/packs?isActive=true`)
+  getPacks(establishmentId: number): Observable<any> {
+    return this.http.get<any>(`/api/packs?isActive=true&establishment=${establishmentId}`)
       .pipe(catchError(this.handleError));
   }
 

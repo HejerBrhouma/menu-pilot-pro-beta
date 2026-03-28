@@ -1,214 +1,164 @@
 <!-- src/app/pages/dashboard/dashboard-component.html -->
 
-<div class="dashboard">
+<div class="dash-page">
 
-  <!-- ══ HERO HEADER ══ -->
-  <div class="hero">
-    <div class="hero-bg">
-      <div class="blob blob-1"></div>
-      <div class="blob blob-2"></div>
-      <div class="blob blob-3"></div>
-    </div>
-    <div class="hero-content">
-      <div class="hero-text">
-        <p class="greeting-label">{{ greeting }} 👋</p>
-        <h1 class="hero-title">Tableau de bord</h1>
-        <p class="hero-date">
-          <mat-icon>calendar_today</mat-icon>
+  <!-- ══ PAGE HEADER ═══════════════════════════════════════════════════════ -->
+  <div class="ds-page-header">
+    <div class="ds-page-title">
+      <div class="title-icon"><mat-icon>dashboard</mat-icon></div>
+      <div>
+        <h1>{{ greeting }}{{ userName ? ', ' + userName : '' }} 👋</h1>
+        <p class="subtitle">
           {{ currentDate | date:'EEEE d MMMM yyyy' : '' : 'fr' }}
+          — voici votre tableau de bord
         </p>
       </div>
-      <div class="hero-badge">
-        <mat-icon>restaurant_menu</mat-icon>
-        <span>Menu Manager</span>
-      </div>
     </div>
-
-    <!-- Alertes commandes en attente -->
-    <div class="hero-alerts" *ngIf="!loading && (pendingOrders > 0 || confirmedOrders > 0)">
-      <a routerLink="/orders" class="alert-chip pending" *ngIf="pendingOrders > 0">
-        <mat-icon>notification_important</mat-icon>
-        {{ pendingOrders }} commande(s) en attente
+    <div class="ds-header-actions">
+      <a routerLink="/orders/new" class="ds-btn ds-btn-primary">
+        <mat-icon>add_shopping_cart</mat-icon>Nouvelle commande
       </a>
-      <a routerLink="/orders" class="alert-chip confirmed" *ngIf="confirmedOrders > 0">
-        <mat-icon>restaurant</mat-icon>
-        {{ confirmedOrders }} en cours
-      </a>
-      <div class="alert-chip revenue" *ngIf="todayRevenue > 0">
-        <mat-icon>payments</mat-icon>
-        {{ todayRevenue | number:'1.2-2' }} TND aujourd'hui
-      </div>
     </div>
   </div>
 
-  <!-- ══ STAT CARDS ══ -->
-  <section class="section">
-    <h2 class="section-title">Vue d'ensemble</h2>
-    <div class="stats-grid">
-      <a *ngFor="let stat of stats; let i = index"
-         [routerLink]="stat.route"
-         class="stat-card"
-         [style.--card-color]="stat.color"
-         [style.--card-accent]="stat.accent"
-         [style.animation-delay]="(i * 80) + 'ms'"
-         matRipple>
+  <!-- ══ LOADER ══ -->
+  <div class="page-loader" *ngIf="loading">
+    <mat-spinner diameter="44"></mat-spinner>
+  </div>
 
-        <div class="stat-icon-wrap">
-          <mat-icon>{{ stat.icon }}</mat-icon>
-        </div>
+  <ng-container *ngIf="!loading">
 
-        <div class="stat-body">
-          <span class="stat-value">
-            <span *ngIf="!loading">{{ stat.value }}</span>
-            <span *ngIf="loading" class="skeleton"></span>
-          </span>
-          <span class="stat-label">{{ stat.label }}</span>
-          <span class="stat-badge" *ngIf="stat.badge">{{ stat.badge }}</span>
-        </div>
-
-        <div class="stat-arrow">
-          <mat-icon>arrow_forward</mat-icon>
-        </div>
+    <!-- ══ ALERTES ACTIVES ════════════════════════════════════════════════ -->
+    <div class="alerts-row" *ngIf="pendingOrders > 0 || pendingReviewsCount > 0">
+      <a routerLink="/orders" class="alert-chip danger" *ngIf="pendingOrders > 0">
+        <mat-icon>notification_important</mat-icon>
+        <strong>{{ pendingOrders }}</strong> commande{{ pendingOrders > 1 ? 's' : '' }} en attente
+      </a>
+      <a routerLink="/reviews" class="alert-chip warning" *ngIf="pendingReviewsCount > 0">
+        <mat-icon>star_rate</mat-icon>
+        <strong>{{ pendingReviewsCount }}</strong> avis à modérer
       </a>
     </div>
-  </section>
 
-  <!-- ══ ACTIONS RAPIDES ══ -->
-  <section class="section">
-    <h2 class="section-title">Actions rapides</h2>
-    <div class="actions-grid">
-      <a *ngFor="let action of quickActions; let i = index"
-         [routerLink]="action.route"
-         class="action-card"
-         [style.--action-color]="action.color"
-         [style.animation-delay]="(i * 60 + 200) + 'ms'"
-         matRipple>
-        <div class="action-icon">
-          <mat-icon>{{ action.icon }}</mat-icon>
+    <!-- ══ KPI CARDS ══════════════════════════════════════════════════════ -->
+    <div class="kpi-grid">
+      <a *ngFor="let kpi of kpis; let i = index"
+         [routerLink]="kpi.route"
+         class="kpi-card"
+         [class.kpi-alert]="kpi.alert"
+         [style.--kpi-color]="kpi.colorVar"
+         [style.--kpi-bg]="kpi.bgVar"
+         [style.animation-delay]="(i * 60) + 'ms'">
+
+        <div class="kpi-icon">
+          <mat-icon>{{ kpi.icon }}</mat-icon>
         </div>
-        <span class="action-label">{{ action.label }}</span>
+        <div class="kpi-body">
+          <span class="kpi-value">{{ kpi.value }}</span>
+          <span class="kpi-label">{{ kpi.label }}</span>
+        </div>
+        <mat-icon class="kpi-arrow">arrow_forward_ios</mat-icon>
       </a>
     </div>
-  </section>
 
-  <!-- ══ MODULES ══ -->
-  <section class="section">
-    <h2 class="section-title">Modules disponibles</h2>
+    <!-- ══ MAIN COLUMNS ════════════════════════════════════════════════════ -->
+    <div class="main-cols">
+
+      <!-- ── Commandes récentes ──────────────────────────────────────────── -->
+      <div class="ds-card col-orders">
+        <div class="card-head">
+          <div class="card-head-title">
+            <mat-icon>receipt_long</mat-icon>
+            <span>Commandes récentes</span>
+          </div>
+          <a routerLink="/orders" class="ds-btn ds-btn-outline card-head-link">
+            Voir tout <mat-icon>chevron_right</mat-icon>
+          </a>
+        </div>
+
+        <!-- Table -->
+        <div class="orders-table-wrap">
+          <div class="empty-orders" *ngIf="recentOrders.length === 0">
+            <mat-icon>receipt_long</mat-icon>
+            <span>Aucune commande pour l'instant</span>
+          </div>
+
+          <table class="orders-table" *ngIf="recentOrders.length > 0">
+            <thead>
+              <tr>
+                <th>Table</th>
+                <th>Statut</th>
+                <th>Total</th>
+                <th>Heure</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let order of recentOrders">
+                <td class="td-table">
+                  <mat-icon>table_restaurant</mat-icon>
+                  {{ order.table?.name || order.tableNumber || '—' }}
+                </td>
+                <td>
+                  <span class="ds-badge" [class]="getStatusClass(order.status)">
+                    {{ getStatusLabel(order.status) }}
+                  </span>
+                </td>
+                <td class="td-total">{{ order.total | number:'1.2-2' }} TND</td>
+                <td class="td-time">{{ order.createdAt | date:'HH:mm' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── Actions rapides ────────────────────────────────────────────── -->
+      <div class="ds-card col-actions">
+        <div class="card-head">
+          <div class="card-head-title">
+            <mat-icon>bolt</mat-icon>
+            <span>Actions rapides</span>
+          </div>
+        </div>
+        <div class="quick-grid">
+          <a *ngFor="let a of quickActions; let i = index"
+             [routerLink]="a.route"
+             class="quick-item"
+             [style.--qa-color]="a.color"
+             [style.animation-delay]="(i * 50 + 200) + 'ms'">
+            <div class="quick-icon">
+              <mat-icon>{{ a.icon }}</mat-icon>
+            </div>
+            <span class="quick-label">{{ a.label }}</span>
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══ MODULES ════════════════════════════════════════════════════════ -->
+    <div class="section-head">
+      <span class="section-accent"></span>
+      <span class="section-title-text">Modules disponibles</span>
+    </div>
+
     <div class="modules-grid">
-
-      <a routerLink="/orders" class="module-card" matRipple>
-        <div class="module-header" style="background: linear-gradient(135deg, #ec4899, #db2777)">
-          <mat-icon>receipt_long</mat-icon>
+      <a *ngFor="let m of modules; let i = index"
+         [routerLink]="m.route"
+         class="module-card"
+         [style.animation-delay]="(i * 60 + 300) + 'ms'">
+        <div class="module-hdr" [style.background]="m.grad">
+          <mat-icon>{{ m.icon }}</mat-icon>
         </div>
         <div class="module-body">
-          <h3>Commandes</h3>
-          <p>Gérez les commandes en temps réel, suivez leur statut</p>
+          <p class="module-title">{{ m.label }}</p>
+          <p class="module-desc">{{ m.desc }}</p>
         </div>
-        <div class="module-footer">
+        <div class="module-foot">
           <span>Accéder</span>
           <mat-icon>chevron_right</mat-icon>
         </div>
       </a>
-
-      <a routerLink="/tables" class="module-card" matRipple>
-        <div class="module-header" style="background: linear-gradient(135deg, #10b981, #059669)">
-          <mat-icon>table_restaurant</mat-icon>
-        </div>
-        <div class="module-body">
-          <h3>Tables</h3>
-          <p>Configurez vos tables et générez les QR codes par table</p>
-        </div>
-        <div class="module-footer">
-          <span>Accéder</span>
-          <mat-icon>chevron_right</mat-icon>
-        </div>
-      </a>
-
-      <a routerLink="/invoices" class="module-card" matRipple>
-        <div class="module-header" style="background: linear-gradient(135deg, #14b8a6, #0d9488)">
-          <mat-icon>receipt</mat-icon>
-        </div>
-        <div class="module-body">
-          <h3>Factures</h3>
-          <p>Consultez et imprimez les factures de vos commandes</p>
-        </div>
-        <div class="module-footer">
-          <span>Accéder</span>
-          <mat-icon>chevron_right</mat-icon>
-        </div>
-      </a>
-
-      <a routerLink="/promotions" class="module-card" matRipple>
-        <div class="module-header" style="background: linear-gradient(135deg, #ef4444, #dc2626)">
-          <mat-icon>local_offer</mat-icon>
-        </div>
-        <div class="module-body">
-          <h3>Promotions</h3>
-          <p>Créez des promos par période, événement ou récurrence</p>
-        </div>
-        <div class="module-footer">
-          <span>Accéder</span>
-          <mat-icon>chevron_right</mat-icon>
-        </div>
-      </a>
-
-      <a routerLink="/products" class="module-card" matRipple>
-        <div class="module-header" style="background: linear-gradient(135deg, #6366f1, #8b5cf6)">
-          <mat-icon>inventory_2</mat-icon>
-        </div>
-        <div class="module-body">
-          <h3>Produits</h3>
-          <p>Gérez votre catalogue, prix et disponibilités</p>
-        </div>
-        <div class="module-footer">
-          <span>Accéder</span>
-          <mat-icon>chevron_right</mat-icon>
-        </div>
-      </a>
-
-      <a routerLink="/qr-code" class="module-card" matRipple>
-        <div class="module-header" style="background: linear-gradient(135deg, #3b82f6, #2563eb)">
-          <mat-icon>qr_code_2</mat-icon>
-        </div>
-        <div class="module-body">
-          <h3>Menu QR Code</h3>
-          <p>Générez et partagez votre menu digital</p>
-        </div>
-        <div class="module-footer">
-          <span>Accéder</span>
-          <mat-icon>chevron_right</mat-icon>
-        </div>
-      </a>
-
-      <a routerLink="/staff" class="module-card" matRipple>
-        <div class="module-header" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed)">
-          <mat-icon>badge</mat-icon>
-        </div>
-        <div class="module-body">
-          <h3>Mon Équipe</h3>
-          <p>Gérez votre personnel et leurs accès</p>
-        </div>
-        <div class="module-footer">
-          <span>Accéder</span>
-          <mat-icon>chevron_right</mat-icon>
-        </div>
-      </a>
-
-      <a routerLink="/reviews" class="module-card" matRipple>
-        <div class="module-header" style="background: linear-gradient(135deg, #f59e0b, #d97706)">
-          <mat-icon>star_rate</mat-icon>
-        </div>
-        <div class="module-body">
-          <h3>Avis clients</h3>
-          <p>Consultez et gérez les avis de vos clients</p>
-        </div>
-        <div class="module-footer">
-          <span>Accéder</span>
-          <mat-icon>chevron_right</mat-icon>
-        </div>
-      </a>
-
     </div>
-  </section>
 
+  </ng-container>
 </div>

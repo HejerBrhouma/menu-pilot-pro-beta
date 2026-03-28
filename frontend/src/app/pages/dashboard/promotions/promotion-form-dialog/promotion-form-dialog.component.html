@@ -1,29 +1,42 @@
 <!-- promotion-form-dialog.component.html -->
 
-<div class="dialog-header">
-  <mat-icon>local_offer</mat-icon>
-  <h2>{{ isEdit ? 'Modifier la promotion' : 'Nouvelle promotion' }}</h2>
-</div>
+<div class="dialog-wrapper">
 
-<mat-dialog-content>
-  <form [formGroup]="form" class="promo-form">
+  <!-- ══ HEADER ════════════════════════════════════════════════════════ -->
+  <div class="dialog-header">
+    <div class="dialog-header-left">
+      <div class="dialog-header-icon danger">
+        <mat-icon>local_offer</mat-icon>
+      </div>
+      <div class="dialog-title-block">
+        <h2 class="dialog-title-text">{{ isEdit ? 'Modifier la promotion' : 'Nouvelle promotion' }}</h2>
+        <p class="dialog-subtitle-text">{{ isEdit ? 'Modifiez les règles de cette promotion' : 'Créez une réduction sur vos produits' }}</p>
+      </div>
+    </div>
+    <button class="dialog-close-btn" mat-dialog-close>
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
 
-    <!-- ── Infos de base ── -->
-    <div class="section-title">Informations</div>
+  <!-- ══ BODY ══════════════════════════════════════════════════════════ -->
+  <form [formGroup]="form" class="dialog-body">
 
-    <mat-form-field appearance="outline" class="full-width">
+    <!-- ── Informations ── -->
+    <div class="dlg-section"><mat-icon>info</mat-icon>Informations</div>
+
+    <mat-form-field appearance="outline" class="dlg-full">
       <mat-label>Nom de la promotion</mat-label>
-      <input matInput formControlName="name" placeholder="Ex: Happy Hour, Promo Ramadan…">
+      <input matInput formControlName="name" placeholder="Ex : Happy Hour, Promo Ramadan…">
       <mat-icon matSuffix>local_offer</mat-icon>
       <mat-error>Requis</mat-error>
     </mat-form-field>
 
-    <mat-form-field appearance="outline" class="full-width">
+    <mat-form-field appearance="outline" class="dlg-full">
       <mat-label>Description</mat-label>
       <textarea matInput formControlName="description" rows="2"></textarea>
     </mat-form-field>
 
-    <div class="two-cols">
+    <div class="dlg-row">
       <mat-form-field appearance="outline">
         <mat-label>Type de réduction</mat-label>
         <mat-select formControlName="type">
@@ -42,10 +55,9 @@
     </div>
 
     <!-- ── Cibles ── -->
-    <mat-divider></mat-divider>
-    <div class="section-title">Cibles</div>
+    <div class="dlg-section"><mat-icon>ads_click</mat-icon>Cibles</div>
 
-    <mat-form-field appearance="outline" class="full-width">
+    <mat-form-field appearance="outline" class="dlg-full">
       <mat-label>Appliquer sur</mat-label>
       <mat-select formControlName="scope">
         <mat-option *ngFor="let s of scopeOptions" [value]="s.value">
@@ -54,14 +66,14 @@
       </mat-select>
     </mat-form-field>
 
-    <mat-form-field appearance="outline" class="full-width">
+    <mat-form-field appearance="outline" class="dlg-full">
       <mat-label>Cibles (actives uniquement)</mat-label>
       <mat-select formControlName="targetIds" multiple>
         <mat-option *ngIf="loadingTargets" [value]="null" disabled>Chargement…</mat-option>
         <mat-option *ngFor="let t of targets" [value]="t.id">
-          <span class="target-option">
+          <span class="dlg-select-opt">
             <span>{{ t.name }}</span>
-            <span class="target-price" *ngIf="t.price">{{ t.price | number:'1.2-2' }} TND</span>
+            <span class="dlg-opt-price" *ngIf="t.price">{{ t.price | number:'1.2-2' }} TND</span>
           </span>
         </mat-option>
       </mat-select>
@@ -69,14 +81,10 @@
       <mat-error>Sélectionner au moins une cible</mat-error>
     </mat-form-field>
 
-    <!-- ── Période globale ── -->
-    <mat-divider></mat-divider>
-    <div class="section-title">
-      Période
-      <span class="section-hint">Laisser vide = toujours active</span>
-    </div>
+    <!-- ── Période ── -->
+    <div class="dlg-section"><mat-icon>date_range</mat-icon>Période <span class="dlg-section-hint">— laisser vide = toujours active</span></div>
 
-    <div class="two-cols">
+    <div class="dlg-row">
       <mat-form-field appearance="outline">
         <mat-label>Date de début</mat-label>
         <input matInput [matDatepicker]="pickerStart" formControlName="startDate">
@@ -93,28 +101,26 @@
       </mat-form-field>
     </div>
 
-    <!-- ── Horaires ── -->
-    <div class="two-cols">
+    <div class="dlg-row">
       <mat-form-field appearance="outline">
         <mat-label>Heure de début</mat-label>
         <input matInput type="time" formControlName="startTime">
         <mat-icon matSuffix>schedule</mat-icon>
-        <mat-hint>Ex: 17:00 pour Happy Hour</mat-hint>
+        <mat-hint>Ex : 17:00 pour Happy Hour</mat-hint>
       </mat-form-field>
 
       <mat-form-field appearance="outline">
         <mat-label>Heure de fin</mat-label>
         <input matInput type="time" formControlName="endTime">
         <mat-icon matSuffix>schedule</mat-icon>
-        <mat-hint>Ex: 10:00 pour promo matin</mat-hint>
+        <mat-hint>Ex : 10:00 pour promo matin</mat-hint>
       </mat-form-field>
     </div>
 
     <!-- ── Récurrence ── -->
-    <mat-divider></mat-divider>
-    <div class="section-title">Récurrence</div>
+    <div class="dlg-section"><mat-icon>repeat</mat-icon>Récurrence</div>
 
-    <mat-form-field appearance="outline" class="full-width">
+    <mat-form-field appearance="outline" class="dlg-full">
       <mat-label>Type de récurrence</mat-label>
       <mat-select formControlName="recurrenceType">
         <mat-option *ngFor="let r of recurrenceOptions" [value]="r.value">
@@ -124,13 +130,13 @@
     </mat-form-field>
 
     <!-- Jours de la semaine si WEEKLY -->
-    <div class="days-selector" *ngIf="recurrenceType === 'WEEKLY'">
-      <label class="days-label">Jours actifs :</label>
-      <div class="days-grid">
+    <div *ngIf="recurrenceType === 'WEEKLY'" class="promo-days-block">
+      <p class="promo-days-label">Jours actifs</p>
+      <div class="dlg-days-grid">
         <button type="button"
                 *ngFor="let day of daysOptions"
-                class="day-btn"
-                [class.selected]="isDaySelected(day.value)"
+                class="dlg-day-btn"
+                [class.sel]="isDaySelected(day.value)"
                 (click)="toggleDay(day.value)">
           {{ day.label.slice(0,3) }}
         </button>
@@ -138,13 +144,9 @@
     </div>
 
     <!-- ── Événement spécial ── -->
-    <mat-divider></mat-divider>
-    <div class="section-title">
-      Événement spécial
-      <span class="section-hint">Optionnel — s'active en plus des règles ci-dessus</span>
-    </div>
+    <div class="dlg-section"><mat-icon>celebration</mat-icon>Événement spécial <span class="dlg-section-hint">— optionnel</span></div>
 
-    <mat-form-field appearance="outline" class="full-width">
+    <mat-form-field appearance="outline" class="dlg-full">
       <mat-label>Événement</mat-label>
       <mat-select formControlName="specialEvent">
         <mat-option *ngFor="let e of specialEventOptions" [value]="e.value">
@@ -153,8 +155,7 @@
       </mat-select>
     </mat-form-field>
 
-    <!-- Date de l'Aid (variable chaque année) -->
-    <mat-form-field appearance="outline" class="full-width" *ngIf="needsSpecialEventDate">
+    <mat-form-field appearance="outline" class="dlg-full" *ngIf="needsSpecialEventDate">
       <mat-label>Date de l'Aïd cette année</mat-label>
       <input matInput [matDatepicker]="pickerEvent" formControlName="specialEventDate">
       <mat-datepicker-toggle matSuffix [for]="pickerEvent"></mat-datepicker-toggle>
@@ -163,9 +164,9 @@
     </mat-form-field>
 
     <!-- Dates personnalisées -->
-    <div class="custom-dates-section" *ngIf="needsCustomDates">
-      <div class="custom-dates-input">
-        <mat-form-field appearance="outline" class="flex-1">
+    <div *ngIf="needsCustomDates" class="promo-custom-dates">
+      <div class="promo-custom-input">
+        <mat-form-field appearance="outline" style="flex:1">
           <mat-label>Ajouter une date</mat-label>
           <input matInput type="date" [(ngModel)]="customDateInput" [ngModelOptions]="{standalone: true}">
         </mat-form-field>
@@ -174,7 +175,7 @@
           <mat-icon>add_circle</mat-icon>
         </button>
       </div>
-      <div class="custom-dates-list" *ngIf="customDates.length > 0">
+      <div *ngIf="customDates.length > 0">
         <mat-chip-set>
           <mat-chip *ngFor="let d of customDates" (removed)="removeCustomDate(d)">
             {{ d | date:'dd/MM/yyyy' }}
@@ -185,21 +186,24 @@
     </div>
 
     <!-- ── Statut ── -->
-    <mat-divider></mat-divider>
-    <div class="toggle-row">
+    <div class="dlg-section"><mat-icon>toggle_on</mat-icon>Statut</div>
+
+    <div class="promo-toggle-row">
       <mat-slide-toggle formControlName="isActive" color="primary">
         Promotion active
       </mat-slide-toggle>
     </div>
 
   </form>
-</mat-dialog-content>
 
-<mat-dialog-actions align="end">
-  <button mat-stroked-button mat-dialog-close [disabled]="saving">Annuler</button>
-  <button mat-flat-button color="primary" (click)="save()" [disabled]="saving || form.invalid">
-    <mat-spinner diameter="16" *ngIf="saving"></mat-spinner>
-    <mat-icon *ngIf="!saving">save</mat-icon>
-    {{ isEdit ? 'Enregistrer' : 'Créer' }}
-  </button>
-</mat-dialog-actions>
+  <!-- ══ FOOTER ════════════════════════════════════════════════════════ -->
+  <div class="dialog-footer">
+    <button class="ds-btn ds-btn-outline" mat-dialog-close [disabled]="saving">Annuler</button>
+    <button class="ds-btn ds-btn-primary" (click)="save()" [disabled]="saving || form.invalid">
+      <mat-spinner diameter="16" *ngIf="saving"></mat-spinner>
+      <mat-icon *ngIf="!saving">save</mat-icon>
+      {{ isEdit ? 'Enregistrer' : 'Créer' }}
+    </button>
+  </div>
+
+</div>

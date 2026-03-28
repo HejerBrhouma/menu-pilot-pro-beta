@@ -1,22 +1,125 @@
-// src/app/pages/super-admin/establishments/establishment-form-dialog/establishment-form-dialog.component.scss
+// establishment-form-dialog.component.scss
 
-.dialog-header {
-  display: flex; align-items: center; gap: 10px; padding: 1.5rem 1.5rem 0;
-  mat-icon { color: #f59e0b; font-size: 1.75rem; width: 1.75rem; height: 1.75rem; }
-  h2 { margin: 0; font-size: 1.25rem; font-weight: 700; color: #1a1a2e; }
+// ── Wrapper : largeur calée sur le contenu ─────────────────────────────────
+.dialog-wrapper {
+  width     : 100%;
+  box-sizing: border-box;
 }
-mat-dialog-content { padding: 1.25rem 1.5rem !important; max-height: 65vh; }
-.est-form { display: flex; flex-direction: column; gap: 0.5rem; }
-.full-width { width: 100%; }
-.two-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-.color-fields { display: flex; flex-direction: column; gap: 4px; }
-.color-field label { font-size: 0.78rem; font-weight: 700; color: #374151; }
-.color-row { display: flex; align-items: center; gap: 8px; }
-.color-picker { width: 40px; height: 40px; border-radius: 8px; border: 2px solid #e5e7eb; padding: 2px; cursor: pointer; background: none; flex-shrink: 0; }
-mat-dialog-actions { padding: 1rem 1.5rem !important; gap: 0.75rem; }
-mat-dialog-actions button { border-radius: 10px; display: flex; align-items: center; gap: 6px; }
-::ng-deep .mat-mdc-form-field-text-prefix {
-  padding-right: 0 !important;
-  color: #6b7280;
-  font-size: 0.9rem;
+
+// ── Logo zone ──────────────────────────────────────────────────────────────
+.est-logo-zone {
+  display        : flex;
+  align-items    : center;
+  gap            : 1rem;
+  padding        : 1rem;
+  background     : var(--clr-bg);
+  border         : 1px solid var(--clr-border);
+  border-radius  : var(--radius-md);
+  margin-bottom  : 0.25rem;
 }
+
+.est-logo-preview {
+  width        : 72px;
+  height       : 72px;
+  border-radius: var(--radius-md);
+  border       : 2px solid var(--clr-border);
+  overflow     : hidden;
+  flex-shrink  : 0;
+  background   : var(--clr-surface);
+  display      : flex;
+  align-items  : center;
+  justify-content: center;
+
+  img {
+    width     : 100%;
+    height    : 100%;
+    object-fit: contain;
+  }
+}
+
+.est-logo-placeholder {
+  display        : flex;
+  align-items    : center;
+  justify-content: center;
+  width          : 100%;
+  height         : 100%;
+
+  mat-icon {
+    font-size: 2rem !important;
+    width    : 2rem !important;
+    height   : 2rem !important;
+    color    : var(--clr-text-muted) !important;
+  }
+}
+
+.est-logo-actions {
+  display    : flex;
+  align-items: center;
+  gap        : 0.5rem;
+  flex       : 1;
+}
+
+.est-logo-btn {
+  height   : 36px !important;
+  font-size: 0.82rem !important;
+  gap      : 6px;
+  cursor   : pointer;
+
+  mat-icon { font-size: 1rem !important; width: 1rem !important; height: 1rem !important; }
+}
+
+.est-logo-remove {
+  display        : flex;
+  align-items    : center;
+  justify-content: center;
+  width          : 32px;
+  height         : 32px;
+  border-radius  : 50%;
+  border         : 1px solid var(--clr-border);
+  background     : none;
+  cursor         : pointer;
+  color          : var(--clr-text-soft);
+  transition     : var(--transition);
+  flex-shrink    : 0;
+
+  &:hover { background: #fee2e2; color: #ef4444; border-color: #ef4444; }
+
+  mat-icon { font-size: 1rem !important; width: 1rem !important; height: 1rem !important; }
+}
+
+.est-logo-hint {
+  font-size  : 0.72rem;
+  color      : var(--clr-text-muted);
+  margin     : 0;
+  white-space: nowrap;
+}
+
+// ── Colour picker row ──────────────────────────────────────────────────────
+.est-color-row {
+  display    : flex;
+  align-items: center;
+  gap        : 0.875rem;
+}
+
+.est-color-picker {
+  width        : 46px;
+  height       : 46px;
+  border-radius: var(--radius-sm);
+  border       : 2px solid var(--clr-border);
+  padding      : 3px;
+  cursor       : pointer;
+  background   : none;
+  flex-shrink  : 0;
+}
+
+.est-color-input { flex: 1; }
+
+.est-color-preview {
+  width        : 46px;
+  height       : 46px;
+  border-radius: var(--radius-sm);
+  border       : 2px solid var(--clr-border);
+  flex-shrink  : 0;
+  transition   : background 0.2s;
+}
+
