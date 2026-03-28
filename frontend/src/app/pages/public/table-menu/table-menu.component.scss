@@ -9,6 +9,7 @@
   max-width: 480px;
   margin: 0 auto;
   position: relative;
+  padding-top: 56px; // hauteur app-top-bar fixe
 }
 
 // ── Loader / Error ────────────────────────────
@@ -183,7 +184,7 @@
 // Header
 .tm-header {
   background: white; padding: 1rem 1rem 0.75rem;
-  border-bottom: 1px solid #f1f5f9; position: sticky; top: 0; z-index: 100;
+  border-bottom: 1px solid #f1f5f9; position: sticky; top: 56px; z-index: 100;
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
   display: flex; align-items: center; gap: 0.5rem;
 }
@@ -324,12 +325,20 @@
   display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;
   h2 { font-size: 1.1rem; font-weight: 700; margin: 0; color: #1a1a2e; }
 }
+.ov-header-actions { display: flex; align-items: center; gap: 8px; }
+.refresh-btn {
+  width: 34px; height: 34px; border-radius: 10px; border: 1.5px solid #e5e7eb;
+  background: white; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #6b7280;
+  mat-icon { font-size: 1rem; width: 1rem; height: 1rem; }
+  &:disabled { opacity: 0.4; cursor: default; }
+}
 .new-order-btn {
   display: flex; align-items: center; gap: 4px; padding: 6px 14px;
   border-radius: 10px; border: 1.5px solid #6366f1; background: white;
   color: #6366f1; font-size: 0.8rem; font-weight: 700; cursor: pointer;
   mat-icon { font-size: 0.9rem; width: 0.9rem; height: 0.9rem; }
 }
+.ov-loading { display: flex; justify-content: center; padding: 2rem; }
 .ov-empty {
   display: flex; flex-direction: column; align-items: center; padding: 3rem; gap: 1rem; color: #9ca3af;
   mat-icon { font-size: 3rem; width: 3rem; height: 3rem; opacity: 0.3; }
@@ -347,6 +356,10 @@
 .ohc-meta   { display: flex; gap: 6px; font-size: 0.75rem; color: #9ca3af; }
 .ohc-progress { display: flex; gap: 3px; }
 .ohc-step { flex: 1; height: 4px; border-radius: 99px; background: #f1f5f9; &.done { background: #10b981; } }
+.ohc-step-labels {
+  display: flex; justify-content: space-between;
+  font-size: 0.6rem; color: #d1d5db; margin-top: -4px;
+}
 .ohc-live { display: flex; align-items: center; gap: 5px; font-size: 0.72rem; color: #9ca3af; }
 .live-dot { width: 6px; height: 6px; border-radius: 50%; background: #10b981; animation: blink 1.5s infinite; }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }

@@ -158,7 +158,10 @@ export class CustomerAccountComponent implements OnInit {
   loadOrders(): void {
     this.reviewSvc.getCustomerOrders().subscribe({
       next: (o) => { this.orders = o; this.cdr.detectChanges(); },
-      error: () => {}
+      error: (err) => {
+        this.snackBar.open('Erreur chargement commandes : ' + (err.status || ''), '✕', { duration: 4000 });
+        this.cdr.detectChanges();
+      }
     });
   }
 

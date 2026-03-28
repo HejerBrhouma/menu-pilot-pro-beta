@@ -91,6 +91,18 @@
     <!-- ─── Client connecté ─── -->
     <ng-container *ngIf="isCustomer">
 
+      <!-- Mes commandes -->
+      <button class="action-icon-btn" routerLink="/account" matTooltip="Mes commandes">
+        <span class="icon-wrap">
+          <mat-icon>receipt_long</mat-icon>
+          <span class="icon-badge indigo" *ngIf="customerActiveOrders > 0">
+            {{ customerActiveOrders > 9 ? '9+' : customerActiveOrders }}
+          </span>
+        </span>
+      </button>
+
+      <div class="sep"></div>
+
       <button class="profile-chip" [matMenuTriggerFor]="customerMenu">
         <div class="avatar customer">{{ customerInitial }}</div>
         <div class="profile-info">
@@ -126,14 +138,13 @@
 
 <!-- ══ Menu dropdown Client ═════════════════════════════════════════════ -->
 <mat-menu #customerMenu="matMenu" class="profile-dropdown">
-  <button mat-menu-item routerLink="/account">
+  <button mat-menu-item (click)="goToCustomerAccount()">
     <mat-icon>person</mat-icon>
-    <span>Voir le profil</span>
+    <span>Mon compte</span>
   </button>
-  <button mat-menu-item disabled>
-    <mat-icon>notifications_none</mat-icon>
-    <span>Configurer les notifications</span>
-    <span class="soon-tag">Bientôt</span>
+  <button mat-menu-item (click)="goToCustomerOrders()">
+    <mat-icon>receipt_long</mat-icon>
+    <span>Mes commandes</span>
   </button>
   <mat-divider></mat-divider>
   <button mat-menu-item class="logout-item" (click)="logoutCustomer()">

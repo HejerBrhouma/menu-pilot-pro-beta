@@ -32,8 +32,9 @@ export class TopBarComponent implements OnInit, OnDestroy {
   isSuperAdmin       = false;
   isCustomer         = false;
 
-  pendingOrdersCount  = 0;
-  pendingReviewsCount = 0;
+  pendingOrdersCount      = 0;
+  pendingReviewsCount     = 0;
+  customerActiveOrders    = 0;
 
   adminName         = '';
   adminInitial      = 'A';
@@ -101,6 +102,7 @@ export class TopBarComponent implements OnInit, OnDestroy {
       this.customerInitial = (c?.firstName ?? 'C').charAt(0).toUpperCase();
       this.establishmentLogo = null;
       this.establishmentName = 'Menu Pilot Pro';
+      this.loadCustomerOrdersCount();
     }
 
     this.cdr.detectChanges();
@@ -131,6 +133,18 @@ export class TopBarComponent implements OnInit, OnDestroy {
     });
   }
 
+  private loadCustomerOrdersCount(): void {
+    this.reviewService.getCustomerOrders().subscribe({
+      next: (orders) => {
+        this.customerActiveOrders = orders.filter(
+          (o: any) => !['PAID', 'CANCELLED'].includes(o.status)
+        ).length;
+        this.cdr.detectChanges();
+      },
+      error: () => {}
+    });
+  }
+
   private getRoleLabel(roles: string[]): string {
     if (roles.includes('ROLE_SUPER_ADMIN')) return 'Super Admin';
     if (roles.includes('ROLE_ADMIN'))       return 'Administrateur';
@@ -150,6 +164,14 @@ export class TopBarComponent implements OnInit, OnDestroy {
   logoutAdmin(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
+  }
+
+  goToCustomerAccount(): void {
+    this.router.navigate(['/account']);
+  }
+
+  goToCustomerOrders(): void {
+    this.router.navigate(['/account']);
   }
 
   logoutCustomer(): void {

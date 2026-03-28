@@ -72,3 +72,10 @@ CREATE TABLE invoice_lines (
                                CONSTRAINT fk_invoice_lines_invoice
                                    FOREIGN KEY (invoice_id) REFERENCES invoices (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+ALTER TABLE `orders`
+    ADD CONSTRAINT `FK_orders_customer`
+        FOREIGN KEY (`customer_id`) REFERENCES `user`(`id`) ON DELETE SET NULL;
+
+ALTER TABLE `reviews` MODIFY `customer_id` INT(11) DEFAULT NULL;

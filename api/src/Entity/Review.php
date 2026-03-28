@@ -23,10 +23,10 @@ class Review
 
     /**
      * @ORM\ManyToOne(targetEntity=User::class)
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=true)
      * @Groups({"review:read"})
      */
-    private User $customer;
+    private ?User $customer = null;
 
     /**
      * @ORM\ManyToOne(targetEntity=Order::class)
@@ -102,8 +102,8 @@ class Review
     public function __construct() { $this->createdAt = new \DateTimeImmutable(); }
 
     public function getId(): ?int { return $this->id; }
-    public function getCustomer(): User { return $this->customer; }
-    public function setCustomer(User $c): self { $this->customer = $c; return $this; }
+    public function getCustomer(): ?User { return $this->customer; }
+    public function setCustomer(?User $c): self { $this->customer = $c; return $this; }
     public function getOrder(): Order { return $this->order; }
     public function setOrder(Order $o): self { $this->order = $o; return $this; }
     public function getEstablishment(): Establishment { return $this->establishment; }

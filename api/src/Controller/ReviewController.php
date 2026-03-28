@@ -22,34 +22,37 @@ class ReviewController extends AbstractController
     }
 
     /**
-     * Créer un avis (ROLE_CUSTOMER, commande payée)
+     * Créer un avis (client connecté OU anonyme avec guestName)
      * @Route("/api/public/reviews", methods={"POST"})
      */
     public function create(Request $request): JsonResponse
     {
-        $user = $this->getUser();
-        if (!$user instanceof User || !in_array('ROLE_CUSTOMER', $user->getRoles())) {
-            return $this->json(['error' => 'Connexion requise'], 401);
+        $data      = json_decode($request->getContent(), true);
+        $user      = $this->getUser();
+        $isCustomer = $user instanceof User && in_array('ROLE_CUSTOMER', $user->getRoles());
+        $guestName  = trim($data['guestName'] ?? '');
+
+        if (!$isCustomer && empty($guestName)) {
+            return $this->json(['error' => 'Connexion ou prénom requis'], 401);
         }
 
-        $data  = json_decode($request->getContent(), true);
         $order = $this->em->getRepository(Order::class)->find($data['orderId'] ?? 0);
-
         if (!$order || $order->getStatus() !== 'PAID') {
             return $this->json(['error' => 'Commande invalide ou non payée'], 400);
         }
 
-        // Vérifier doublon
-        $existing = $this->em->getRepository(Review::class)->findOneBy([
-            'customer'   => $user,
-            'order'      => $order,
-            'targetType' => $data['targetType'] ?? '',
-            'targetId'   => (int)($data['targetId'] ?? 0),
-        ]);
-        if ($existing) return $this->json(['error' => 'Avis déjà soumis'], 409);
+        // Vérifier doublon : une seule fois par commande
+        $existing = $isCustomer
+            ? $this->em->getRepository(Review::class)->findOneBy(['customer' => $user,      'order' => $order])
+            : $this->em->getRepository(Review::class)->findOneBy(['guestName' => $guestName, 'order' => $order]);
+        if ($existing) return $this->json(['error' => 'Vous avez déjà laissé un avis pour cette commande'], 409);
 
         $review = new Review();
-        $review->setCustomer($user);
+        if ($isCustomer) {
+            $review->setCustomer($user);
+        } else {
+            $review->setGuestName($guestName);
+        }
         $review->setOrder($order);
         $review->setEstablishment($order->getEstablishment());
         $review->setTargetType($data['targetType']);
@@ -57,9 +60,6 @@ class ReviewController extends AbstractController
         $review->setRating((int)($data['rating'] ?? 5));
         $review->setComment($data['comment'] ?? null);
         $review->setIsLiked(isset($data['isLiked']) ? (bool)$data['isLiked'] : null);
-        if (!empty($data['guestName'])) {
-            $review->setGuestName($data['guestName']);
-        }
 
         $this->em->persist($review);
         $this->em->flush();
@@ -102,13 +102,18 @@ class ReviewController extends AbstractController
             return $this->json(['error' => 'Commande non trouvée ou non payée'], 404);
         }
 
+        $user      = $this->getUser();
+        $alreadyReviewed = $user instanceof User
+            ? (bool) $this->em->getRepository(Review::class)->findOneBy(['customer' => $user, 'order' => $order])
+            : false; // anonyme : vérifié à la soumission (guestName inconnu ici)
+
         return $this->json([
             'id'              => $order->getId(),
             'orderNumber'     => $order->getOrderNumber(),
             'status'          => $order->getStatus(),
             'total'           => $order->getTotal(),
             'establishmentId' => $order->getEstablishment()->getId(),
-            'canReview'       => true,
+            'canReview'       => !$alreadyReviewed,
             'items'           => array_map(fn($item) => [
                 'itemType' => $item->getItemType(),
                 'itemId'   => $item->getItemId(),
@@ -142,10 +147,14 @@ class ReviewController extends AbstractController
             'photo'     => $r->getPhoto(),
             'isLiked'   => $r->getIsLiked(),
             'createdAt' => $r->getCreatedAt()->format('Y-m-d'),
-            'customer'  => [
+            'customer'  => $r->getCustomer() ? [
                 'firstName' => $r->getCustomer()->getFirstName(),
                 'lastName'  => $r->getCustomer()->getLastName(),
                 'avatar'    => $r->getCustomer()->getAvatar(),
+            ] : [
+                'firstName' => $r->getGuestName() ?? 'Anonyme',
+                'lastName'  => '',
+                'avatar'    => null,
             ],
         ], $reviews);
 
@@ -169,15 +178,33 @@ class ReviewController extends AbstractController
         $user = $this->getUser();
         if (!$user instanceof User) return $this->json(['error' => 'Non connecté'], 401);
 
-        $orders = $this->em->createQueryBuilder()
-            ->select('o')
-            ->from(Order::class, 'o')
-            ->where('o.customerName = :name')
-            ->setParameter('name', $user->getFullName())
+        // Commandes liées via FK (nouvelles) OU via customerName (anciennes)
+        $firstName = trim($user->getFirstName() ?? '');
+        $fullName  = trim(($user->getFirstName() ?? '') . ' ' . ($user->getLastName() ?? ''));
+
+        $conditions = ['o.customer = :user'];
+        $params = ['user' => $user];
+
+        if ($firstName !== '') {
+            $conditions[] = 'o.customerName = :firstName';
+            $params['firstName'] = $firstName;
+        }
+        if ($fullName !== $firstName && $fullName !== '') {
+            $conditions[] = 'o.customerName = :fullName';
+            $params['fullName'] = $fullName;
+        }
+
+        $qb = $this->em->createQueryBuilder()
+            ->select('o')->from(Order::class, 'o')
+            ->where(implode(' OR ', $conditions))
             ->orderBy('o.createdAt', 'DESC')
-            ->setMaxResults(20)
-            ->getQuery()
-            ->getResult();
+            ->setMaxResults(50);
+
+        foreach ($params as $key => $val) {
+            $qb->setParameter($key, $val);
+        }
+
+        $orders = $qb->getQuery()->getResult();
 
         return $this->json(array_map(fn(Order $o) => [
             'id'              => $o->getId(),
@@ -186,7 +213,7 @@ class ReviewController extends AbstractController
             'total'           => $o->getTotal(),
             'createdAt'       => $o->getCreatedAt()->format('Y-m-d H:i'),
             'establishmentId' => $o->getEstablishment()->getId(),
-            'canReview'       => $o->getStatus() === 'PAID',
+            'canReview'       => $o->getStatus() === 'PAID' && !$this->em->getRepository(Review::class)->findOneBy(['customer' => $user, 'order' => $o]),
             'items'           => array_map(fn($item) => [
                 'itemType' => $item->getItemType(),
                 'itemId'   => $item->getItemId(),
@@ -218,7 +245,9 @@ class ReviewController extends AbstractController
             'isLiked'    => $r->getIsLiked(),
             'photo'      => $r->getPhoto(),
             'createdAt'  => $r->getCreatedAt()->format('Y-m-d H:i'),
-            'customer'   => $r->getCustomer()->getFullName(),
+            'customer'   => $r->getCustomer()
+                ? $r->getCustomer()->getFullName()
+                : ($r->getGuestName() ?? 'Anonyme'),
         ], $reviews));
     }
 

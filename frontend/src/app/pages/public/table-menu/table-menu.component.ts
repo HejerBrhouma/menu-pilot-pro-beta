@@ -13,6 +13,7 @@ import { ProductImageService } from '../../../core/services/product-image.servic
 import { RatingCacheService } from '../../../core/services/rating-cache.service';
 import { StarRatingComponent } from '../../../shared/star-rating/star-rating.component';
 import { CustomerAuthService } from '../../../core/services/customer-auth.service';
+import { ReviewService } from '../../../core/services/review.service';
 import {
   PublicOrderService, PublicTableInfo, PublicCartItem
 } from '../../../core/services/public-order.service';
@@ -81,11 +82,16 @@ export class TableMenuComponent implements OnInit, OnDestroy {
   // Ratings map
   ratingsMap = new Map<string, { avg: number; count: number }>();
 
+  customerApiOrders: any[] = [];
+  ordersLoading = false;
+
   private token         = '';
   private statusPollers = new Map<number, any>();
+  private customerOrdersPoller: any = null;
 
   private route       = inject(ActivatedRoute);
   private router      = inject(Router);
+  private reviewSvc   = inject(ReviewService);
   private publicSvc   = inject(PublicOrderService);
   private cartStorage = inject(CartStorageService);
   private notifSvc    = inject(NotificationService);
@@ -114,6 +120,7 @@ export class TableMenuComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.statusPollers.forEach(i => clearInterval(i));
+    if (this.customerOrdersPoller) clearInterval(this.customerOrdersPoller);
   }
 
   // ── Chargement ────────────────────────────────────────────────────
@@ -141,6 +148,7 @@ export class TableMenuComponent implements OnInit, OnDestroy {
             if (this.authSvc.isLoggedIn || this.customerName) {
               if (this.authSvc.isLoggedIn) {
                 this.customerName = this.authSvc.currentCustomer?.fullName || this.customerName;
+                this.loadCustomerOrders();
               }
               this.screen = 'menu';
             }
@@ -176,6 +184,7 @@ export class TableMenuComponent implements OnInit, OnDestroy {
         this.customerName = this.authSvc.currentCustomer?.fullName || '';
         this.cartStorage.saveCustomerName(this.token, this.customerName);
         this.screen = 'menu';
+        this.loadCustomerOrders();
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -198,6 +207,7 @@ export class TableMenuComponent implements OnInit, OnDestroy {
         this.customerName = this.authSvc.currentCustomer?.fullName || this.regFirstName;
         this.cartStorage.saveCustomerName(this.token, this.customerName);
         this.screen = 'menu';
+        this.loadCustomerOrders();
         this.snackBar.open('Compte créé ✓', '✕', { duration: 2500, panelClass: ['snack-success'] });
         this.cdr.detectChanges();
       },
@@ -488,7 +498,41 @@ export class TableMenuComponent implements OnInit, OnDestroy {
     return new Date(ts).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
   }
 
+  loadCustomerOrders(): void {
+    if (!this.isLoggedIn) return;
+    this.ordersLoading = true;
+    this.reviewSvc.getCustomerOrders().subscribe({
+      next: (orders) => {
+        this.customerApiOrders = orders;
+        this.ordersLoading = false;
+        this.cdr.detectChanges();
+        this.startCustomerOrdersPolling();
+      },
+      error: () => { this.ordersLoading = false; this.cdr.detectChanges(); }
+    });
+  }
+
+  private startCustomerOrdersPolling(): void {
+    if (this.customerOrdersPoller) clearInterval(this.customerOrdersPoller);
+    const hasActive = this.customerApiOrders.some(o => !['PAID', 'CANCELLED'].includes(o.status));
+    if (!hasActive) return;
+    this.customerOrdersPoller = setInterval(() => {
+      this.reviewSvc.getCustomerOrders().subscribe({
+        next: (orders) => {
+          this.customerApiOrders = orders;
+          this.cdr.detectChanges();
+          const stillActive = orders.some(o => !['PAID', 'CANCELLED'].includes(o.status));
+          if (!stillActive) { clearInterval(this.customerOrdersPoller); this.customerOrdersPoller = null; }
+        },
+        error: () => {}
+      });
+    }, 10000);
+  }
+
   hasActiveOrders(): boolean {
+    if (this.isLoggedIn) {
+      return this.customerApiOrders.some(o => !['PAID', 'CANCELLED'].includes(o.status));
+    }
     return this.pastOrders.some(o => !['PAID', 'CANCELLED'].includes(o.status));
   }
 

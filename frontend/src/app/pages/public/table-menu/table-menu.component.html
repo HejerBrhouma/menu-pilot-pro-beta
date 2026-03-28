@@ -278,53 +278,117 @@
     <div class="orders-view">
       <div class="ov-header">
         <h2>Mes commandes</h2>
-        <button class="new-order-btn" (click)="screen = 'menu'">
-          <mat-icon>add</mat-icon> Commander
-        </button>
+        <div class="ov-header-actions">
+          <button class="refresh-btn" *ngIf="isLoggedIn" (click)="loadCustomerOrders()" [disabled]="ordersLoading">
+            <mat-icon>refresh</mat-icon>
+          </button>
+          <button class="new-order-btn" (click)="screen = 'menu'">
+            <mat-icon>add</mat-icon> Commander
+          </button>
+        </div>
       </div>
 
-      <div class="ov-empty" *ngIf="pastOrders.length === 0">
-        <mat-icon>receipt_long</mat-icon>
-        <p>Aucune commande</p>
-        <button (click)="screen = 'menu'">Voir le menu</button>
-      </div>
-
-      <div class="order-history-card" *ngFor="let order of pastOrders">
-        <div class="ohc-top">
-          <span class="ohc-number">{{ order.orderNumber }}</span>
-          <span class="ohc-status"
-                [style.background]="getStatusColor(order.status) + '18'"
-                [style.color]="getStatusColor(order.status)">
-            {{ getStatusLabel(order.status) }}
-          </span>
-        </div>
-        <div class="ohc-meta">
-          <span>{{ order.items }} article(s)</span>
-          <span>·</span>
-          <span>{{ order.total | number:'1.2-2' }} TND</span>
-          <span>·</span>
-          <span>{{ formatTime(order.createdAt) }}</span>
+      <!-- ── Commandes connecté (API) ── -->
+      <ng-container *ngIf="isLoggedIn">
+        <div class="ov-loading" *ngIf="ordersLoading">
+          <mat-spinner diameter="32"></mat-spinner>
         </div>
 
-        <!-- Progress bar -->
-        <div class="ohc-progress" *ngIf="order.status !== 'CANCELLED'">
-          <div class="ohc-step"
-               *ngFor="let s of ['PENDING','CONFIRMED','SERVED','PAID']"
-               [class.done]="['PENDING','CONFIRMED','SERVED','PAID'].indexOf(s) <= ['PENDING','CONFIRMED','SERVED','PAID'].indexOf(order.status)">
+        <div class="ov-empty" *ngIf="!ordersLoading && customerApiOrders.length === 0">
+          <mat-icon>receipt_long</mat-icon>
+          <p>Aucune commande</p>
+          <button (click)="screen = 'menu'">Voir le menu</button>
+        </div>
+
+        <div class="order-history-card" *ngFor="let order of customerApiOrders">
+          <div class="ohc-top">
+            <span class="ohc-number">{{ order.orderNumber }}</span>
+            <span class="ohc-status"
+                  [style.background]="getStatusColor(order.status) + '18'"
+                  [style.color]="getStatusColor(order.status)">
+              {{ getStatusLabel(order.status) }}
+            </span>
           </div>
+          <div class="ohc-meta">
+            <span>{{ order.items?.length || 0 }} article(s)</span>
+            <span>·</span>
+            <span>{{ order.total | number:'1.2-2' }} TND</span>
+            <span>·</span>
+            <span>{{ order.createdAt | date:'dd/MM HH:mm' }}</span>
+          </div>
+
+          <!-- Progress bar -->
+          <div class="ohc-progress" *ngIf="order.status !== 'CANCELLED'">
+            <div class="ohc-step"
+                 *ngFor="let s of ['PENDING','CONFIRMED','SERVED','PAID']"
+                 [class.done]="['PENDING','CONFIRMED','SERVED','PAID'].indexOf(s) <= ['PENDING','CONFIRMED','SERVED','PAID'].indexOf(order.status)">
+            </div>
+          </div>
+          <div class="ohc-step-labels">
+            <span>Reçue</span><span>Confirmée</span><span>Servie</span><span>Payée</span>
+          </div>
+
+          <!-- Live indicator -->
+          <div class="ohc-live" *ngIf="!['PAID','CANCELLED'].includes(order.status)">
+            <span class="live-dot"></span> En cours de traitement
+          </div>
+
+          <!-- Bouton avis après paiement -->
+          <button class="review-btn" *ngIf="order.canReview" (click)="goToReview(order.id)">
+            <mat-icon>star</mat-icon>
+            Laisser un avis
+          </button>
+        </div>
+      </ng-container>
+
+      <!-- ── Commandes invité (session locale) ── -->
+      <ng-container *ngIf="!isLoggedIn">
+        <div class="ov-empty" *ngIf="pastOrders.length === 0">
+          <mat-icon>receipt_long</mat-icon>
+          <p>Aucune commande</p>
+          <button (click)="screen = 'menu'">Voir le menu</button>
         </div>
 
-        <!-- Live indicator -->
-        <div class="ohc-live" *ngIf="!['PAID','CANCELLED'].includes(order.status)">
-          <span class="live-dot"></span> En cours de traitement
-        </div>
+        <div class="order-history-card" *ngFor="let order of pastOrders">
+          <div class="ohc-top">
+            <span class="ohc-number">{{ order.orderNumber }}</span>
+            <span class="ohc-status"
+                  [style.background]="getStatusColor(order.status) + '18'"
+                  [style.color]="getStatusColor(order.status)">
+              {{ getStatusLabel(order.status) }}
+            </span>
+          </div>
+          <div class="ohc-meta">
+            <span>{{ order.items }} article(s)</span>
+            <span>·</span>
+            <span>{{ order.total | number:'1.2-2' }} TND</span>
+            <span>·</span>
+            <span>{{ formatTime(order.createdAt) }}</span>
+          </div>
 
-        <!-- Bouton avis après paiement -->
-        <button class="review-btn" *ngIf="canReview(order)" (click)="goToReview(order.orderId)">
-          <mat-icon>star</mat-icon>
-          Laisser un avis sur cette commande
-        </button>
-      </div>
+          <!-- Progress bar -->
+          <div class="ohc-progress" *ngIf="order.status !== 'CANCELLED'">
+            <div class="ohc-step"
+                 *ngFor="let s of ['PENDING','CONFIRMED','SERVED','PAID']"
+                 [class.done]="['PENDING','CONFIRMED','SERVED','PAID'].indexOf(s) <= ['PENDING','CONFIRMED','SERVED','PAID'].indexOf(order.status)">
+            </div>
+          </div>
+          <div class="ohc-step-labels">
+            <span>Reçue</span><span>Confirmée</span><span>Servie</span><span>Payée</span>
+          </div>
+
+          <!-- Live indicator -->
+          <div class="ohc-live" *ngIf="!['PAID','CANCELLED'].includes(order.status)">
+            <span class="live-dot"></span> En cours de traitement
+          </div>
+
+          <button class="review-btn" *ngIf="canReview(order)" (click)="goToReview(order.orderId)">
+            <mat-icon>star</mat-icon>
+            Laisser un avis
+          </button>
+        </div>
+      </ng-container>
+
     </div>
   </ng-container>
 

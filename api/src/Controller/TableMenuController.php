@@ -6,6 +6,7 @@ namespace App\Controller;
 use App\Entity\Table;
 use App\Entity\Order;
 use App\Entity\OrderItem;
+use App\Entity\User;
 use App\Service\OrderService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -125,6 +126,11 @@ class TableMenuController extends AbstractController
             $this->orderService->generateOrderNumber($establishment)
         );
         $order->setIsQrOrder(true);
+
+        $currentUser = $this->getUser();
+        if ($currentUser instanceof User && in_array('ROLE_CUSTOMER', $currentUser->getRoles())) {
+            $order->setCustomer($currentUser);
+        }
 
         if (!empty($data['notes'])) {
             $order->setNotes($data['notes']);

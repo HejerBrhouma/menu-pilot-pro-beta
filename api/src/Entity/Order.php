@@ -129,6 +129,14 @@ class Order
     private bool $isQrOrder = false;
 
     /**
+     * Client connecté qui a passé la commande via QR
+     * @ORM\ManyToOne(targetEntity=User::class)
+     * @ORM\JoinColumn(nullable=true)
+     * @Groups({"order:read"})
+     */
+    private ?User $customer = null;
+
+    /**
      * @ORM\Column(type="datetime_immutable")
      * @Groups({"order:read"})
      */
@@ -188,6 +196,8 @@ class Order
     public function setCustomerName(?string $n): self { $this->customerName = $n; return $this; }
     public function getIsQrOrder(): bool { return $this->isQrOrder; }
     public function setIsQrOrder(bool $v): self { $this->isQrOrder = $v; return $this; }
+    public function getCustomer(): ?User { return $this->customer; }
+    public function setCustomer(?User $u): self { $this->customer = $u; return $this; }
 
     public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
     public function getUpdatedAt(): ?\DateTime { return $this->updatedAt; }
