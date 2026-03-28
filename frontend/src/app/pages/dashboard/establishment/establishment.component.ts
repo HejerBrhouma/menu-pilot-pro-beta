@@ -41,6 +41,7 @@ export class EstablishmentComponent implements OnInit {
   infoForm!: FormGroup;
   themeForm!: FormGroup;
   socialForm!: FormGroup;
+  facturationForm!: FormGroup;
 
   openingHours: OpeningHours = { ...DEFAULT_OPENING_HOURS };
   daysKeys   = Object.keys(DAYS_FR);
@@ -85,6 +86,10 @@ export class EstablishmentComponent implements OnInit {
       instagram: [''],
       facebook:  [''],
     });
+
+    this.facturationForm = this.fb.group({
+      tvaRate: [19, [Validators.required, Validators.min(0), Validators.max(100)]],
+    });
   }
 
   loadEstablishment(): void {
@@ -120,12 +125,16 @@ export class EstablishmentComponent implements OnInit {
     this.socialForm.patchValue({
       website: e.website, instagram: e.instagram, facebook: e.facebook
     });
+    this.facturationForm.patchValue({
+      tvaRate: e.tvaRate ?? 19,
+    });
 
     // Désactiver tous les formulaires si lecture seule
     if (!this.canManage) {
       this.infoForm.disable();
       this.themeForm.disable();
       this.socialForm.disable();
+      this.facturationForm.disable();
     }
   }
 
@@ -190,6 +199,15 @@ export class EstablishmentComponent implements OnInit {
     this.saving = true;
     this.establishmentService.update(this.establishment.id, { openingHours: this.openingHours }).subscribe({
       next: () => { this.saving = false; this.notify('Horaires sauvegardés ✓'); },
+      error: (err) => { this.saving = false; this.notify(err.message, 'error'); }
+    });
+  }
+
+  saveFacturation(): void {
+    if (!this.canManage || !this.establishment?.id || this.facturationForm.invalid) return;
+    this.saving = true;
+    this.establishmentService.update(this.establishment.id, this.facturationForm.value).subscribe({
+      next: () => { this.saving = false; this.notify('Paramètres de facturation sauvegardés ✓'); },
       error: (err) => { this.saving = false; this.notify(err.message, 'error'); }
     });
   }

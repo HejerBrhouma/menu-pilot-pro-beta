@@ -44,6 +44,16 @@ export interface RestaurantTable {
   qrToken?:  string;
 }
 
+export interface InvoiceLine {
+  id?:          number;
+  description:  string;
+  itemType:     'PRODUCT' | 'PACK';
+  itemId:       number;
+  quantity:     number;
+  unitPrice:    number;
+  total:        number;
+}
+
 export interface Invoice {
   '@id'?:          string;
   id?:             number;
@@ -51,8 +61,11 @@ export interface Invoice {
   order?:          any;
   waiter?:         any;
   itemsSnapshot:   any[];
+  lines?:          InvoiceLine[];
   subtotal:        number;
   discount:        number;
+  tvaRate?:        number;
+  tvaAmount?:      number;
   total:           number;
   paymentMethod?:  PaymentMethod;
   status:          'PENDING' | 'PAID' | 'CANCELLED';
@@ -78,10 +91,11 @@ export const ORDER_STATUS_COLORS: Record<OrderStatus, string> = {
   CANCELLED: '#ef4444',
 };
 
+// SERVED → PAID retiré intentionnellement :
+// le paiement doit passer par le dialogue d'encaissement (POST /invoice)
 export const ORDER_STATUS_NEXT: Partial<Record<OrderStatus, OrderStatus>> = {
   PENDING:   'CONFIRMED',
   CONFIRMED: 'SERVED',
-  SERVED:    'PAID',
 };
 
 export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {

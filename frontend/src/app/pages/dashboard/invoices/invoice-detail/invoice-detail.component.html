@@ -35,12 +35,17 @@
       <!-- En-tête -->
       <div class="inv-header">
         <div class="inv-brand">
-          <div class="brand-logo">
-            <mat-icon>restaurant_menu</mat-icon>
+          <!-- Logo enseigne si disponible, sinon icône fallback -->
+          <div class="brand-logo" [class.has-img]="getEstablishmentLogoUrl()">
+            <img *ngIf="getEstablishmentLogoUrl()"
+                 [src]="getEstablishmentLogoUrl()"
+                 alt="Logo"
+                 class="brand-logo-img">
+            <mat-icon *ngIf="!getEstablishmentLogoUrl()">restaurant_menu</mat-icon>
           </div>
           <div class="brand-info">
             <h2>{{ getEstablishmentName() }}</h2>
-            <span>Système de caisse Menu Pilot</span>
+            <span>Facture · Menu Pilot Pro</span>
           </div>
         </div>
         <div class="inv-title-block">
@@ -86,28 +91,43 @@
         </tr>
         </thead>
         <tbody>
-        <tr *ngFor="let item of invoice.itemsSnapshot">
-          <td class="td-name">
-            {{ item.name }}
-            <span class="item-note" *ngIf="item.notes">— {{ item.notes }}</span>
-            <div class="item-promos" *ngIf="item.promotions && item.promotions.length > 0">
-                <span class="promo-tag" *ngFor="let p of item.promotions">
-                  🏷 {{ p.name }}
+        <!-- Lines from InvoiceLine entities (new invoices) -->
+        <ng-container *ngIf="invoice.lines && invoice.lines.length > 0">
+          <tr *ngFor="let line of invoice.lines">
+            <td class="td-name">{{ line.description }}</td>
+            <td class="td-type">
+              <span class="type-pill">{{ line.itemType === 'PACK' ? 'Pack' : 'Produit' }}</span>
+            </td>
+            <td class="td-qty">{{ line.quantity }}</td>
+            <td class="td-unit">{{ line.unitPrice | number:'1.3-3' }} TND</td>
+            <td class="td-total">{{ line.total | number:'1.3-3' }} TND</td>
+          </tr>
+        </ng-container>
+        <!-- Fallback: itemsSnapshot (old invoices without lines) -->
+        <ng-container *ngIf="!invoice.lines || invoice.lines.length === 0">
+          <tr *ngFor="let item of invoice.itemsSnapshot">
+            <td class="td-name">
+              {{ item.name }}
+              <span class="item-note" *ngIf="item.notes">— {{ item.notes }}</span>
+              <div class="item-promos" *ngIf="item.promotions && item.promotions.length > 0">
+                  <span class="promo-tag" *ngFor="let p of item.promotions">
+                    🏷 {{ p.name }}
+                  </span>
+              </div>
+            </td>
+            <td class="td-type">
+              <span class="type-pill">{{ item.type === 'PACK' ? 'Pack' : 'Produit' }}</span>
+            </td>
+            <td class="td-qty">{{ item.quantity }}</td>
+            <td class="td-unit">
+                <span class="price-crossed" *ngIf="item.unitPrice !== item.finalPrice">
+                  {{ item.unitPrice | number:'1.2-2' }}
                 </span>
-            </div>
-          </td>
-          <td class="td-type">
-            <span class="type-pill">{{ item.type === 'PACK' ? 'Pack' : 'Produit' }}</span>
-          </td>
-          <td class="td-qty">{{ item.quantity }}</td>
-          <td class="td-unit">
-              <span class="price-crossed" *ngIf="item.unitPrice !== item.finalPrice">
-                {{ item.unitPrice | number:'1.2-2' }}
-              </span>
-            {{ item.finalPrice | number:'1.2-2' }} TND
-          </td>
-          <td class="td-total">{{ item.total | number:'1.2-2' }} TND</td>
-        </tr>
+              {{ item.finalPrice | number:'1.2-2' }} TND
+            </td>
+            <td class="td-total">{{ item.total | number:'1.2-2' }} TND</td>
+          </tr>
+        </ng-container>
         </tbody>
       </table>
 
@@ -116,17 +136,25 @@
       <!-- Récapitulatif -->
       <div class="inv-summary">
         <div class="summary-row">
-          <span>Sous-total</span>
-          <span>{{ invoice.subtotal | number:'1.2-2' }} TND</span>
+          <span>Sous-total HT</span>
+          <span>{{ invoice.subtotal | number:'1.3-3' }} TND</span>
         </div>
         <div class="summary-row promo" *ngIf="invoice.discount > 0">
           <span>🏷 Promotions appliquées</span>
-          <span>- {{ invoice.discount | number:'1.2-2' }} TND</span>
+          <span>- {{ invoice.discount | number:'1.3-3' }} TND</span>
+        </div>
+        <div class="summary-row" *ngIf="invoice.discount > 0">
+          <span>Base HT</span>
+          <span>{{ (invoice.subtotal - invoice.discount) | number:'1.3-3' }} TND</span>
+        </div>
+        <div class="summary-row tva" *ngIf="invoice.tvaRate != null">
+          <span>TVA ({{ invoice.tvaRate }}%)</span>
+          <span>+ {{ invoice.tvaAmount | number:'1.3-3' }} TND</span>
         </div>
         <div class="summary-divider"></div>
         <div class="summary-row total">
-          <span>TOTAL</span>
-          <span>{{ invoice.total | number:'1.2-2' }} TND</span>
+          <span>TOTAL TTC</span>
+          <span>{{ invoice.total | number:'1.3-3' }} TND</span>
         </div>
         <div class="payment-method">
           <mat-icon>{{ getPaymentIcon(invoice.paymentMethod) }}</mat-icon>

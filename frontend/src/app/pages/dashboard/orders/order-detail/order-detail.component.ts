@@ -121,11 +121,21 @@ export class OrderDetailComponent implements OnInit {
       this.saving = true;
       this.orderService.generateInvoice(this.order!.id!, result.paymentMethod).subscribe({
         next: ({ invoiceId }) => {
-          this.saving = false;
-          this.order  = { ...this.order!, status: 'PAID' };
-          this.notify('Facture générée ✓');
-          this.loadInvoice(this.order!.id!);
-          this.cdr.detectChanges();
+          this.order = { ...this.order!, status: 'PAID' };
+          // Charger la facture directement par son ID (retourné par le backend)
+          this.orderService.getInvoice(invoiceId).subscribe({
+            next: (invoice) => {
+              this.invoice = invoice;
+              this.saving  = false;
+              this.notify('Paiement enregistré · Facture générée ✓');
+              this.cdr.detectChanges();
+            },
+            error: () => {
+              this.saving = false;
+              this.notify('Paiement enregistré ✓');
+              this.cdr.detectChanges();
+            }
+          });
         },
         error: (err: any) => {
           this.saving = false;

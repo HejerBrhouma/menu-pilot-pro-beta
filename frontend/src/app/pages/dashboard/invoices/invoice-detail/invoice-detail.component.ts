@@ -11,6 +11,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDividerModule } from '@angular/material/divider';
 import { OrderService } from '../../../../core/services/order.service';
 import { PdfService } from '../../../../core/services/pdf.service';
+import { EstablishmentService } from '../../../../core/services/establishment.service';
 import { Invoice, PAYMENT_METHOD_LABELS } from '../../../../core/models/order.model';
 
 @Component({
@@ -25,17 +26,19 @@ import { Invoice, PAYMENT_METHOD_LABELS } from '../../../../core/models/order.mo
   styleUrls: ['./invoice-detail.component.scss']
 })
 export class InvoiceDetailComponent implements OnInit {
-  invoice: Invoice | null = null;
-  loading  = true;
+  invoice:    Invoice | null = null;
+  loading     = true;
+  logoUrl:    string | null = null;
 
   paymentLabels = PAYMENT_METHOD_LABELS;
 
-  private route        = inject(ActivatedRoute);
-  private router       = inject(Router);
-  private orderService = inject(OrderService);
-  private snackBar     = inject(MatSnackBar);
-  private cdr          = inject(ChangeDetectorRef);
-  private pdfService   = inject(PdfService);
+  private route                = inject(ActivatedRoute);
+  private router               = inject(Router);
+  private orderService         = inject(OrderService);
+  private establishmentService = inject(EstablishmentService);
+  private snackBar             = inject(MatSnackBar);
+  private cdr                  = inject(ChangeDetectorRef);
+  private pdfService           = inject(PdfService);
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
@@ -48,6 +51,7 @@ export class InvoiceDetailComponent implements OnInit {
       next: (invoice) => {
         this.invoice = invoice;
         this.loading = false;
+        this.loadEstablishmentLogo();
         this.cdr.detectChanges();
       },
       error: () => {
@@ -58,7 +62,31 @@ export class InvoiceDetailComponent implements OnInit {
     });
   }
 
+  private loadEstablishmentLogo(): void {
+    // Essayer d'abord via le champ logo retourné dans invoice.establishment
+    const est = (this.invoice as any)?.establishment;
+    if (est?.logo) {
+      this.logoUrl = this.establishmentService.getLogoUrl(est.logo);
+      this.cdr.detectChanges();
+      return;
+    }
+    // Sinon, charger l'enseigne directement (fiable même sans cache Symfony)
+    this.establishmentService.getAll().subscribe({
+      next: (ests) => {
+        if (ests.length && ests[0].logo) {
+          this.logoUrl = this.establishmentService.getLogoUrl(ests[0].logo);
+          this.cdr.detectChanges();
+        }
+      },
+      error: () => {}
+    });
+  }
+
   printInvoice(): void {
+    document.body.classList.add('printing-invoice');
+    window.addEventListener('afterprint', () => {
+      document.body.classList.remove('printing-invoice');
+    }, { once: true });
     window.print();
   }
 
@@ -94,9 +122,12 @@ export class InvoiceDetailComponent implements OnInit {
   }
 
   getEstablishmentName(): string {
-    const inv = this.invoice as any;
-    if (!inv || !inv.establishment) return 'Menu Pilot';
-    return inv.establishment.name || 'Menu Pilot';
+    const est = (this.invoice as any)?.establishment;
+    return est?.name || 'Menu Pilot';
+  }
+
+  getEstablishmentLogoUrl(): string | null {
+    return this.logoUrl;
   }
 
   getPaymentIcon(method?: string): string {

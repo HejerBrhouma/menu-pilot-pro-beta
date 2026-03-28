@@ -75,10 +75,15 @@
 .inv-brand {
   display: flex; align-items: center; gap: 0.875rem;
   .brand-logo {
-    width: 48px; height: 48px; border-radius: 14px;
+    width: 56px; height: 56px; border-radius: 14px;
     background: linear-gradient(135deg, #6366f1, #8b5cf6);
     display: flex; align-items: center; justify-content: center;
+    overflow: hidden; flex-shrink: 0;
+    &.has-img { background: transparent; border: 1.5px solid #f1f5f9; }
     mat-icon { color: white; font-size: 1.5rem; width: 1.5rem; height: 1.5rem; }
+  }
+  .brand-logo-img {
+    width: 100%; height: 100%; object-fit: contain;
   }
   .brand-info {
     h2 { font-size: 1.1rem; font-weight: 700; color: #1a1a2e; margin: 0 0 2px; }
@@ -155,6 +160,7 @@
   display: flex; justify-content: space-between;
   padding: 0.375rem 0; font-size: 0.875rem; color: #6b7280;
   &.promo { color: #10b981; font-weight: 500; }
+  &.tva { color: #f59e0b; font-weight: 500; }
   &.total {
     font-size: 1.1rem; font-weight: 800; color: #1a1a2e;
     padding: 0.625rem 0;
@@ -185,114 +191,42 @@
   a, button { border-radius: 10px; display: flex; align-items: center; gap: 6px; }
 }
 
-// ══════════════════════════════════════════════
-// ── IMPRESSION PDF ────────────────────────────
-// ══════════════════════════════════════════════
+// ── Impression : styles scoped au composant ────────────────────────
 @media print {
-  @page {
-    size: A4;
-    margin: 1.5cm;
-  }
-
-  // Masquer TOUT le layout Angular Material
-  mat-sidenav-container,
-  mat-sidenav,
-  .mat-sidenav,
-  .mat-sidenav-container,
-  .mat-drawer,
-  .mat-drawer-container,
-  .mat-drawer-content,
-  app-header,
-  app-impersonation-banner,
-  app-promo-conflict-banner,
-  .no-print,
-  .detail-topbar,
-  .bottom-actions {
-    display: none !important;
-  }
-
-  // Afficher uniquement la facture
-  body, html {
-    margin: 0 !important;
-    padding: 0 !important;
-    background: white !important;
-  }
-
-  // Forcer la visibilité du composant
   :host {
     display: block !important;
     background: white !important;
+    overflow: visible !important;
+    height: auto !important;
   }
 
   .detail-page {
     display: block !important;
+    background: white !important;
+    overflow: visible !important;
+    height: auto !important;
   }
 
+  /* Supprimer tout padding autour et centrage — pleine page */
   .invoice-wrapper {
-    padding: 0 !important;
     display: block !important;
-  }
-
-  .invoice-paper {
-    max-width: 100% !important;
-    border: none !important;
-    box-shadow: none !important;
-    border-radius: 0 !important;
     padding: 0 !important;
     margin: 0 !important;
+    overflow: visible !important;
+    height: auto !important;
   }
 
-  // Forcer les couleurs à l'impression
-  * {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
-
-  // Eviter les coupures dans les lignes
-  tr, .item-row { page-break-inside: avoid; }
-  thead { display: table-header-group; }
-}
-
-// ══════════════════════════════════════════════
-// OVERRIDE GLOBAL PRINT — masquer tout le layout
-// ══════════════════════════════════════════════
-@media print {
-  // Masquer sidebar Angular Material
-  mat-sidenav,
-  mat-sidenav-container > mat-sidenav,
-  .mat-sidenav,
-  .mat-sidenav-container .mat-drawer,
-  .mat-drawer-container .mat-drawer { display: none !important; }
-
-  // Forcer le contenu principal à occuper toute la page
-  mat-sidenav-content,
-  .mat-sidenav-content,
-  .mat-drawer-content {
-    margin-left: 0 !important;
-    padding: 0 !important;
-  }
-
-  // Masquer topbar, boutons, bannières
-  .no-print,
-  .detail-topbar,
-  .bottom-actions,
-  app-impersonation-banner,
-  app-promo-conflict-banner { display: none !important; }
-
-  // Fond blanc
-  body, :host { background: white !important; }
-
-  // Facture pleine page
-  .invoice-wrapper { padding: 0 !important; }
   .invoice-paper {
     box-shadow: none !important;
     border: none !important;
     border-radius: 0 !important;
     max-width: 100% !important;
-    padding: 1cm !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
   }
 
-  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-
-  @page { size: A4; margin: 0; }
+  tr { page-break-inside: avoid; }
+  thead { display: table-header-group; }
 }
