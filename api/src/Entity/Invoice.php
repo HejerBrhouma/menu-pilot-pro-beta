@@ -5,6 +5,8 @@ namespace App\Entity;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
@@ -52,6 +54,27 @@ class Invoice
     /** @ORM\Column(type="float") @Groups({"invoice:read"}) */
     private float $total;
 
+    /**
+     * Taux de TVA figé au moment du paiement (ex: 19.0)
+     * @ORM\Column(type="float")
+     * @Groups({"invoice:read"})
+     */
+    private float $tvaRate = 19.0;
+
+    /**
+     * Montant TVA = (subtotal - discount) × tvaRate / 100
+     * @ORM\Column(type="float")
+     * @Groups({"invoice:read"})
+     */
+    private float $tvaAmount = 0.0;
+
+    /**
+     * Lignes de facturation détaillées
+     * @ORM\OneToMany(targetEntity=InvoiceLine::class, mappedBy="invoice", cascade={"persist","remove"}, orphanRemoval=true)
+     * @Groups({"invoice:read"})
+     */
+    private Collection $lines;
+
     /** @ORM\Column(type="string", length=20, nullable=true) @Groups({"invoice:read", "invoice:write"}) */
     private ?string $paymentMethod = null;
 
@@ -70,7 +93,11 @@ class Invoice
     /** @ORM\Column(type="datetime_immutable") @Groups({"invoice:read"}) */
     private \DateTimeImmutable $createdAt;
 
-    public function __construct() { $this->createdAt = new \DateTimeImmutable(); }
+    public function __construct()
+    {
+        $this->createdAt = new \DateTimeImmutable();
+        $this->lines     = new ArrayCollection();
+    }
 
     public function getId(): ?int { return $this->id; }
     public function getInvoiceNumber(): string { return $this->invoiceNumber; }
@@ -87,6 +114,12 @@ class Invoice
     public function setDiscount(float $v): self { $this->discount = $v; return $this; }
     public function getTotal(): float { return $this->total; }
     public function setTotal(float $v): self { $this->total = $v; return $this; }
+    public function getTvaRate(): float { return $this->tvaRate; }
+    public function setTvaRate(float $v): self { $this->tvaRate = $v; return $this; }
+    public function getTvaAmount(): float { return $this->tvaAmount; }
+    public function setTvaAmount(float $v): self { $this->tvaAmount = $v; return $this; }
+    public function getLines(): Collection { return $this->lines; }
+    public function addLine(InvoiceLine $line): self { if (!$this->lines->contains($line)) { $this->lines->add($line); $line->setInvoice($this); } return $this; }
     public function getPaymentMethod(): ?string { return $this->paymentMethod; }
     public function setPaymentMethod(?string $m): self { $this->paymentMethod = $m; return $this; }
     public function getStatus(): string { return $this->status; }

@@ -43,3 +43,32 @@ ALTER TABLE reviews
     ADD CONSTRAINT FK_review_customer FOREIGN KEY (customer_id) REFERENCES customer_accounts (id),
     ADD CONSTRAINT FK_review_order FOREIGN KEY (order_id) REFERENCES orders (id),
     ADD CONSTRAINT FK_review_est FOREIGN KEY (establishment_id) REFERENCES establishments (id);
+
+ALTER TABLE reviews
+    ADD COLUMN guest_name VARCHAR(100) DEFAULT NULL;
+
+ALTER TABLE establishments
+    ADD name VARCHAR(255) DEFAULT NULL;
+
+-- 1. Taux TVA sur l'enseigne
+ALTER TABLE establishments ADD tva_rate DOUBLE DEFAULT NULL;
+
+-- 2. TVA figée sur la facture
+ALTER TABLE invoices ADD tva_rate DOUBLE NOT NULL DEFAULT 19;
+ALTER TABLE invoices ADD tva_amount DOUBLE NOT NULL DEFAULT 0;
+
+-- 3. Table des lignes de facturation
+CREATE TABLE invoice_lines (
+                               id          INT AUTO_INCREMENT NOT NULL,
+                               invoice_id  INT NOT NULL,
+                               description VARCHAR(255) NOT NULL,
+                               item_type   VARCHAR(20)  NOT NULL,
+                               item_id     INT NOT NULL,
+                               quantity    INT NOT NULL,
+                               unit_price  DOUBLE NOT NULL,
+                               total       DOUBLE NOT NULL,
+                               PRIMARY KEY (id),
+                               INDEX idx_invoice_lines_invoice (invoice_id),
+                               CONSTRAINT fk_invoice_lines_invoice
+                                   FOREIGN KEY (invoice_id) REFERENCES invoices (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
