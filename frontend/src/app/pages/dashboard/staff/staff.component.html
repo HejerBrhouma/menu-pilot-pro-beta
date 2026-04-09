@@ -76,9 +76,34 @@
         </td>
       </ng-container>
 
-      <!-- Statut -->
+      <!-- Statut temps réel -->
+      <ng-container matColumnDef="liveStatus">
+        <th mat-header-cell *matHeaderCellDef>En ligne</th>
+        <td mat-cell *matCellDef="let user">
+          <div class="live-status-cell" [class.has-alert]="user.hasAlert">
+            <span class="live-dot"
+                  [style.background]="statusColor[user.liveStatus || 'OFFLINE'] || '#9ca3af'"
+                  [class.pulse]="user.liveStatus === 'INACTIVE'">
+            </span>
+            <span class="live-label"
+                  [style.color]="statusColor[user.liveStatus || 'OFFLINE'] || '#9ca3af'">
+              {{ statusLabel[user.liveStatus || 'OFFLINE'] }}
+            </span>
+            <span *ngIf="user.liveActivityLabel && user.liveActivityLabel !== 'ALERT_NO_RESPONSE'"
+                  class="live-activity">
+              — {{ user.liveActivityLabel }}
+            </span>
+            <mat-icon *ngIf="user.hasAlert" class="alert-icon"
+                      matTooltip="Pas de réponse depuis + de 2 min">
+              warning
+            </mat-icon>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Statut compte (actif / inactif) -->
       <ng-container matColumnDef="status">
-        <th mat-header-cell *matHeaderCellDef>Statut</th>
+        <th mat-header-cell *matHeaderCellDef>Compte</th>
         <td mat-cell *matCellDef="let user">
           <div class="status-toggle">
             <mat-slide-toggle

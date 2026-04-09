@@ -237,6 +237,17 @@ body {
 .snack-success .mdc-snackbar__surface { background: #065f46 !important; }
 .snack-error   .mdc-snackbar__surface { background: #991b1b !important; }
 
+/* ── Dialog inactivité ──────────────────────────────────────────────────── */
+.inactivity-dialog-panel .mat-mdc-dialog-container {
+  border-radius: 20px !important;
+  overflow: hidden !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18) !important;
+}
+.cdk-overlay-backdrop.cdk-overlay-dark-backdrop {
+  background: rgba(15, 23, 42, 0.6) !important;
+  backdrop-filter: blur(4px);
+}
+
 /* You can add global styles to this file, and also import other style files */
 
 // ── Dropdown profil topbar ────────────────────────────────────────────────

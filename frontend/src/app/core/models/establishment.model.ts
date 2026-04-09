@@ -36,6 +36,12 @@ export interface Establishment {
   instagram?:      string;
   facebook?:       string;
   tvaRate?:        number | null;
+  paymentMethods?:       string[];
+  customPaymentMethods?: { value: string; label: string; icon: string }[];
+  staffPermissions?: {
+    manager?: Record<string, boolean>;
+    waiter?:  Record<string, boolean>;
+  };
   isActive:        boolean;
   maxUsers:        number;
   owner?:          string;

@@ -1,0 +1,382 @@
+<!-- src/app/pages/dashboard/pos/pos.component.html -->
+
+<div class="pos-shell">
+
+  <!-- ── Header ──────────────────────────────────────────────────────── -->
+  <header class="pos-header">
+    <div class="pos-header-left">
+      <!-- Back button when in sub-view -->
+      <button class="pos-back-btn" *ngIf="currentView !== 'home'" (click)="showView('home')">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="pos-logo" *ngIf="logoUrl">
+        <img [src]="logoUrl" [alt]="establishmentName">
+      </div>
+      <div class="pos-logo-icon" *ngIf="!logoUrl">
+        <mat-icon>restaurant_menu</mat-icon>
+      </div>
+      <div class="pos-title-group">
+        <span class="pos-enseigne">{{ establishmentName || 'Mon Établissement' }}</span>
+        <span class="pos-subtitle">
+          <ng-container *ngIf="currentView === 'home'">Mode Caisse</ng-container>
+          <ng-container *ngIf="currentView === 'tables'">Plan de salle</ng-container>
+          <ng-container *ngIf="currentView === 'orders'">Commandes en cours</ng-container>
+          <ng-container *ngIf="currentView === 'invoices'">Factures du jour</ng-container>
+          <ng-container *ngIf="currentView === 'reviews'">Avis clients</ng-container>
+        </span>
+      </div>
+    </div>
+
+    <div class="pos-header-right">
+      <div class="pos-stat">
+        <span class="stat-value">{{ todayInvoices.length }}</span>
+        <span class="stat-label">Factures</span>
+      </div>
+      <div class="pos-stat">
+        <span class="stat-value">{{ freeTables }} / {{ tables.length }}</span>
+        <span class="stat-label">Tables libres</span>
+      </div>
+      <div class="pos-stat highlight">
+        <span class="stat-value">{{ todayRevenue | number:'1.2-2' }} TND</span>
+        <span class="stat-label">Recette du jour</span>
+      </div>
+      <button class="pos-new-btn" (click)="goToNewOrder()">
+        <mat-icon>add</mat-icon>
+        <span>Commande</span>
+      </button>
+      <button class="pos-exit-btn" (click)="exitPos()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <!-- HOME VIEW — 4 large tiles                                         -->
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <div class="pos-body" *ngIf="currentView === 'home'">
+    <div class="pos-actions">
+
+      <!-- Nouvelle commande -->
+      <button class="pos-tile tile-order" (click)="goToNewOrder()">
+        <div class="tile-icon-wrap">
+          <mat-icon>add_shopping_cart</mat-icon>
+        </div>
+        <span class="tile-label">Nouvelle commande</span>
+        <span class="tile-sub">Saisir une commande</span>
+      </button>
+
+      <!-- Tables -->
+      <button class="pos-tile tile-tables" (click)="showView('tables')">
+        <div class="tile-icon-wrap">
+          <mat-icon>table_restaurant</mat-icon>
+          <span class="tile-badge occupied" *ngIf="occupiedTables > 0">{{ occupiedTables }}</span>
+        </div>
+        <span class="tile-label">Tables</span>
+        <span class="tile-sub">{{ freeTables }} libre{{ freeTables > 1 ? 's' : '' }} · {{ occupiedTables }} occupée{{ occupiedTables > 1 ? 's' : '' }}</span>
+      </button>
+
+      <!-- Factures -->
+      <button class="pos-tile tile-invoices" (click)="showView('invoices')">
+        <div class="tile-icon-wrap">
+          <mat-icon>receipt</mat-icon>
+          <span class="tile-badge green" *ngIf="todayInvoices.length > 0">{{ todayInvoices.length }}</span>
+        </div>
+        <span class="tile-label">Factures</span>
+        <span class="tile-sub">{{ todayInvoices.length }} facture{{ todayInvoices.length > 1 ? 's' : '' }} aujourd'hui</span>
+      </button>
+
+      <!-- Commandes -->
+      <button class="pos-tile tile-orders-list" (click)="showView('orders')">
+        <div class="tile-icon-wrap">
+          <mat-icon>receipt_long</mat-icon>
+          <span class="tile-badge red pulse" *ngIf="allActiveOrders.length > 0">{{ allActiveOrders.length }}</span>
+        </div>
+        <span class="tile-label">Commandes</span>
+        <span class="tile-sub">{{ pendingOrders.length }} en attente · {{ confirmedOrders.length }} en cours · {{ servedOrders.length }} non payée{{ servedOrders.length > 1 ? 's' : '' }}</span>
+      </button>
+
+      <!-- Avis -->
+      <button class="pos-tile tile-reviews" (click)="showView('reviews')" *ngIf="canModerateReviews">
+        <div class="tile-icon-wrap">
+          <mat-icon>rate_review</mat-icon>
+          <span class="tile-badge yellow pulse" *ngIf="pendingReviews.length > 0">{{ pendingReviews.length }}</span>
+        </div>
+        <span class="tile-label">Avis clients</span>
+        <span class="tile-sub">{{ pendingReviews.length }} en attente de validation</span>
+      </button>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <!-- TABLES VIEW                                                        -->
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <div class="pos-body" *ngIf="currentView === 'tables'">
+
+    <div class="view-loader" *ngIf="loadingTables">
+      <mat-spinner diameter="40"></mat-spinner>
+      <span>Chargement des tables…</span>
+    </div>
+
+    <div class="tables-grid" *ngIf="!loadingTables">
+
+      <div class="table-empty" *ngIf="tables.length === 0">
+        <mat-icon>table_restaurant</mat-icon>
+        <p>Aucune table active</p>
+      </div>
+
+      <div *ngFor="let table of tables"
+           class="table-card"
+           [class.table-free]="table.status === 'FREE'"
+           [class.table-occupied]="table.status === 'OCCUPIED'"
+           [class.table-reserved]="table.status === 'RESERVED'"
+           (click)="getOrderForTable(table) && goToOrder(getOrderForTable(table)!.id!)">
+
+        <!-- Status indicator -->
+        <div class="table-status-dot"></div>
+
+        <!-- Table name -->
+        <div class="table-name">{{ table.name }}</div>
+        <div class="table-capacity">
+          <mat-icon>people</mat-icon>
+          {{ table.capacity }} pers.
+        </div>
+
+        <!-- Status label -->
+        <div class="table-status-label">
+          <ng-container *ngIf="table.status === 'FREE'">
+            <mat-icon>check_circle</mat-icon> Libre
+          </ng-container>
+          <ng-container *ngIf="table.status === 'OCCUPIED'">
+            <mat-icon>dining</mat-icon> Occupée
+          </ng-container>
+          <ng-container *ngIf="table.status === 'RESERVED'">
+            <mat-icon>schedule</mat-icon> Réservée
+          </ng-container>
+        </div>
+
+        <!-- Order summary if occupied -->
+        <div class="table-order-info" *ngIf="table.status === 'OCCUPIED' && getOrderForTable(table) as order">
+          <span class="order-items">{{ getItemsCount(order) }} art.</span>
+          <span class="order-total">{{ order.total | number:'1.2-2' }} TND</span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <!-- ORDERS VIEW                                                        -->
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <div class="pos-body" *ngIf="currentView === 'orders'">
+
+    <div class="view-loader" *ngIf="loadingOrders">
+      <mat-spinner diameter="40"></mat-spinner>
+      <span>Chargement…</span>
+    </div>
+
+    <div *ngIf="!loadingOrders">
+
+      <div class="orders-empty"
+           *ngIf="pendingOrders.length === 0 && confirmedOrders.length === 0 && servedOrders.length === 0">
+        <mat-icon>check_circle</mat-icon>
+        <p>Aucune commande en cours</p>
+      </div>
+
+      <!-- Pending -->
+      <div *ngIf="pendingOrders.length > 0">
+        <div class="orders-group-label pending-label">
+          <mat-icon>hourglass_top</mat-icon>
+          En attente ({{ pendingOrders.length }})
+        </div>
+        <div class="orders-grid">
+          <div class="order-card card-pending" *ngFor="let o of pendingOrders"
+               (click)="goToOrder(o.id!)">
+            <div class="order-card-top">
+              <span class="order-table">{{ getTableName(o) }}</span>
+              <span class="order-time">{{ timeAgo(o.createdAt) }}</span>
+            </div>
+            <div class="order-items-count">{{ getItemsCount(o) }} article{{ getItemsCount(o) > 1 ? 's' : '' }}</div>
+            <div class="order-card-bottom">
+              <span class="order-type-tag">
+                <mat-icon>{{ o.type === 'TAKEAWAY' ? 'shopping_bag' : 'table_restaurant' }}</mat-icon>
+                {{ o.type === 'TAKEAWAY' ? 'À emporter' : 'Sur place' }}
+              </span>
+              <span class="order-total">{{ o.total | number:'1.2-2' }} TND</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Confirmed -->
+      <div *ngIf="confirmedOrders.length > 0">
+        <div class="orders-group-label confirmed-label">
+          <mat-icon>check</mat-icon>
+          En traitement ({{ confirmedOrders.length }})
+        </div>
+        <div class="orders-grid">
+          <div class="order-card card-confirmed" *ngFor="let o of confirmedOrders"
+               (click)="goToOrder(o.id!)">
+            <div class="order-card-top">
+              <span class="order-table">{{ getTableName(o) }}</span>
+              <span class="order-time">{{ timeAgo(o.createdAt) }}</span>
+            </div>
+            <div class="order-items-count">{{ getItemsCount(o) }} article{{ getItemsCount(o) > 1 ? 's' : '' }}</div>
+            <div class="order-card-bottom">
+              <span class="order-type-tag">
+                <mat-icon>{{ o.type === 'TAKEAWAY' ? 'shopping_bag' : 'table_restaurant' }}</mat-icon>
+                {{ o.type === 'TAKEAWAY' ? 'À emporter' : 'Sur place' }}
+              </span>
+              <span class="order-total">{{ o.total | number:'1.2-2' }} TND</span>
+            </div>
+            <div class="card-processing-bar">
+              <span class="processing-dot"></span>
+              <span class="processing-label">En cours de traitement</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Served (non payées) -->
+      <div *ngIf="servedOrders.length > 0">
+        <div class="orders-group-label served-label">
+          <mat-icon>point_of_sale</mat-icon>
+          Non payées ({{ servedOrders.length }})
+        </div>
+        <div class="orders-grid">
+          <div class="order-card card-served" *ngFor="let o of servedOrders"
+               (click)="goToOrder(o.id!)">
+            <div class="order-card-top">
+              <span class="order-table">{{ getTableName(o) }}</span>
+              <span class="order-time">{{ timeAgo(o.createdAt) }}</span>
+            </div>
+            <div class="order-items-count">{{ getItemsCount(o) }} article{{ getItemsCount(o) > 1 ? 's' : '' }}</div>
+            <div class="order-card-bottom">
+              <span class="order-type-tag">
+                <mat-icon>{{ o.type === 'TAKEAWAY' ? 'shopping_bag' : 'table_restaurant' }}</mat-icon>
+                {{ o.type === 'TAKEAWAY' ? 'À emporter' : 'Sur place' }}
+              </span>
+              <span class="order-total">{{ o.total | number:'1.2-2' }} TND</span>
+            </div>
+            <div class="card-served-bar">
+              <span class="served-dot"></span>
+              <span class="served-label-text">En attente de paiement</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <!-- INVOICES VIEW                                                      -->
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <div class="pos-body" *ngIf="currentView === 'invoices'">
+
+    <div class="view-loader" *ngIf="loadingInvoices">
+      <mat-spinner diameter="40"></mat-spinner>
+      <span>Chargement des factures…</span>
+    </div>
+
+    <div *ngIf="!loadingInvoices">
+
+      <div class="invoices-empty" *ngIf="todayInvoices.length === 0">
+        <mat-icon>receipt</mat-icon>
+        <p>Aucune facture aujourd'hui</p>
+      </div>
+
+      <div class="invoices-grid" *ngIf="todayInvoices.length > 0">
+        <div class="invoice-card" *ngFor="let inv of todayInvoices"
+             (click)="goToInvoice(inv.id!)">
+          <div class="inv-top">
+            <span class="inv-number"># {{ inv.invoiceNumber || inv.id }}</span>
+            <span class="inv-time">{{ timeAgo(inv.createdAt) }}</span>
+          </div>
+          <div class="inv-total">{{ inv.total | number:'1.2-2' }} <span class="inv-currency">TND</span></div>
+          <div class="inv-bottom">
+            <span class="inv-payment">
+              <mat-icon>{{ inv.paymentMethod === 'CASH' ? 'payments' : 'credit_card' }}</mat-icon>
+              {{ getPaymentLabel(inv.paymentMethod) }}
+            </span>
+            <span class="inv-status" [class.paid]="inv.status === 'PAID'">
+              {{ inv.status === 'PAID' ? 'Payée' : inv.status }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <!-- REVIEWS VIEW                                                       -->
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <div class="pos-body" *ngIf="currentView === 'reviews'">
+
+    <div class="view-loader" *ngIf="loadingReviews">
+      <mat-spinner diameter="40"></mat-spinner>
+      <span>Chargement des avis…</span>
+    </div>
+
+    <div *ngIf="!loadingReviews">
+
+      <div class="reviews-empty" *ngIf="pendingReviews.length === 0">
+        <mat-icon>check_circle</mat-icon>
+        <p>Aucun avis en attente</p>
+      </div>
+
+      <div class="reviews-grid" *ngIf="pendingReviews.length > 0">
+        <div class="review-card" *ngFor="let r of pendingReviews">
+
+          <!-- En-tête -->
+          <div class="rv-header">
+            <div class="rv-target-icon" [ngClass]="r.targetType?.toLowerCase()">
+              <mat-icon>{{ getReviewTargetIcon(r.targetType) }}</mat-icon>
+            </div>
+            <div class="rv-meta">
+              <span class="rv-target">{{ getReviewTargetLabel(r.targetType) }}</span>
+              <span class="rv-author">
+                <mat-icon>person</mat-icon>
+                {{ r.customer }}
+              </span>
+            </div>
+            <span class="rv-time">{{ timeAgo(r.createdAt) }}</span>
+          </div>
+
+          <!-- Étoiles -->
+          <div class="rv-stars">
+            <mat-icon *ngFor="let s of stars" [class.star-filled]="s <= r.rating">
+              {{ s <= r.rating ? 'star' : 'star_border' }}
+            </mat-icon>
+            <span class="rv-rating-num">{{ r.rating }}/5</span>
+            <span class="rv-like liked"    *ngIf="r.isLiked === true"><mat-icon>thumb_up</mat-icon></span>
+            <span class="rv-like disliked" *ngIf="r.isLiked === false"><mat-icon>thumb_down</mat-icon></span>
+          </div>
+
+          <!-- Commentaire -->
+          <p class="rv-comment" *ngIf="r.comment">{{ r.comment }}</p>
+
+          <!-- Photo -->
+          <img *ngIf="r.photo" [src]="'/uploads/reviews/' + r.photo" class="rv-photo" alt="Photo">
+
+          <!-- Actions -->
+          <div class="rv-actions" *ngIf="canModerateReviews">
+            <button class="rv-btn approve" (click)="approveReview(r.id)" [disabled]="moderatingReview === r.id">
+              <mat-spinner diameter="14" *ngIf="moderatingReview === r.id"></mat-spinner>
+              <mat-icon *ngIf="moderatingReview !== r.id">check_circle</mat-icon>
+              Approuver
+            </button>
+            <button class="rv-btn reject" (click)="rejectReview(r.id)" [disabled]="moderatingReview === r.id">
+              <mat-icon>cancel</mat-icon>
+              Rejeter
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>

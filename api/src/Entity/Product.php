@@ -28,26 +28,26 @@ class Product
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
-     * @Groups({"product:read"})
+     * @Groups({"product:read", "menu:read"})
      */
     private ?int $id = null;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"product:read", "product:write", "invoice:read", "order:read"})
+     * @Groups({"product:read", "product:write", "invoice:read", "order:read", "pack:read", "menu:read"})
      */
     private string $name = '';
 
     /**
      * @ORM\Column(type="float")
-     * @Groups({"product:read", "product:write", "invoice:read", "order:read"})
+     * @Groups({"product:read", "product:write", "invoice:read", "order:read", "pack:read", "menu:read"})
      */
     private float $price = 0;
 
     /**
      * Description courte du produit
      * @ORM\Column(type="text", nullable=true)
-     * @Groups({"product:read", "product:write"})
+     * @Groups({"product:read", "product:write", "menu:read"})
      */
     private ?string $description = null;
 

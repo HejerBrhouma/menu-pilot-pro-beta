@@ -44,6 +44,12 @@ class Table
     private bool $isActive = true;
 
     /**
+     * Statut calculé dynamiquement (non persisté)
+     * @Groups({"table:read"})
+     */
+    private string $status = 'FREE';
+
+    /**
      * @ORM\Column(type="string", length=64, unique=true)
      * @Groups({"table:read"})
      */
@@ -68,6 +74,8 @@ class Table
     public function setCapacity(int $c): self { $this->capacity = $c; return $this; }
     public function getIsActive(): bool { return $this->isActive; }
     public function setIsActive(bool $v): self { $this->isActive = $v; return $this; }
+    public function getStatus(): string { return $this->status; }
+    public function setStatus(string $s): self { $this->status = $s; return $this; }
     public function getQrToken(): string { return $this->qrToken; }
     public function getEstablishment(): Establishment { return $this->establishment; }
     public function setEstablishment(Establishment $e): self { $this->establishment = $e; return $this; }

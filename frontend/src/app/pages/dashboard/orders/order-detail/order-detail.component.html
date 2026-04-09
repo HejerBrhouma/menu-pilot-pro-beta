@@ -3,7 +3,7 @@
 
   <!-- ══ TOPBAR ══ -->
   <div class="detail-topbar">
-    <a routerLink="/orders" class="back-btn">
+    <a [routerLink]="backRoute" class="back-btn">
       <mat-icon>arrow_back_ios</mat-icon>
     </a>
     <div class="topbar-info">
@@ -182,7 +182,7 @@
           <div class="invoice-date">{{ formatDate(invoice.createdAt) }}</div>
         </div>
         <div class="invoice-actions">
-          <a mat-stroked-button [routerLink]="['/invoices', invoice.id]">
+          <a mat-stroked-button [routerLink]="[invoiceBasePath, invoice.id]">
             <mat-icon>visibility</mat-icon> Voir la facture
           </a>
           <button mat-flat-button color="primary" (click)="printInvoice()">

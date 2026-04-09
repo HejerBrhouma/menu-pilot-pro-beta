@@ -48,7 +48,7 @@ class Establishment
     private ?string $name = null;
 
     /**
-     * Slug unique pour l'URL publique /r/{slug}
+     * Slug unique pour l'URL publique /{slug}
      * @ORM\Column(type="string", length=100, unique=true)
      * @Assert\NotBlank()
      * @Assert\Regex("/^[a-z0-9-]+$/")
@@ -144,6 +144,27 @@ class Establishment
      * @Groups({"establishment:read", "establishment:write"})
      */
     private ?float $tvaRate = null;
+
+    /**
+     * Modes de paiement acceptés (ex: ["cash","card","cheque"])
+     * @ORM\Column(type="json", nullable=true)
+     * @Groups({"establishment:read", "establishment:write"})
+     */
+    private ?array $paymentMethods = ['cash', 'card'];
+
+    /**
+     * Modes de paiement personnalisés ex: [{"value":"crypto","label":"Crypto","icon":"currency_bitcoin"}]
+     * @ORM\Column(type="json", nullable=true)
+     * @Groups({"establishment:read", "establishment:write"})
+     */
+    private ?array $customPaymentMethods = [];
+
+    /**
+     * Permissions des rôles manager et waiter
+     * @ORM\Column(type="json", nullable=true)
+     * @Groups({"establishment:read", "establishment:write"})
+     */
+    private ?array $staffPermissions = null;
 
     /**
      * @ORM\Column(type="boolean")
@@ -247,6 +268,26 @@ class Establishment
 
     public function getTvaRate(): ?float { return $this->tvaRate; }
     public function setTvaRate(?float $tvaRate): self { $this->tvaRate = $tvaRate; return $this; }
+
+    public function getPaymentMethods(): array { return $this->paymentMethods ?? ['cash', 'card']; }
+    public function setPaymentMethods(array $m): self { $this->paymentMethods = $m; return $this; }
+
+    public function getCustomPaymentMethods(): array { return $this->customPaymentMethods ?? []; }
+    public function setCustomPaymentMethods(array $m): self { $this->customPaymentMethods = $m; return $this; }
+
+    public function getStaffPermissions(): array
+    {
+        return $this->staffPermissions ?? [
+            'manager' => [
+                'canManageProducts' => true, 'canManageMenu' => true,
+                'canManageCategories' => true, 'canManagePacks' => true,
+                'canManagePromotions' => true, 'canManageGallery' => true,
+                'canManageTables' => true, 'canViewReports' => true,
+            ],
+            'waiter' => ['canManageOrders' => true, 'canManageTables' => true, 'canViewReports' => false],
+        ];
+    }
+    public function setStaffPermissions(array $p): self { $this->staffPermissions = $p; return $this; }
 
     public function getIsActive(): bool { return $this->isActive; }
     public function setIsActive(bool $isActive): self { $this->isActive = $isActive; return $this; }

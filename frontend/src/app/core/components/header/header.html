@@ -96,7 +96,7 @@
           <a mat-ripple class="nav-item" routerLink="/notifications" routerLinkActive="active">
             <div class="nav-icon"><mat-icon>notifications</mat-icon></div>
             <span>Notifications</span>
-            <span class="nav-dot" *ngIf="hasNotifications"></span>
+            <span class="nav-count-badge" *ngIf="unreadNotifCount > 0">{{ unreadNotifCount }}</span>
           </a>
         </nav>
       </div>

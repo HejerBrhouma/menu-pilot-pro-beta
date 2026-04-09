@@ -55,6 +55,57 @@
   &.revenue  { background: #dcfce7; color: #166534; }
 }
 
+// ── Date Filter ───────────────────────────────
+.date-filter-bar {
+  display: flex; align-items: center; gap: 1rem;
+  flex-wrap: wrap; margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  background: #f8fafc; border-radius: 12px;
+  border: 1.5px solid #e5e7eb;
+}
+
+.period-chips {
+  display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
+}
+
+.period-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 5px 12px; border-radius: 99px;
+  border: 1.5px solid #e5e7eb; background: white;
+  font-size: 0.78rem; font-weight: 600; color: #6b7280;
+  cursor: pointer; transition: all 0.15s;
+
+  &:hover { border-color: #6366f1; color: #6366f1; }
+  &.active { background: #6366f1; color: white; border-color: #6366f1; }
+  &.clear { border-color: #fecaca; color: #ef4444; background: #fff5f5;
+    &:hover { background: #ef4444; color: white; }
+    mat-icon { font-size: 0.9rem; width: 0.9rem; height: 0.9rem; }
+  }
+}
+
+.date-inputs {
+  display: flex; align-items: center; gap: 8px; margin-left: auto;
+}
+
+.date-input-wrap {
+  display: flex; align-items: center; gap: 6px;
+  background: white; border: 1.5px solid #e5e7eb; border-radius: 9px;
+  padding: 5px 10px;
+
+  mat-icon { font-size: 1rem; width: 1rem; height: 1rem; color: #9ca3af; }
+
+  input[type="date"] {
+    border: none; outline: none; background: transparent;
+    font-size: 0.82rem; color: #374151; font-family: inherit;
+    cursor: pointer;
+    &::-webkit-calendar-picker-indicator { cursor: pointer; opacity: 0.6; }
+  }
+}
+
+.date-sep {
+  font-size: 0.85rem; color: #9ca3af; font-weight: 600;
+}
+
 // ── Status Tabs ───────────────────────────────
 .status-tabs {
   display: flex; gap: 4px; margin-bottom: 1.5rem;
@@ -161,9 +212,68 @@
 }
 
 .order-status-badge {
-  display: inline-flex; align-items: center; gap: 4px;
-  padding: 3px 10px; border-radius: 99px; font-size: 0.72rem; font-weight: 700;
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 99px; font-size: 0.72rem; font-weight: 700;
   mat-icon { font-size: 0.8rem; width: 0.8rem; height: 0.8rem; }
+  position: relative;
+
+  &.badge-confirmed {
+    border: 1.5px solid rgba(245,158,11,0.4);
+    animation: badge-breathe-amber 2.5s ease-in-out infinite;
+  }
+
+  &.badge-served {
+    border: 1.5px solid rgba(239,68,68,0.4);
+    animation: badge-breathe-red 2s ease-in-out infinite;
+  }
+}
+
+.status-pulse-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+
+  .badge-confirmed & {
+    background: #f59e0b;
+    box-shadow: 0 0 0 0 rgba(245,158,11,0.6);
+    animation: dot-pulse-amber 1.5s ease-in-out infinite;
+  }
+
+  .badge-served & {
+    background: #ef4444;
+    box-shadow: 0 0 0 0 rgba(239,68,68,0.6);
+    animation: dot-pulse-red 1.2s ease-in-out infinite;
+  }
+}
+
+.status-sub-label {
+  font-size: 0.62rem;
+  font-weight: 600;
+  opacity: 0.8;
+  letter-spacing: 0.2px;
+}
+
+@keyframes dot-pulse-amber {
+  0%   { box-shadow: 0 0 0 0 rgba(245,158,11,0.7); }
+  70%  { box-shadow: 0 0 0 5px rgba(245,158,11,0); }
+  100% { box-shadow: 0 0 0 0 rgba(245,158,11,0); }
+}
+
+@keyframes dot-pulse-red {
+  0%   { box-shadow: 0 0 0 0 rgba(239,68,68,0.7); }
+  70%  { box-shadow: 0 0 0 5px rgba(239,68,68,0); }
+  100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+}
+
+@keyframes badge-breathe-amber {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245,158,11,0.15); }
+  50%       { box-shadow: 0 0 8px 2px rgba(245,158,11,0.25); }
+}
+
+@keyframes badge-breathe-red {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.15); }
+  50%       { box-shadow: 0 0 8px 2px rgba(239,68,68,0.25); }
 }
 
 .order-time {

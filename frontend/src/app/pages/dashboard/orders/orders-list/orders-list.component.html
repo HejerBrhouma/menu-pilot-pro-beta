@@ -60,6 +60,29 @@
     </button>
   </div>
 
+  <!-- ══ DATE FILTER ══ -->
+  <div class="date-filter-bar">
+    <div class="period-chips">
+      <button class="period-chip" [class.active]="activePeriod === 'today'"   (click)="setPeriod('today')">Aujourd'hui</button>
+      <button class="period-chip" [class.active]="activePeriod === 'week'"    (click)="setPeriod('week')">Cette semaine</button>
+      <button class="period-chip" [class.active]="activePeriod === 'month'"   (click)="setPeriod('month')">Ce mois</button>
+      <button class="period-chip clear" *ngIf="dateFrom || dateTo"            (click)="clearDateFilter()">
+        <mat-icon>close</mat-icon> Effacer
+      </button>
+    </div>
+    <div class="date-inputs">
+      <div class="date-input-wrap">
+        <mat-icon>event</mat-icon>
+        <input type="date" [(ngModel)]="dateFrom" (ngModelChange)="activePeriod = ''" placeholder="Du">
+      </div>
+      <span class="date-sep">→</span>
+      <div class="date-input-wrap">
+        <mat-icon>event</mat-icon>
+        <input type="date" [(ngModel)]="dateTo" (ngModelChange)="activePeriod = ''" placeholder="Au">
+      </div>
+    </div>
+  </div>
+
   <!-- ══ LOADER ══ -->
   <div class="loader" *ngIf="loading">
     <mat-spinner diameter="36"></mat-spinner>
@@ -101,9 +124,14 @@
           </div>
           <div class="order-status-badge"
                [style.background]="getStatusColor(order.status) + '18'"
-               [style.color]="getStatusColor(order.status)">
+               [style.color]="getStatusColor(order.status)"
+               [class.badge-confirmed]="order.status === 'CONFIRMED'"
+               [class.badge-served]="order.status === 'SERVED'">
+            <span class="status-pulse-dot" *ngIf="order.status === 'CONFIRMED' || order.status === 'SERVED'"></span>
             <mat-icon>{{ getStatusIcon(order.status) }}</mat-icon>
             {{ getStatusLabel(order.status) }}
+            <span class="status-sub-label" *ngIf="order.status === 'CONFIRMED'">En traitement</span>
+            <span class="status-sub-label" *ngIf="order.status === 'SERVED'">Non payée</span>
           </div>
           <div class="order-time">
             <span class="time">{{ formatTime(order.createdAt!) }}</span>

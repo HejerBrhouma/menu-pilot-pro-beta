@@ -14,11 +14,11 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class ReviewController extends AbstractController
 {
-    private EntityManagerInterface $em;
+    private EntityManagerInterface $entityManager;
 
-    public function __construct(EntityManagerInterface $em)
+    public function __construct(EntityManagerInterface $entityManager)
     {
-        $this->em = $em;
+        $this->entityManager = $entityManager;
     }
 
     /**
@@ -27,25 +27,28 @@ class ReviewController extends AbstractController
      */
     public function create(Request $request): JsonResponse
     {
-        $data      = json_decode($request->getContent(), true);
-        $user      = $this->getUser();
-        $isCustomer = $user instanceof User && in_array('ROLE_CUSTOMER', $user->getRoles());
-        $guestName  = trim($data['guestName'] ?? '');
+        $requestData = json_decode($request->getContent(), true);
+        $user        = $this->getUser();
+        $isCustomer  = $user instanceof User && in_array('ROLE_CUSTOMER', $user->getRoles());
+        $guestName   = trim($requestData['guestName'] ?? '');
 
         if (!$isCustomer && empty($guestName)) {
             return $this->json(['error' => 'Connexion ou prénom requis'], 401);
         }
 
-        $order = $this->em->getRepository(Order::class)->find($data['orderId'] ?? 0);
+        $order = $this->entityManager->getRepository(Order::class)->find($requestData['orderId'] ?? 0);
         if (!$order || $order->getStatus() !== 'PAID') {
             return $this->json(['error' => 'Commande invalide ou non payée'], 400);
         }
 
         // Vérifier doublon : une seule fois par commande
-        $existing = $isCustomer
-            ? $this->em->getRepository(Review::class)->findOneBy(['customer' => $user,      'order' => $order])
-            : $this->em->getRepository(Review::class)->findOneBy(['guestName' => $guestName, 'order' => $order]);
-        if ($existing) return $this->json(['error' => 'Vous avez déjà laissé un avis pour cette commande'], 409);
+        $existingReview = $isCustomer
+            ? $this->entityManager->getRepository(Review::class)->findOneBy(['customer' => $user,      'order' => $order])
+            : $this->entityManager->getRepository(Review::class)->findOneBy(['guestName' => $guestName, 'order' => $order]);
+
+        if ($existingReview) {
+            return $this->json(['error' => 'Vous avez déjà laissé un avis pour cette commande'], 409);
+        }
 
         $review = new Review();
         if ($isCustomer) {
@@ -55,14 +58,15 @@ class ReviewController extends AbstractController
         }
         $review->setOrder($order);
         $review->setEstablishment($order->getEstablishment());
-        $review->setTargetType($data['targetType']);
-        $review->setTargetId((int)$data['targetId']);
-        $review->setRating((int)($data['rating'] ?? 5));
-        $review->setComment($data['comment'] ?? null);
-        $review->setIsLiked(isset($data['isLiked']) ? (bool)$data['isLiked'] : null);
+        $review->setTargetType($requestData['targetType']);
+        $review->setTargetId((int) $requestData['targetId']);
+        $review->setRating((int) ($requestData['rating'] ?? 5));
+        $review->setComment($requestData['comment'] ?? null);
+        $review->setIsLiked(isset($requestData['isLiked']) ? (bool) $requestData['isLiked'] : null);
+        $review->setIsApproved(false); // En attente de validation par le personnel
 
-        $this->em->persist($review);
-        $this->em->flush();
+        $this->entityManager->persist($review);
+        $this->entityManager->flush();
 
         return $this->json(['id' => $review->getId()], 201);
     }
@@ -73,23 +77,28 @@ class ReviewController extends AbstractController
      */
     public function uploadPhoto(int $id, Request $request): JsonResponse
     {
-        $review = $this->em->getRepository(Review::class)->find($id);
-        if (!$review) return $this->json(['error' => 'Avis introuvable'], 404);
+        $review = $this->entityManager->getRepository(Review::class)->find($id);
+        if (!$review) {
+            return $this->json(['error' => 'Avis introuvable'], 404);
+        }
 
-        $file = $request->files->get('photo');
-        if (!$file || !$file->isValid()) return $this->json(['error' => 'Fichier invalide'], 400);
+        $uploadedFile = $request->files->get('photo');
+        if (!$uploadedFile || !$uploadedFile->isValid()) {
+            return $this->json(['error' => 'Fichier invalide'], 400);
+        }
 
-        $filename  = 'review_' . $id . '_' . uniqid() . '.' . $file->guessExtension();
+        $filename  = 'review_' . $id . '_' . uniqid() . '.' . $uploadedFile->guessExtension();
         $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/reviews';
-        if (!is_dir($uploadDir)) mkdir($uploadDir, 0775, true);
-        $file->move($uploadDir, $filename);
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0775, true);
+        }
+        $uploadedFile->move($uploadDir, $filename);
 
         $review->setPhoto($filename);
-        $this->em->flush();
+        $this->entityManager->flush();
 
         return $this->json(['photo' => $filename]);
     }
-
 
     /**
      * Infos commande pour avis anonyme
@@ -97,74 +106,87 @@ class ReviewController extends AbstractController
      */
     public function orderReviewInfo(int $id): JsonResponse
     {
-        $order = $this->em->getRepository(Order::class)->find($id);
+        $order = $this->entityManager->getRepository(Order::class)->find($id);
         if (!$order || $order->getStatus() !== 'PAID') {
             return $this->json(['error' => 'Commande non trouvée ou non payée'], 404);
         }
 
-        $user      = $this->getUser();
+        $user            = $this->getUser();
         $alreadyReviewed = $user instanceof User
-            ? (bool) $this->em->getRepository(Review::class)->findOneBy(['customer' => $user, 'order' => $order])
+            ? (bool) $this->entityManager->getRepository(Review::class)->findOneBy(['customer' => $user, 'order' => $order])
             : false; // anonyme : vérifié à la soumission (guestName inconnu ici)
+
+        $establishment = $order->getEstablishment();
 
         return $this->json([
             'id'              => $order->getId(),
             'orderNumber'     => $order->getOrderNumber(),
             'status'          => $order->getStatus(),
             'total'           => $order->getTotal(),
-            'establishmentId' => $order->getEstablishment()->getId(),
+            'customerName'    => $order->getCustomerName(),
+            'establishmentId' => $establishment->getId(),
+            'establishment'   => [
+                'id'   => $establishment->getId(),
+                'name' => $establishment->getName(),
+                'logo' => $establishment->getLogo(),
+                'slug' => $establishment->getSlug(),
+            ],
             'canReview'       => !$alreadyReviewed,
-            'items'           => array_map(fn($item) => [
-                'itemType' => $item->getItemType(),
-                'itemId'   => $item->getItemId(),
-                'itemName' => $item->getItemName(),
+            'items'           => array_map(fn($orderItem) => [
+                'itemType' => $orderItem->getItemType(),
+                'itemId'   => $orderItem->getItemId(),
+                'itemName' => $orderItem->getItemName(),
             ], $order->getItems()->toArray()),
         ]);
     }
 
     /**
      * Avis publics d'une cible
-     * @Route("/api/public/reviews/{type}/{id}", methods={"GET"})
+     * @Route("/api/public/reviews/{type}/{id}", methods={"GET"}, requirements={"id"="\d+"})
      */
     public function getByTarget(string $type, int $id): JsonResponse
     {
-        $reviews = $this->em->createQueryBuilder()
-            ->select('r')
-            ->from(Review::class, 'r')
-            ->where('r.targetType = :type')
-            ->andWhere('r.targetId = :id')
-            ->andWhere('r.isApproved = true')
+        if ($id <= 0) {
+            return $this->json(['reviews' => [], 'count' => 0, 'avgRating' => 0]);
+        }
+
+        $reviews = $this->entityManager->createQueryBuilder()
+            ->select('review')
+            ->from(Review::class, 'review')
+            ->where('review.targetType = :type')
+            ->andWhere('review.targetId = :id')
+            ->andWhere('review.isApproved = true')
             ->setParameter('type', strtoupper($type))
             ->setParameter('id', $id)
-            ->orderBy('r.createdAt', 'DESC')
+            ->orderBy('review.createdAt', 'DESC')
             ->getQuery()
             ->getResult();
 
-        $data = array_map(fn(Review $r) => [
-            'id'        => $r->getId(),
-            'rating'    => $r->getRating(),
-            'comment'   => $r->getComment(),
-            'photo'     => $r->getPhoto(),
-            'isLiked'   => $r->getIsLiked(),
-            'createdAt' => $r->getCreatedAt()->format('Y-m-d'),
-            'customer'  => $r->getCustomer() ? [
-                'firstName' => $r->getCustomer()->getFirstName(),
-                'lastName'  => $r->getCustomer()->getLastName(),
-                'avatar'    => $r->getCustomer()->getAvatar(),
+        $reviewsData = array_map(fn(Review $review) => [
+            'id'        => $review->getId(),
+            'rating'    => $review->getRating(),
+            'comment'   => $review->getComment(),
+            'photo'     => $review->getPhoto(),
+            'isLiked'   => $review->getIsLiked(),
+            'createdAt' => $review->getCreatedAt()->format('Y-m-d'),
+            'customer'  => $review->getCustomer() ? [
+                'firstName' => $review->getCustomer()->getFirstName(),
+                'lastName'  => $review->getCustomer()->getLastName(),
+                'avatar'    => $review->getCustomer()->getAvatar(),
             ] : [
-                'firstName' => $r->getGuestName() ?? 'Anonyme',
+                'firstName' => $review->getGuestName() ?? 'Anonyme',
                 'lastName'  => '',
                 'avatar'    => null,
             ],
         ], $reviews);
 
-        $avgRating = count($data) > 0
-            ? round(array_sum(array_column($data, 'rating')) / count($data), 1)
+        $avgRating = count($reviewsData) > 0
+            ? round(array_sum(array_column($reviewsData, 'rating')) / count($reviewsData), 1)
             : 0;
 
         return $this->json([
-            'reviews'   => $data,
-            'count'     => count($data),
+            'reviews'   => $reviewsData,
+            'count'     => count($reviewsData),
             'avgRating' => $avgRating,
         ]);
     }
@@ -176,50 +198,62 @@ class ReviewController extends AbstractController
     public function customerOrders(): JsonResponse
     {
         $user = $this->getUser();
-        if (!$user instanceof User) return $this->json(['error' => 'Non connecté'], 401);
+        if (!$user instanceof User) {
+            return $this->json(['error' => 'Non connecté'], 401);
+        }
 
         // Commandes liées via FK (nouvelles) OU via customerName (anciennes)
         $firstName = trim($user->getFirstName() ?? '');
         $fullName  = trim(($user->getFirstName() ?? '') . ' ' . ($user->getLastName() ?? ''));
 
-        $conditions = ['o.customer = :user'];
-        $params = ['user' => $user];
+        $conditions = ['customerOrder.customer = :user'];
+        $parameters = ['user' => $user];
 
         if ($firstName !== '') {
-            $conditions[] = 'o.customerName = :firstName';
-            $params['firstName'] = $firstName;
+            $conditions[] = 'customerOrder.customerName = :firstName';
+            $parameters['firstName'] = $firstName;
         }
         if ($fullName !== $firstName && $fullName !== '') {
-            $conditions[] = 'o.customerName = :fullName';
-            $params['fullName'] = $fullName;
+            $conditions[] = 'customerOrder.customerName = :fullName';
+            $parameters['fullName'] = $fullName;
         }
 
-        $qb = $this->em->createQueryBuilder()
-            ->select('o')->from(Order::class, 'o')
+        $queryBuilder = $this->entityManager->createQueryBuilder()
+            ->select('customerOrder')
+            ->from(Order::class, 'customerOrder')
             ->where(implode(' OR ', $conditions))
-            ->orderBy('o.createdAt', 'DESC')
+            ->orderBy('customerOrder.createdAt', 'DESC')
             ->setMaxResults(50);
 
-        foreach ($params as $key => $val) {
-            $qb->setParameter($key, $val);
+        foreach ($parameters as $key => $value) {
+            $queryBuilder->setParameter($key, $value);
         }
 
-        $orders = $qb->getQuery()->getResult();
+        $orders = $queryBuilder->getQuery()->getResult();
 
-        return $this->json(array_map(fn(Order $o) => [
-            'id'              => $o->getId(),
-            'orderNumber'     => $o->getOrderNumber(),
-            'status'          => $o->getStatus(),
-            'total'           => $o->getTotal(),
-            'createdAt'       => $o->getCreatedAt()->format('Y-m-d H:i'),
-            'establishmentId' => $o->getEstablishment()->getId(),
-            'canReview'       => $o->getStatus() === 'PAID' && !$this->em->getRepository(Review::class)->findOneBy(['customer' => $user, 'order' => $o]),
-            'items'           => array_map(fn($item) => [
-                'itemType' => $item->getItemType(),
-                'itemId'   => $item->getItemId(),
-                'itemName' => $item->getItemName(),
-            ], $o->getItems()->toArray()),
-        ], $orders));
+        return $this->json(array_map(function (Order $order) use ($user) {
+            $establishment = $order->getEstablishment();
+            return [
+                'id'              => $order->getId(),
+                'orderNumber'     => $order->getOrderNumber(),
+                'status'          => $order->getStatus(),
+                'total'           => $order->getTotal(),
+                'createdAt'       => $order->getCreatedAt()->format('Y-m-d H:i'),
+                'establishmentId' => $establishment->getId(),
+                'establishment'   => [
+                    'id'   => $establishment->getId(),
+                    'name' => $establishment->getName(),
+                    'logo' => $establishment->getLogo(),
+                    'slug' => $establishment->getSlug(),
+                ],
+                'canReview'       => $order->getStatus() === 'PAID' && !$this->entityManager->getRepository(Review::class)->findOneBy(['customer' => $user, 'order' => $order]),
+                'items'           => array_map(fn($orderItem) => [
+                    'itemType' => $orderItem->getItemType(),
+                    'itemId'   => $orderItem->getItemId(),
+                    'itemName' => $orderItem->getItemName(),
+                ], $order->getItems()->toArray()),
+            ];
+        }, $orders));
     }
 
     /**
@@ -228,26 +262,26 @@ class ReviewController extends AbstractController
      */
     public function pending(): JsonResponse
     {
-        $reviews = $this->em->createQueryBuilder()
-            ->select('r')
-            ->from(Review::class, 'r')
-            ->where('r.isApproved = false')
-            ->orderBy('r.createdAt', 'DESC')
+        $reviews = $this->entityManager->createQueryBuilder()
+            ->select('review')
+            ->from(Review::class, 'review')
+            ->where('review.isApproved = false')
+            ->orderBy('review.createdAt', 'DESC')
             ->getQuery()
             ->getResult();
 
-        return $this->json(array_map(fn(Review $r) => [
-            'id'         => $r->getId(),
-            'targetType' => $r->getTargetType(),
-            'targetId'   => $r->getTargetId(),
-            'rating'     => $r->getRating(),
-            'comment'    => $r->getComment(),
-            'isLiked'    => $r->getIsLiked(),
-            'photo'      => $r->getPhoto(),
-            'createdAt'  => $r->getCreatedAt()->format('Y-m-d H:i'),
-            'customer'   => $r->getCustomer()
-                ? $r->getCustomer()->getFullName()
-                : ($r->getGuestName() ?? 'Anonyme'),
+        return $this->json(array_map(fn(Review $review) => [
+            'id'         => $review->getId(),
+            'targetType' => $review->getTargetType(),
+            'targetId'   => $review->getTargetId(),
+            'rating'     => $review->getRating(),
+            'comment'    => $review->getComment(),
+            'isLiked'    => $review->getIsLiked(),
+            'photo'      => $review->getPhoto(),
+            'createdAt'  => $review->getCreatedAt()->format('Y-m-d H:i'),
+            'customer'   => $review->getCustomer()
+                ? $review->getCustomer()->getFullName()
+                : ($review->getGuestName() ?? 'Anonyme'),
         ], $reviews));
     }
 
@@ -257,20 +291,22 @@ class ReviewController extends AbstractController
      */
     public function moderate(int $id, Request $request): JsonResponse
     {
-        $review = $this->em->getRepository(Review::class)->find($id);
-        if (!$review) return $this->json(['error' => 'Avis introuvable'], 404);
-
-        $data   = json_decode($request->getContent(), true);
-        $action = $data['action'] ?? 'approve';
-
-        if ($action === 'approve') {
-            $review->setIsApproved(true);
-            $this->em->flush();
-            return $this->json(['success' => true, 'status' => 'approved']);
-        } else {
-            $this->em->remove($review);
-            $this->em->flush();
-            return $this->json(['success' => true, 'status' => 'rejected']);
+        $review = $this->entityManager->getRepository(Review::class)->find($id);
+        if (!$review) {
+            return $this->json(['error' => 'Avis introuvable'], 404);
         }
+
+        $requestData    = json_decode($request->getContent(), true);
+        $moderationAction = $requestData['action'] ?? 'approve';
+
+        if ($moderationAction === 'approve') {
+            $review->setIsApproved(true);
+            $this->entityManager->flush();
+            return $this->json(['success' => true, 'status' => 'approved']);
+        }
+
+        $this->entityManager->remove($review);
+        $this->entityManager->flush();
+        return $this->json(['success' => true, 'status' => 'rejected']);
     }
 }

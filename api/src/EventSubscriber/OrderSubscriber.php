@@ -55,6 +55,14 @@ class OrderSubscriber implements EventSubscriberInterface
             $object->setEstablishment($establishment);
             $object->setOrderNumber($this->orderService->generateOrderNumber($establishment));
 
+            // Auto-confirmation pour le personnel (admin/manager/waiter)
+            $staffRoles = ['ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_WAITER'];
+            if (count(array_intersect($staffRoles, $user->getRoles())) > 0) {
+                $object->setStatus(Order::STATUS_CONFIRMED);
+            } else {
+                $object->setStatus(Order::STATUS_PENDING);
+            }
+
             foreach ($object->getItems() as $item) {
                 $result = $this->orderService->applyPromotionsToItem(
                     $item->getItemType(),

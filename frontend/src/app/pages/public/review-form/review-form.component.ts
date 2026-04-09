@@ -9,6 +9,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ReviewService } from '../../../core/services/review.service';
 import { CustomerAuthService } from '../../../core/services/customer-auth.service';
+import { EstablishmentService } from '../../../core/services/establishment.service';
 
 interface ReviewItem {
   targetType: string;
@@ -21,6 +22,13 @@ interface ReviewItem {
   reviewId:   number | null;
   photoFile:  File | null;
   photoPreview: string | null;
+}
+
+interface EstablishmentInfo {
+  id:   number;
+  name: string;
+  logo: string | null;
+  slug: string | null;
 }
 
 @Component({
@@ -41,18 +49,21 @@ export class ReviewFormComponent implements OnInit {
   isAnonymous  = false;
   guestName    = '';
 
+  establishment: EstablishmentInfo | null = null;
   reviewItems: ReviewItem[] = [];
   stars = [1, 2, 3, 4, 5];
 
-  private route       = inject(ActivatedRoute);
-  private router      = inject(Router);
-  private reviewSvc   = inject(ReviewService);
-  private authService = inject(CustomerAuthService);
-  private snackBar    = inject(MatSnackBar);
-  private cdr         = inject(ChangeDetectorRef);
+  private route          = inject(ActivatedRoute);
+  private router         = inject(Router);
+  private reviewSvc      = inject(ReviewService);
+  private authService    = inject(CustomerAuthService);
+  private estabService   = inject(EstablishmentService);
+  private snackBar       = inject(MatSnackBar);
+  private cdr            = inject(ChangeDetectorRef);
 
   get isLoggedIn() { return this.authService.isLoggedIn; }
   get customer()   { return this.authService.currentCustomer; }
+  get estabLogoUrl(): string { return this.estabService.getLogoUrl(this.establishment?.logo ?? undefined); }
 
   ngOnInit(): void {
     this.orderId    = Number(this.route.snapshot.paramMap.get('orderId'));
@@ -78,6 +89,10 @@ export class ReviewFormComponent implements OnInit {
       // Anonyme — charger depuis l'API publique
       this.reviewSvc.getOrderForReview(this.orderId).subscribe({
         next: (order: any) => {
+          // Pré-remplir le nom depuis la commande (saisi lors de la commande QR)
+          if (order.customerName) {
+            this.guestName = order.customerName;
+          }
           this.buildReviewItems(order);
           this.loading = false;
           this.cdr.detectChanges();
@@ -90,10 +105,16 @@ export class ReviewFormComponent implements OnInit {
   buildReviewItems(order: any): void {
     this.reviewItems = [];
 
+    if (order.establishment) {
+      this.establishment = order.establishment;
+    }
+
+    const estName = this.establishment?.name || 'L\'enseigne';
+
     // Avis enseigne
     this.reviewItems.push({
-      targetType: 'ESTABLISHMENT', targetId: order.establishmentId || 1,
-      targetName: 'L\'enseigne en général',
+      targetType: 'ESTABLISHMENT', targetId: order.establishmentId || order.establishment?.id || 1,
+      targetName: estName,
       rating: 5, comment: '', isLiked: null,
       submitted: false, reviewId: null, photoFile: null, photoPreview: null
     });

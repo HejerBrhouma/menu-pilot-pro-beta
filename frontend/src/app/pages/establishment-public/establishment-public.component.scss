@@ -272,6 +272,113 @@
 .day-hours { font-size: 0.875rem; color: #6b7280; }
 .closed-day { color: #ef4444; font-weight: 500; }
 
+// ── Galerie publique ──────────────────────────────────────────────────────────
+.pub-gallery {
+  padding: 2.5rem 1.25rem;
+  background: #fff;
+  max-width: 680px;
+  margin: 2rem auto 0;
+}
+
+.gallery-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin-bottom: 1.5rem;
+}
+.gtab {
+  padding: .4rem 1rem;
+  border-radius: 24px;
+  border: 2px solid #e5e7eb;
+  background: transparent;
+  font-size: .82rem;
+  font-weight: 600;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all .15s;
+  &.active {
+    background: var(--primary, #6366f1);
+    border-color: var(--primary, #6366f1);
+    color: #fff;
+  }
+  &:hover:not(.active) {
+    border-color: var(--primary, #6366f1);
+    color: var(--primary, #6366f1);
+  }
+}
+
+.gallery-masonry {
+  columns: 2;
+  column-gap: .75rem;
+  @media (min-width: 640px) { columns: 3; }
+  @media (min-width: 900px) { columns: 4; }
+}
+.gm-item {
+  break-inside: avoid;
+  margin-bottom: .75rem;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  position: relative;
+  background: #f1f5f9;
+  img {
+    width: 100%;
+    display: block;
+    transition: transform .3s;
+  }
+  &:hover img { transform: scale(1.04); }
+  &:hover .gm-overlay { opacity: 1; }
+}
+.gm-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.35);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .25rem;
+  opacity: 0;
+  transition: opacity .25s;
+  color: #fff;
+  mat-icon { font-size: 2rem; width: 2rem; height: 2rem; }
+  span { font-size: .75rem; font-weight: 600; text-align: center; padding: 0 .5rem; }
+}
+
+// Lightbox
+.lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.88);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  img {
+    max-width: 90vw;
+    max-height: 90vh;
+    border-radius: 12px;
+    object-fit: contain;
+    box-shadow: 0 25px 60px rgba(0,0,0,.5);
+  }
+}
+.lb-close {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(255,255,255,.15);
+  border: none;
+  border-radius: 50%;
+  width: 44px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  color: #fff;
+  backdrop-filter: blur(4px);
+  mat-icon { font-size: 22px; }
+  &:hover { background: rgba(255,255,255,.25); }
+}
+
 // ── Footer ────────────────────────────────────
 .pub-footer {
   text-align: center;

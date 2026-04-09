@@ -98,8 +98,8 @@
   <!-- ══ CONNECTÉ ══ -->
   <ng-container *ngIf="isLoggedIn && customer">
 
-    <!-- Profil -->
-    <div class="profile-card">
+    <!-- Profil — vue -->
+    <div class="profile-card" *ngIf="!editingProfile">
       <div class="profile-avatar">
         <img *ngIf="customer.avatar" [src]="customer.avatar" [alt]="customer.fullName">
         <span *ngIf="!customer.avatar">
@@ -109,6 +109,58 @@
       <div class="profile-info">
         <h2>{{ customer.fullName }}</h2>
         <span>{{ customer.email }}</span>
+      </div>
+      <button class="edit-profile-btn" (click)="openEditProfile()" title="Modifier mon profil">
+        <mat-icon>edit</mat-icon>
+      </button>
+    </div>
+
+    <!-- Profil — édition -->
+    <div class="profile-edit-card" *ngIf="editingProfile">
+      <div class="profile-edit-header">
+        <h3>Modifier mon profil</h3>
+        <button class="close-edit-btn" (click)="cancelEditProfile()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <div class="name-row">
+        <div class="input-group">
+          <mat-icon>person</mat-icon>
+          <input [(ngModel)]="editFirstName" placeholder="Prénom *">
+        </div>
+        <div class="input-group">
+          <input [(ngModel)]="editLastName" placeholder="Nom (optionnel)">
+        </div>
+      </div>
+
+      <div class="edit-section-label">Changer le mot de passe (optionnel)</div>
+
+      <div class="input-group">
+        <mat-icon>lock</mat-icon>
+        <input [type]="showCurrentPass ? 'text' : 'password'"
+               [(ngModel)]="editCurrentPass" placeholder="Mot de passe actuel">
+        <button class="eye-btn" (click)="showCurrentPass = !showCurrentPass">
+          <mat-icon>{{ showCurrentPass ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+      </div>
+
+      <div class="input-group">
+        <mat-icon>lock_reset</mat-icon>
+        <input [type]="showNewPass ? 'text' : 'password'"
+               [(ngModel)]="editNewPass" placeholder="Nouveau mot de passe">
+        <button class="eye-btn" (click)="showNewPass = !showNewPass">
+          <mat-icon>{{ showNewPass ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+      </div>
+
+      <div class="profile-edit-actions">
+        <button class="cancel-btn" (click)="cancelEditProfile()">Annuler</button>
+        <button class="save-btn" (click)="saveProfile()" [disabled]="savingProfile">
+          <mat-spinner diameter="16" *ngIf="savingProfile"></mat-spinner>
+          <mat-icon *ngIf="!savingProfile">check</mat-icon>
+          <span>{{ savingProfile ? 'Enregistrement...' : 'Enregistrer' }}</span>
+        </button>
       </div>
     </div>
 

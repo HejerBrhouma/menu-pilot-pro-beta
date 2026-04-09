@@ -66,7 +66,7 @@
 
         <div class="est-meta">
           <h3 class="est-name">{{ est.name }}</h3>
-          <span class="est-slug">/r/{{ est.slug }}</span>
+          <span class="est-slug">/{{ est.slug }}</span>
           <span class="est-city" *ngIf="est.city">
             <mat-icon>location_on</mat-icon>{{ est.city }}
           </span>
@@ -132,7 +132,7 @@
             <mat-icon>edit</mat-icon>
           </button>
 
-          <a class="row-btn" [href]="'/r/' + est.slug" target="_blank" matTooltip="Voir page publique">
+          <a class="row-btn" [href]="'/' + est.slug" target="_blank" matTooltip="Voir page publique">
             <mat-icon>open_in_new</mat-icon>
           </a>
         </div>

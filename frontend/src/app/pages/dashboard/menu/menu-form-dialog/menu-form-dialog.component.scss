@@ -1,10 +1,16 @@
 // menu-form-dialog.component.scss
 // All shared dialog styles are in styles.scss
 
-.dialog-wrapper { width: min(700px, 95vw); }
+.dialog-wrapper { width: 100%; box-sizing: border-box; }
 
 // Time row: 2 fields + toggle
-.menu-time-row { grid-template-columns: 1fr 1fr auto; }
+.menu-time-row {
+  grid-template-columns: 1fr 1fr auto;
+
+  @media (max-width: 520px) {
+    grid-template-columns: 1fr;
+  }
+}
 
 // Sections accordion
 .menu-sections-accordion {

@@ -6,28 +6,26 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormControl }
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { HttpClient } from '@angular/common/http';
 import { OrderService } from '../../../../core/services/order.service';
 import { ProductService } from '../../../../core/services/product.service';
+import { TableService } from '../../../../core/services/table.service';
 import { AdminCartService, AdminCartItem } from '../../../../core/services/admin-cart.service';
 import { ProductImageService } from '../../../../core/services/product-image.service';
 import { RatingCacheService } from '../../../../core/services/rating-cache.service';
 import { StarRatingComponent } from '../../../../shared/star-rating/star-rating.component';
-import { Order, RestaurantTable } from '../../../../core/models/order.model';
+import { Order } from '../../../../core/models/order.model';
+import { Table } from '../../../../core/models/table.model';
 
 @Component({
   selector: 'app-order-new',
   standalone: true,
   imports: [
     CommonModule, FormsModule, ReactiveFormsModule, RouterModule,
-    MatIconModule, MatButtonModule, MatFormFieldModule,
-    MatInputModule, MatSelectModule, MatProgressSpinnerModule,
+    MatIconModule, MatButtonModule, MatProgressSpinnerModule,
     MatSnackBarModule, MatTooltipModule,
     StarRatingComponent
   ],
@@ -41,7 +39,7 @@ export class OrderNewComponent implements OnInit, OnDestroy {
   cartRestored       = false;
   cartTimeRemaining  = '';
 
-  tables:   RestaurantTable[] = [];
+  tables:   Table[] = [];
   products: any[]             = [];
   packs:    any[]             = [];
   cart:     AdminCartItem[]   = [];
@@ -51,6 +49,7 @@ export class OrderNewComponent implements OnInit, OnDestroy {
   tempIdCounter = 0;
   currentTime   = new Date();
   currentDate   = new Date();
+  tablePickerOpen = false;
 
   private ratingsMap = new Map<string, { avg: number; count: number }>();
   private clockInterval: any;
@@ -62,6 +61,7 @@ export class OrderNewComponent implements OnInit, OnDestroy {
 
   private orderService     = inject(OrderService);
   private productService   = inject(ProductService);
+  private tableService     = inject(TableService);
   private adminCartService = inject(AdminCartService);
   private imageService     = inject(ProductImageService);
   private ratingCache      = inject(RatingCacheService);
@@ -74,6 +74,25 @@ export class OrderNewComponent implements OnInit, OnDestroy {
 
   get tableControl(): FormControl { return this.form.get('table') as FormControl; }
   get notesControl(): FormControl { return this.form.get('notes') as FormControl; }
+  get isPosMode(): boolean { return this.router.url.startsWith('/pos'); }
+  get backRoute(): string { return this.isPosMode ? '/pos' : '/orders'; }
+
+  get selectedTable(): Table | undefined {
+    const val = this.tableControl.value;
+    if (!val) return undefined;
+    return this.tables.find(t => `/api/tables/${t.id}` === val);
+  }
+
+  selectTable(t: Table): void {
+    this.tableControl.setValue(`/api/tables/${t.id}`);
+    this.tablePickerOpen = false;
+    this.persistCart();
+  }
+
+  clearTable(): void {
+    this.tableControl.setValue(null);
+    this.persistCart();
+  }
 
   ngOnInit(): void {
     this.form = this.fb.group({ table: [null], notes: [''] });
@@ -86,7 +105,7 @@ export class OrderNewComponent implements OnInit, OnDestroy {
   }
 
   loadData(): void {
-    this.orderService.getTables().subscribe({
+    this.tableService.getAll().subscribe({
       next: (tables) => {
         this.tables = tables.filter(t => t.isActive);
         this.restoreCart();
@@ -308,7 +327,7 @@ export class OrderNewComponent implements OnInit, OnDestroy {
         this.saving = false;
         this.adminCartService.clear();
         this.notify('Commande ' + order.orderNumber + ' créée ✓');
-        this.router.navigate(['/orders']);
+        this.router.navigate([this.backRoute]);
       },
       error: (err: any) => {
         this.saving = false;

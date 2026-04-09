@@ -1,0 +1,101 @@
+// src/app/pages/dashboard/notifications/notifications.component.scss
+
+.filter-tabs {
+  display : flex;
+  gap     : 8px;
+  margin  : 0 0 20px;
+}
+
+.tab-btn {
+  display      : flex;
+  align-items  : center;
+  gap          : 8px;
+  padding      : 8px 18px;
+  border-radius: 99px;
+  border       : 1.5px solid var(--clr-border);
+  background   : transparent;
+  font-size    : 0.85rem;
+  font-weight  : 600;
+  color        : var(--clr-text-muted);
+  cursor       : pointer;
+  transition   : all .15s;
+
+  &.active {
+    background  : var(--clr-primary);
+    color       : white;
+    border-color: var(--clr-primary);
+  }
+}
+
+.tab-count {
+  font-size    : 0.72rem;
+  background   : rgba(0,0,0,.08);
+  padding      : 2px 7px;
+  border-radius: 99px;
+  font-weight  : 700;
+
+  &.unread {
+    background: #fef2f2;
+    color     : #ef4444;
+  }
+}
+
+.notif-list { padding: 0; overflow: hidden; }
+
+.notif-row {
+  display     : flex;
+  align-items : center;
+  gap         : 16px;
+  padding     : 16px 20px;
+  border-bottom: 1px solid var(--clr-border);
+  cursor      : pointer;
+  transition  : background .12s;
+
+  &:last-child { border-bottom: none; }
+  &:hover      { background: var(--clr-surface-hover, #f9fafb); }
+
+  &.unread {
+    background: #f0fdf4;
+    &:hover  { background: #dcfce7; }
+  }
+}
+
+.notif-icon {
+  width        : 44px;
+  height       : 44px;
+  border-radius: 12px;
+  display      : flex;
+  align-items  : center;
+  justify-content: center;
+  flex-shrink  : 0;
+
+  mat-icon { font-size: 22px; width: 22px; height: 22px; }
+}
+
+.notif-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.notif-message {
+  font-size  : 0.88rem;
+  font-weight: 500;
+  color      : var(--clr-text);
+  margin     : 0 0 4px;
+  line-height: 1.4;
+}
+
+.notif-time {
+  font-size: 0.75rem;
+  color    : var(--clr-text-muted);
+}
+
+.notif-status { flex-shrink: 0; }
+
+.unread-dot {
+  display      : block;
+  width        : 10px;
+  height       : 10px;
+  border-radius: 50%;
+  background   : var(--clr-primary);
+}

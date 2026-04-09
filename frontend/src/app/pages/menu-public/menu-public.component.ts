@@ -59,7 +59,7 @@ export class MenuPublicComponent implements OnInit {
             next: (est) => {
               this.establishment = est;
               if (est.logo) {
-                this.logoUrl = `http://localhost:8008/uploads/logos/${est.logo}`;
+                this.logoUrl = `/uploads/logos/${est.logo}`;
               }
               this.loading = false;
               this.cdr.detectChanges();

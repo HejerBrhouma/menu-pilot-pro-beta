@@ -65,7 +65,7 @@ export class EstablishmentService {
   getLogoUrl(filename: string | undefined): string {
     if (!filename) return '/assets/default-logo.png';
     if (filename.startsWith('http')) return filename;
-    return `http://localhost:8008/uploads/logos/${filename}`;
+    return `/uploads/logos/${filename}`;
   }
 
   private handleError(error: any): Observable<never> {
