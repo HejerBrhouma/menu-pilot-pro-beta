@@ -12,10 +12,13 @@ export class MenuService {
 
   constructor(private http: HttpClient) {}
 
-  getAll(page = 1, perPage = 10): Observable<{ items: MenuRead[]; total: number }> {
-    const params = new HttpParams()
+  getAll(page = 1, perPage = 10, establishmentId?: number): Observable<{ items: MenuRead[]; total: number }> {
+    let params = new HttpParams()
       .set('page', page)
       .set('itemsPerPage', perPage);
+    if (establishmentId) {
+      params = params.set('establishment', establishmentId);
+    }
     return this.http.get<any>(this.url, { params }).pipe(
       map(res => ({ items: res['hydra:member'], total: res['hydra:totalItems'] })),
       catchError(this.handleError)

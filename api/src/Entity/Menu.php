@@ -17,7 +17,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *   normalizationContext={"groups"={"menu:read"}},
  *   denormalizationContext={"groups"={"menu:write"}}
  * )
- * @ApiFilter(SearchFilter::class, properties={"qrToken": "exact"})
+ * @ApiFilter(SearchFilter::class, properties={"qrToken": "exact", "establishment": "exact"})
  * @ORM\Entity()
  * @ORM\Table(name="menus")
  * @ORM\HasLifecycleCallbacks()

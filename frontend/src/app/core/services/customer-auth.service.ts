@@ -60,6 +60,16 @@ export class CustomerAuthService {
     }).pipe(tap(res => this.saveSession(res)));
   }
 
+  updateProfile(data: {
+    firstName?: string;
+    lastName?:  string;
+    currentPassword?: string;
+    newPassword?:     string;
+  }): Observable<AuthResponse> {
+    return this.http.patch<AuthResponse>('/api/public/customer/profile', data)
+      .pipe(tap(res => this.saveSession(res)));
+  }
+
   logout(): void {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.CUSTOMER_KEY);

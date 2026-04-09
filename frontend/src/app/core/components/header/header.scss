@@ -134,6 +134,25 @@ $text-muted      : #64748b;
   box-shadow: 0 0 6px rgba(239,68,68,0.6);
 }
 
+.nav-count-badge {
+  position     : absolute;
+  right        : 8px;
+  top          : 50%;
+  transform    : translateY(-50%);
+  background   : #ef4444;
+  color        : #fff;
+  font-size    : 0.65rem;
+  font-weight  : 700;
+  min-width    : 18px;
+  height       : 18px;
+  border-radius: 99px;
+  display      : flex;
+  align-items  : center;
+  justify-content: center;
+  padding      : 0 4px;
+  box-shadow   : 0 0 6px rgba(239,68,68,0.5);
+}
+
 // ── Footer user card ───────────────────────────────────────────────────────
 .sidebar-footer {
   padding: 0.75rem;

@@ -43,6 +43,21 @@
       <input [(ngModel)]="guestName" placeholder="Votre prénom *">
     </div>
 
+    <!-- Enseigne -->
+    <div class="estab-card" *ngIf="establishment">
+      <div class="estab-logo">
+        <img [src]="estabLogoUrl" [alt]="establishment.name" (error)="$any($event.target).style.display='none'">
+      </div>
+      <div class="estab-info">
+        <span class="estab-tag">Établissement</span>
+        <h2 class="estab-name">{{ establishment.name }}</h2>
+      </div>
+      <a *ngIf="establishment.slug" [routerLink]="['/', establishment.slug]"
+         class="estab-link" title="Voir la page de l'enseigne">
+        <mat-icon>open_in_new</mat-icon>
+      </a>
+    </div>
+
     <!-- Cards avis -->
     <div class="review-card" *ngFor="let item of reviewItems; let i = index">
 

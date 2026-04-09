@@ -73,7 +73,7 @@
 
         <div class="hero-slug" *ngIf="establishment?.slug">
           <mat-icon>link</mat-icon>
-          <code>/r/{{ establishment?.slug }}</code>
+          <code>/{{ establishment?.slug }}</code>
         </div>
       </div>
 
@@ -117,7 +117,7 @@
                 </mat-form-field>
                 <mat-form-field appearance="outline">
                   <mat-label>Slug URL</mat-label>
-                  <span matTextPrefix>/r/&nbsp;</span>
+                  <span matTextPrefix>/&nbsp;</span>
                   <input matInput formControlName="slug">
                   <mat-hint>lettres, chiffres, tirets</mat-hint>
                 </mat-form-field>
@@ -291,64 +291,6 @@
           </div>
         </mat-tab>
 
-        <!-- ── TAB : Facturation ── -->
-        <mat-tab>
-          <ng-template mat-tab-label>
-            <mat-icon>receipt</mat-icon>&nbsp;Facturation
-          </ng-template>
-
-          <div class="tab-body">
-            <div class="tab-section-title">
-              <mat-icon>calculate</mat-icon>
-              <span>Paramètres de facturation</span>
-            </div>
-            <p class="tab-desc">
-              Le taux de TVA est figé au moment de chaque paiement.
-              Si non configuré, la valeur par défaut est <strong>19 %</strong>.
-            </p>
-
-            <form [formGroup]="facturationForm" class="form-grid">
-              <div class="form-row tva-row">
-                <mat-form-field appearance="outline">
-                  <mat-label>Taux de TVA (%)</mat-label>
-                  <input matInput formControlName="tvaRate" type="number" min="0" max="100" step="0.1"
-                         placeholder="19">
-                  <span matSuffix>%</span>
-                  <mat-hint>Ex : 19 pour 19%</mat-hint>
-                  <mat-error *ngIf="facturationForm.get('tvaRate')?.hasError('min') || facturationForm.get('tvaRate')?.hasError('max')">
-                    Valeur entre 0 et 100
-                  </mat-error>
-                </mat-form-field>
-
-                <div class="tva-preview-box">
-                  <div class="tva-preview-label">Aperçu sur une facture de 100 TND HT</div>
-                  <div class="tva-preview-row">
-                    <span>Base HT</span><span>100,000 TND</span>
-                  </div>
-                  <div class="tva-preview-row tva">
-                    <span>TVA ({{ facturationForm.get('tvaRate')?.value || 19 }}%)</span>
-                    <span>+ {{ ((facturationForm.get('tvaRate')?.value || 19) * 1) | number:'1.3-3' }} TND</span>
-                  </div>
-                  <div class="tva-preview-row total">
-                    <span>Total TTC</span>
-                    <span>{{ (100 + (facturationForm.get('tvaRate')?.value || 19)) | number:'1.3-3' }} TND</span>
-                  </div>
-                </div>
-              </div>
-
-              <div class="tab-actions" *ngIf="canManage">
-                <button class="ds-btn ds-btn-primary save-btn"
-                        (click)="saveFacturation()"
-                        [disabled]="saving || facturationForm.invalid">
-                  <mat-spinner diameter="16" *ngIf="saving"></mat-spinner>
-                  <mat-icon *ngIf="!saving">save</mat-icon>
-                  Enregistrer les paramètres
-                </button>
-              </div>
-            </form>
-          </div>
-        </mat-tab>
-
         <!-- ── TAB : Réseaux sociaux ── -->
         <mat-tab>
           <ng-template mat-tab-label>
@@ -394,6 +336,75 @@
                 </button>
               </div>
             </form>
+          </div>
+        </mat-tab>
+
+        <!-- ── TAB : Galerie ── -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <mat-icon>photo_library</mat-icon>&nbsp;Galerie
+          </ng-template>
+
+          <div class="tab-body">
+            <div class="tab-section-title">
+              <mat-icon>collections</mat-icon>
+              <span>Galerie photos</span>
+            </div>
+            <p class="tab-desc">Organisez vos photos par catégorie. Elles seront visibles sur votre page publique.</p>
+
+            <!-- Upload zone -->
+            <div class="gallery-upload-zone" *ngIf="canManage && establishment">
+              <div class="gallery-cat-select">
+                <span class="gcat-label">Catégorie :</span>
+                <div class="gcat-pills">
+                  <button *ngFor="let cat of galleryCategories"
+                          class="gcat-pill"
+                          [class.active]="selectedGalleryCategory === cat"
+                          (click)="selectedGalleryCategory = cat"
+                          type="button">
+                    {{ cat }}
+                  </button>
+                </div>
+              </div>
+
+              <label class="gallery-drop-label" for="gallery-input" [class.uploading]="galleryUploading">
+                <mat-spinner diameter="20" *ngIf="galleryUploading"></mat-spinner>
+                <mat-icon *ngIf="!galleryUploading">add_photo_alternate</mat-icon>
+                <span>{{ galleryUploading ? 'Envoi en cours…' : 'Cliquer pour ajouter des photos' }}</span>
+                <span class="gdrop-hint">JPG, PNG, WebP — max 5 Mo par image</span>
+              </label>
+              <input type="file" id="gallery-input" accept="image/*" multiple
+                     (change)="onGalleryFilesSelected($event)" style="display:none">
+            </div>
+
+            <!-- Grid par catégorie -->
+            <div class="gallery-section" *ngFor="let cat of galleryCategories">
+              <ng-container *ngIf="getGalleryByCategory(cat).length > 0">
+                <div class="gallery-cat-header">
+                  <span class="gallery-cat-title">{{ cat }}</span>
+                  <span class="gallery-cat-count">{{ getGalleryByCategory(cat).length }} photo(s)</span>
+                </div>
+                <div class="gallery-grid">
+                  <div class="gallery-thumb" *ngFor="let img of getGalleryByCategory(cat)">
+                    <img [src]="galleryService.getImageUrl(img.filename)" [alt]="img.title || img.category" loading="lazy">
+                    <div class="gallery-thumb-overlay" *ngIf="canManage">
+                      <button class="gallery-del-btn"
+                              (click)="deleteGalleryImage(img)"
+                              [disabled]="galleryDeleting === img.id">
+                        <mat-spinner diameter="14" *ngIf="galleryDeleting === img.id"></mat-spinner>
+                        <mat-icon *ngIf="galleryDeleting !== img.id">delete</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </ng-container>
+            </div>
+
+            <!-- Empty state -->
+            <div class="gallery-empty" *ngIf="galleryImages.length === 0 && !galleryUploading">
+              <mat-icon>photo_library</mat-icon>
+              <p>Aucune photo pour le moment. Ajoutez vos premières images !</p>
+            </div>
           </div>
         </mat-tab>
 

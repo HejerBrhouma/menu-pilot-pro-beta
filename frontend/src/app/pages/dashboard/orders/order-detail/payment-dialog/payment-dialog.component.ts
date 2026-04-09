@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { Order, PAYMENT_METHOD_LABELS } from '../../../../../core/models/order.model';
+import { Order } from '../../../../../core/models/order.model';
 
 @Component({
   selector: 'app-payment-dialog',
@@ -93,18 +93,40 @@ import { Order, PAYMENT_METHOD_LABELS } from '../../../../../core/models/order.m
   `]
 })
 export class PaymentDialogComponent {
-  selected = 'CASH';
 
-  methods = [
-    { value: 'CASH',   label: 'Espèces',        icon: 'payments' },
-    { value: 'CARD',   label: 'Carte bancaire',  icon: 'credit_card' },
-    { value: 'CHEQUE', label: 'Chèque',          icon: 'receipt_long' },
-    { value: 'OTHER',  label: 'Autre',           icon: 'more_horiz' },
+  private readonly allMethods = [
+    { value: 'cash',     label: 'Espèces',          icon: 'payments' },
+    { value: 'card',     label: 'Carte bancaire',    icon: 'credit_card' },
+    { value: 'cheque',   label: 'Chèque',            icon: 'edit_document' },
+    { value: 'transfer', label: 'Virement',          icon: 'account_balance' },
+    { value: 'online',   label: 'Paiement en ligne', icon: 'language' },
   ];
+
+  methods: { value: string; label: string; icon: string }[] = [];
+  selected = '';
 
   dialogRef = inject(MatDialogRef<PaymentDialogComponent>);
 
-  constructor(@Inject(MAT_DIALOG_DATA) public data: { order: Order }) {}
+  constructor(@Inject(MAT_DIALOG_DATA) public data: {
+    order: Order;
+    paymentMethods: string[];
+    customPaymentMethods: { value: string; label: string; icon: string }[];
+  }) {
+    const enabledKeys: string[] = data.paymentMethods ?? [];
+    const customMethods = data.customPaymentMethods ?? [];
+
+    if (enabledKeys.length > 0) {
+      const standard = this.allMethods.filter(m => enabledKeys.includes(m.value));
+      const custom = customMethods.filter(m => enabledKeys.includes(m.value));
+      this.methods = [...standard, ...custom];
+    }
+
+    if (this.methods.length === 0) {
+      this.methods = this.allMethods.filter(m => ['cash', 'card'].includes(m.value));
+    }
+
+    this.selected = this.methods[0].value;
+  }
 
   confirm(): void {
     this.dialogRef.close({ paymentMethod: this.selected });

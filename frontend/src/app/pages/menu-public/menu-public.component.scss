@@ -204,13 +204,28 @@
   }
 }
 
+.item-media {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.item-img {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  object-fit: cover;
+  display: block;
+}
+
 .item-avatar {
-  width: 40px; height: 40px;
+  width: 48px; height: 48px;
   border-radius: 10px;
   background: linear-gradient(135deg, #6366f1, #8b5cf6);
   color: white;
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 1.1rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -252,12 +267,17 @@
 }
 
 .pack-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
   background: #fef3c7;
   color: #92400e;
   font-size: 0.68rem;
   font-weight: 600;
-  padding: 2px 8px;
+  padding: 2px 8px 2px 5px;
   border-radius: 99px;
+
+  mat-icon { font-size: 0.7rem; width: 0.7rem; height: 0.7rem; color: #d97706; }
 }
 
 .item-price {

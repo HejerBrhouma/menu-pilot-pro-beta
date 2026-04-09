@@ -4,7 +4,7 @@
   <!-- ══ TOP BAR ══ -->
   <div class="pos-topbar">
     <div class="topbar-left">
-      <a routerLink="/orders" class="back-btn">
+      <a [routerLink]="backRoute" class="back-btn">
         <mat-icon>arrow_back_ios</mat-icon>
       </a>
       <div class="topbar-title">
@@ -22,15 +22,70 @@
           <mat-icon>takeout_dining</mat-icon> À emporter
         </button>
       </div>
-      <!-- Table selector -->
-      <mat-form-field appearance="outline" class="table-select" *ngIf="!isTakeaway">
-        <mat-label>Table</mat-label>
-        <mat-select [formControl]="tableControl">
-          <mat-option *ngFor="let t of tables" [value]="'/api/tables/' + t.id">
-            {{ t.name }}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
+      <!-- Table selector custom -->
+      <div class="table-picker-wrap" *ngIf="!isTakeaway">
+
+        <!-- Trigger button -->
+        <button class="table-trigger"
+                [class.has-value]="!!selectedTable"
+                [class.open]="tablePickerOpen"
+                (click)="tablePickerOpen = !tablePickerOpen">
+          <ng-container *ngIf="!selectedTable">
+            <mat-icon class="trigger-icon">table_restaurant</mat-icon>
+            <span>Choisir une table</span>
+            <mat-icon class="trigger-chevron">expand_more</mat-icon>
+          </ng-container>
+          <ng-container *ngIf="selectedTable">
+            <span class="trigger-dot"
+                  [class.dot-free]="selectedTable.status === 'FREE'"
+                  [class.dot-occupied]="selectedTable.status === 'OCCUPIED'"
+                  [class.dot-reserved]="selectedTable.status === 'RESERVED'">
+            </span>
+            <span class="trigger-name">{{ selectedTable.name }}</span>
+            <span class="trigger-cap">· {{ selectedTable.capacity }} pers.</span>
+            <button class="trigger-clear" (click)="$event.stopPropagation(); clearTable()">
+              <mat-icon>close</mat-icon>
+            </button>
+          </ng-container>
+        </button>
+
+        <!-- Backdrop -->
+        <div class="picker-backdrop" *ngIf="tablePickerOpen"
+             (click)="tablePickerOpen = false"></div>
+
+        <!-- Dropdown panel -->
+        <div class="table-picker-panel" *ngIf="tablePickerOpen">
+          <div class="picker-header">
+            <span>Sélectionner une table</span>
+            <span class="picker-count">{{ tables.length }} tables</span>
+          </div>
+          <div class="picker-grid">
+            <button class="picker-card"
+                    *ngFor="let t of tables"
+                    [class.card-free]="t.status === 'FREE'"
+                    [class.card-occupied]="t.status === 'OCCUPIED'"
+                    [class.card-reserved]="t.status === 'RESERVED'"
+                    [class.card-selected]="selectedTable?.id === t.id"
+                    (click)="selectTable(t)">
+              <span class="pcard-dot"></span>
+              <span class="pcard-name">{{ t.name }}</span>
+              <span class="pcard-cap">
+                <mat-icon>people</mat-icon>{{ t.capacity }}
+              </span>
+              <span class="pcard-status">
+                <ng-container *ngIf="t.status === 'FREE'">Libre</ng-container>
+                <ng-container *ngIf="t.status === 'OCCUPIED'">Occupée</ng-container>
+                <ng-container *ngIf="t.status === 'RESERVED'">Réservée</ng-container>
+              </span>
+            </button>
+          </div>
+          <div class="picker-empty" *ngIf="tables.length === 0">
+            <mat-icon>table_restaurant</mat-icon>
+            <span>Aucune table active</span>
+          </div>
+        </div>
+
+      </div>
     </div>
   </div>
 

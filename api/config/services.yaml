@@ -24,5 +24,9 @@ services:
         arguments:
             $uploadDir: '%kernel.project_dir%/public/uploads/logos'
 
+    App\Controller\GalleryController:
+        arguments:
+            $galleryUploadDir: '%kernel.project_dir%/public/uploads/gallery'
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

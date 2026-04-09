@@ -63,7 +63,7 @@
     <div class="dlg-row">
       <mat-form-field appearance="outline">
         <mat-label>Slug URL</mat-label>
-        <span matTextPrefix>/r/&nbsp;</span>
+        <span matTextPrefix>/&nbsp;</span>
         <input matInput formControlName="slug" placeholder="mon-enseigne">
         <mat-error *ngIf="form.get('slug')?.hasError('pattern')">Lettres minuscules, chiffres et tirets</mat-error>
         <mat-hint>Identifiant unique dans l'URL</mat-hint>

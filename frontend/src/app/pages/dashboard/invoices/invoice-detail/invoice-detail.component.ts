@@ -34,6 +34,9 @@ export class InvoiceDetailComponent implements OnInit {
 
   private route                = inject(ActivatedRoute);
   private router               = inject(Router);
+
+  get isPosMode(): boolean { return this.router.url.startsWith('/pos'); }
+  get backRoute(): string  { return this.isPosMode ? '/pos/invoices' : '/invoices'; }
   private orderService         = inject(OrderService);
   private establishmentService = inject(EstablishmentService);
   private snackBar             = inject(MatSnackBar);
@@ -57,7 +60,7 @@ export class InvoiceDetailComponent implements OnInit {
       error: () => {
         this.loading = false;
         this.snackBar.open('Facture introuvable', '✕', { duration: 3000 });
-        this.router.navigate(['/invoices']);
+        this.router.navigate([this.backRoute]);
       }
     });
   }

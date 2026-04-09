@@ -44,6 +44,10 @@ export class OrdersListComponent implements OnInit, OnDestroy {
   searchQuery    = '';
   newOrdersCount = 0;
 
+  dateFrom      = '';
+  dateTo        = '';
+  activePeriod  = '';
+
   statusLabels = ORDER_STATUS_LABELS;
   statusColors = ORDER_STATUS_COLORS;
   statusNext   = ORDER_STATUS_NEXT;
@@ -77,6 +81,17 @@ export class OrdersListComponent implements OnInit, OnDestroy {
     let orders = this.activeTab === 'ALL'
       ? this.allOrders
       : this.allOrders.filter(o => o.status === this.activeTab);
+
+    if (this.dateFrom) {
+      const from = new Date(this.dateFrom);
+      from.setHours(0, 0, 0, 0);
+      orders = orders.filter(o => new Date(o.createdAt!) >= from);
+    }
+    if (this.dateTo) {
+      const to = new Date(this.dateTo);
+      to.setHours(23, 59, 59, 999);
+      orders = orders.filter(o => new Date(o.createdAt!) <= to);
+    }
 
     if (this.searchQuery.trim()) {
       const q = this.searchQuery.toLowerCase();
@@ -278,6 +293,34 @@ export class OrdersListComponent implements OnInit, OnDestroy {
     yesterday.setDate(today.getDate() - 1);
     if (d.toDateString() === yesterday.toDateString()) return 'Hier';
     return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+  }
+
+  setPeriod(period: 'today' | 'week' | 'month' | ''): void {
+    this.activePeriod = period;
+    const today = new Date();
+    const toStr = today.toISOString().slice(0, 10);
+    if (period === 'today') {
+      this.dateFrom = toStr;
+      this.dateTo   = toStr;
+    } else if (period === 'week') {
+      const start = new Date(today);
+      const day = today.getDay() || 7;
+      start.setDate(today.getDate() - day + 1);
+      this.dateFrom = start.toISOString().slice(0, 10);
+      this.dateTo   = toStr;
+    } else if (period === 'month') {
+      this.dateFrom = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-01`;
+      this.dateTo   = toStr;
+    } else {
+      this.dateFrom = '';
+      this.dateTo   = '';
+    }
+  }
+
+  clearDateFilter(): void {
+    this.dateFrom     = '';
+    this.dateTo       = '';
+    this.activePeriod = '';
   }
 
   isNewOrder(order: Order): boolean {

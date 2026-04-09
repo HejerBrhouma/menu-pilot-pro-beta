@@ -78,6 +78,7 @@ export class TableMenuComponent implements OnInit, OnDestroy {
 
   cartRestored      = false;
   cartTimeRemaining = '';
+  imgErrors         = new Set<number>();
 
   // Ratings map
   ratingsMap = new Map<string, { avg: number; count: number }>();
@@ -480,7 +481,13 @@ export class TableMenuComponent implements OnInit, OnDestroy {
     return p ? this.imageSvc.getImageUrl(p.image) : null;
   }
 
+  onImgError(id: number): void {
+    this.imgErrors.add(id);
+    this.cdr.detectChanges();
+  }
+
   getAvatarColor(name: string): string {
+    if (!name) return this.avatarColors[0];
     return this.avatarColors[name.charCodeAt(0) % this.avatarColors.length];
   }
 

@@ -16,6 +16,9 @@ import { MatDividerModule } from '@angular/material/divider';
 import { EstablishmentService } from '../../../core/services/establishment.service';
 import { AuthService } from '../../../core/services/auth-service';
 import { Establishment, DAYS_FR, DEFAULT_OPENING_HOURS, OpeningHours } from '../../../core/models/establishment.model';
+import { GalleryService } from '../../../core/services/gallery.service';
+import { GalleryImage, GALLERY_CATEGORIES } from '../../../core/models/gallery.model';
+import { ThemeService } from '../../../core/services/theme.service';
 
 @Component({
   selector: 'app-establishment',
@@ -41,8 +44,6 @@ export class EstablishmentComponent implements OnInit {
   infoForm!: FormGroup;
   themeForm!: FormGroup;
   socialForm!: FormGroup;
-  facturationForm!: FormGroup;
-
   openingHours: OpeningHours = { ...DEFAULT_OPENING_HOURS };
   daysKeys   = Object.keys(DAYS_FR);
   daysLabels = DAYS_FR;
@@ -50,12 +51,20 @@ export class EstablishmentComponent implements OnInit {
   logoPreview: string | null = null;
   logoFile: File | null = null;
 
+  galleryImages: GalleryImage[] = [];
+  galleryCategories = GALLERY_CATEGORIES;
+  selectedGalleryCategory = 'Salle';
+  galleryUploading = false;
+  galleryDeleting: number | null = null;
+
   constructor(
     private fb: FormBuilder,
     private establishmentService: EstablishmentService,
     private authService: AuthService,
     private snackBar: MatSnackBar,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    public galleryService: GalleryService,
+    private themeService: ThemeService
   ) {}
 
   ngOnInit(): void {
@@ -86,10 +95,6 @@ export class EstablishmentComponent implements OnInit {
       instagram: [''],
       facebook:  [''],
     });
-
-    this.facturationForm = this.fb.group({
-      tvaRate: [19, [Validators.required, Validators.min(0), Validators.max(100)]],
-    });
   }
 
   loadEstablishment(): void {
@@ -99,11 +104,18 @@ export class EstablishmentComponent implements OnInit {
         if (items.length > 0) {
           this.establishment = items[0];
           this.patchForms(this.establishment);
+          this.loadGallery(this.establishment!.id!);
           if (this.establishment.openingHours) {
             this.openingHours = { ...DEFAULT_OPENING_HOURS, ...this.establishment.openingHours };
           }
           if (this.establishment.logo) {
             this.logoPreview = this.establishmentService.getLogoUrl(this.establishment.logo);
+          }
+          if (this.establishment.primaryColor || this.establishment.secondaryColor) {
+            this.themeService.apply(
+              this.establishment.primaryColor ?? '#6366f1',
+              this.establishment.secondaryColor ?? '#8b5cf6'
+            );
           }
         }
         this.loading = false;
@@ -125,16 +137,12 @@ export class EstablishmentComponent implements OnInit {
     this.socialForm.patchValue({
       website: e.website, instagram: e.instagram, facebook: e.facebook
     });
-    this.facturationForm.patchValue({
-      tvaRate: e.tvaRate ?? 19,
-    });
 
     // Désactiver tous les formulaires si lecture seule
     if (!this.canManage) {
       this.infoForm.disable();
       this.themeForm.disable();
       this.socialForm.disable();
-      this.facturationForm.disable();
     }
   }
 
@@ -188,8 +196,13 @@ export class EstablishmentComponent implements OnInit {
   saveTheme(): void {
     if (!this.canManage || !this.establishment?.id) return;
     this.saving = true;
+    const { primaryColor, secondaryColor } = this.themeForm.value;
     this.establishmentService.update(this.establishment.id, this.themeForm.value).subscribe({
-      next: () => { this.saving = false; this.notify('Thème sauvegardé ✓'); },
+      next: () => {
+        this.saving = false;
+        this.themeService.apply(primaryColor, secondaryColor);
+        this.notify('Thème sauvegardé ✓');
+      },
       error: (err) => { this.saving = false; this.notify(err.message, 'error'); }
     });
   }
@@ -199,15 +212,6 @@ export class EstablishmentComponent implements OnInit {
     this.saving = true;
     this.establishmentService.update(this.establishment.id, { openingHours: this.openingHours }).subscribe({
       next: () => { this.saving = false; this.notify('Horaires sauvegardés ✓'); },
-      error: (err) => { this.saving = false; this.notify(err.message, 'error'); }
-    });
-  }
-
-  saveFacturation(): void {
-    if (!this.canManage || !this.establishment?.id || this.facturationForm.invalid) return;
-    this.saving = true;
-    this.establishmentService.update(this.establishment.id, this.facturationForm.value).subscribe({
-      next: () => { this.saving = false; this.notify('Paramètres de facturation sauvegardés ✓'); },
       error: (err) => { this.saving = false; this.notify(err.message, 'error'); }
     });
   }
@@ -222,12 +226,56 @@ export class EstablishmentComponent implements OnInit {
   }
 
   getPublicUrl(): string {
-    return `${window.location.origin}/r/${this.establishment?.slug}`;
+    return `${window.location.origin}/${this.establishment?.slug}`;
   }
 
   copyPublicUrl(): void {
     navigator.clipboard.writeText(this.getPublicUrl());
     this.notify('Lien copié ✓');
+  }
+
+  loadGallery(estId: number): void {
+    this.galleryService.getByEstablishment(estId).subscribe({
+      next: (imgs) => { this.galleryImages = imgs; this.cdr.detectChanges(); },
+      error: () => {}
+    });
+  }
+
+  getGalleryByCategory(category: string): GalleryImage[] {
+    return this.galleryImages.filter(img => img.category === category);
+  }
+
+  onGalleryFilesSelected(event: Event): void {
+    if (!this.canManage || !this.establishment?.id) return;
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+    this.galleryUploading = true;
+    const uploads = Array.from(input.files).map(file =>
+      this.galleryService.upload(this.establishment!.id!, file, this.selectedGalleryCategory)
+        .toPromise()
+    );
+    Promise.allSettled(uploads).then((results) => {
+      this.galleryUploading = false;
+      const succeeded = results.filter(r => r.status === 'fulfilled').length;
+      this.loadGallery(this.establishment!.id!);
+      if (succeeded > 0) this.notify(`${succeeded} image(s) ajoutée(s) ✓`);
+      else this.notify('Échec de l\'upload', 'error');
+      input.value = '';
+      this.cdr.detectChanges();
+    });
+  }
+
+  deleteGalleryImage(img: GalleryImage): void {
+    if (!this.canManage) return;
+    this.galleryDeleting = img.id;
+    this.galleryService.delete(img.id).subscribe({
+      next: () => {
+        this.galleryImages = this.galleryImages.filter(i => i.id !== img.id);
+        this.galleryDeleting = null;
+        this.cdr.detectChanges();
+      },
+      error: () => { this.galleryDeleting = null; this.notify('Erreur suppression', 'error'); }
+    });
   }
 
   private notify(message: string, type: 'success' | 'error' = 'success'): void {

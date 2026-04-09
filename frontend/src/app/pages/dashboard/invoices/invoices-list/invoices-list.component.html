@@ -64,6 +64,29 @@
     </div>
   </div>
 
+  <!-- ══ DATE FILTER ══════════════════════════════════════════════════════ -->
+  <div class="date-filter-bar">
+    <div class="period-chips">
+      <button class="period-chip" [class.active]="activePeriod === 'today'"  (click)="setPeriod('today')">Aujourd'hui</button>
+      <button class="period-chip" [class.active]="activePeriod === 'week'"   (click)="setPeriod('week')">Cette semaine</button>
+      <button class="period-chip" [class.active]="activePeriod === 'month'"  (click)="setPeriod('month')">Ce mois</button>
+      <button class="period-chip clear" *ngIf="dateFrom || dateTo"           (click)="clearDateFilter()">
+        <mat-icon>close</mat-icon> Effacer
+      </button>
+    </div>
+    <div class="date-inputs">
+      <div class="date-input-wrap">
+        <mat-icon>event</mat-icon>
+        <input type="date" [(ngModel)]="dateFrom" (ngModelChange)="activePeriod = ''" placeholder="Du">
+      </div>
+      <span class="date-sep">→</span>
+      <div class="date-input-wrap">
+        <mat-icon>event</mat-icon>
+        <input type="date" [(ngModel)]="dateTo" (ngModelChange)="activePeriod = ''" placeholder="Au">
+      </div>
+    </div>
+  </div>
+
   <!-- ══ LOADER ════════════════════════════════════════════════════════════ -->
   <div class="page-loader" *ngIf="loading">
     <mat-spinner diameter="44"></mat-spinner>
@@ -80,7 +103,7 @@
   <div class="inv-list ds-card" *ngIf="!loading && filtered.length > 0">
     <a class="inv-row"
        *ngFor="let inv of filtered; let i = index"
-       [routerLink]="['/invoices', inv.id]"
+       [routerLink]="[invoiceBasePath, inv.id]"
        [style.animation-delay]="(i * 40) + 'ms'">
 
       <!-- Icône méthode -->

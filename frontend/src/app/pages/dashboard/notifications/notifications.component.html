@@ -1,0 +1,67 @@
+<!-- src/app/pages/dashboard/notifications/notifications.component.html -->
+
+<div class="list-page">
+
+  <!-- ══ PAGE HEADER ══════════════════════════════════════════════════════ -->
+  <div class="ds-page-header">
+    <div class="ds-page-title">
+      <div class="title-icon"><mat-icon>notifications</mat-icon></div>
+      <div>
+        <h1>Notifications</h1>
+        <p class="subtitle">
+          {{ unreadCount }} non lue{{ unreadCount > 1 ? 's' : '' }}
+        </p>
+      </div>
+    </div>
+    <div class="ds-header-actions" *ngIf="unreadCount > 0">
+      <button class="ds-btn ds-btn-secondary" (click)="markAllRead()">
+        <mat-icon>done_all</mat-icon>Tout marquer comme lu
+      </button>
+    </div>
+  </div>
+
+  <!-- ══ FILTER TABS ════════════════════════════════════════════════════════ -->
+  <div class="filter-tabs">
+    <button class="tab-btn" [class.active]="filter === 'ALL'" (click)="filter = 'ALL'">
+      Toutes <span class="tab-count">{{ notifications.length }}</span>
+    </button>
+    <button class="tab-btn" [class.active]="filter === 'UNREAD'" (click)="filter = 'UNREAD'">
+      Non lues <span class="tab-count unread">{{ unreadCount }}</span>
+    </button>
+  </div>
+
+  <!-- ══ LOADER ════════════════════════════════════════════════════════════ -->
+  <div class="page-loader" *ngIf="loading">
+    <mat-spinner diameter="44"></mat-spinner>
+  </div>
+
+  <!-- ══ LISTE ════════════════════════════════════════════════════════════ -->
+  <div class="notif-list ds-card" *ngIf="!loading">
+
+    <div *ngFor="let n of displayed"
+         class="notif-row"
+         [class.unread]="!n.isRead"
+         (click)="markRead(n)">
+
+      <div class="notif-icon" [style.background]="colorFor(n.type) + '18'" [style.color]="colorFor(n.type)">
+        <mat-icon>{{ iconFor(n.type) }}</mat-icon>
+      </div>
+
+      <div class="notif-body">
+        <p class="notif-message">{{ n.message }}</p>
+        <span class="notif-time">{{ n.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+      </div>
+
+      <div class="notif-status">
+        <span class="unread-dot" *ngIf="!n.isRead"></span>
+      </div>
+    </div>
+
+    <div class="empty-state" *ngIf="displayed.length === 0">
+      <div class="empty-icon"><mat-icon>notifications_none</mat-icon></div>
+      <p class="empty-title">Aucune notification</p>
+      <p class="empty-sub" *ngIf="filter === 'UNREAD'">Toutes les notifications ont été lues</p>
+    </div>
+  </div>
+
+</div>

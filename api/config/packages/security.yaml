@@ -62,6 +62,11 @@ security:
         - { path: ^/api/public/customer/orders,   roles: ROLE_CUSTOMER }
         - { path: ^/api/public/reviews,           roles: PUBLIC_ACCESS }
         - { path: ^/api/reviews,                  roles: ROLE_ADMIN }
+        - { path: ^/api/waiter/activity$,         roles: ROLE_WAITER }
+        - { path: ^/api/waiter/activities,        roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/api/waiter/status$,           roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/api/staff/status,             roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/api/notifications,            roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/api/public, roles: PUBLIC_ACCESS }
         - { path: ^/api/menus,methods: [ GET ], roles: PUBLIC_ACCESS }
         - { path: ^/api/products, methods: [ GET ], roles: PUBLIC_ACCESS }
@@ -72,6 +77,8 @@ security:
         - { path: ^/api/token/refresh, roles: PUBLIC_ACCESS }
         - { path: ^/api/establishments, methods: GET, roles: PUBLIC_ACCESS }
         - { path: ^/api/establishments, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/api/gallery, methods: [GET], roles: PUBLIC_ACCESS }
+        - { path: ^/api/gallery, roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/api/impersonate, roles: IS_AUTHENTICATED_FULLY }
         # Autoriser la création de compte (POST sur /api/users) sans token
         - { path: ^/api/users$, roles: PUBLIC_ACCESS, methods: [ POST ] }

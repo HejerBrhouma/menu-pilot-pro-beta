@@ -15,6 +15,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { OrderService } from '../../../../core/services/order.service';
 import { AuthService } from '../../../../core/services/auth-service';
+import { EstablishmentService } from '../../../../core/services/establishment.service';
+import { Establishment } from '../../../../core/models/establishment.model';
 import {
   Order, OrderStatus, Invoice,
   ORDER_STATUS_LABELS, ORDER_STATUS_COLORS, ORDER_STATUS_NEXT,
@@ -35,8 +37,9 @@ import { PaymentDialogComponent } from './payment-dialog/payment-dialog.componen
   styleUrls: ['./order-detail.component.scss']
 })
 export class OrderDetailComponent implements OnInit {
-  order:    Order | null = null;
-  invoice:  Invoice | null = null;
+  order:         Order | null = null;
+  invoice:       Invoice | null = null;
+  establishment: Establishment | null = null;
   loading   = true;
   saving    = false;
   canManage = false;
@@ -49,18 +52,27 @@ export class OrderDetailComponent implements OnInit {
   // Workflow complet
   readonly workflow: OrderStatus[] = ['PENDING', 'CONFIRMED', 'SERVED', 'PAID'];
 
-  private route        = inject(ActivatedRoute);
-  private router       = inject(Router);
-  private orderService = inject(OrderService);
-  private authService  = inject(AuthService);
-  private snackBar     = inject(MatSnackBar);
-  private dialog       = inject(MatDialog);
-  private cdr          = inject(ChangeDetectorRef);
+  private route               = inject(ActivatedRoute);
+  private router              = inject(Router);
+
+  get isPosMode(): boolean    { return this.router.url.startsWith('/pos'); }
+  get backRoute(): string     { return this.isPosMode ? '/pos' : '/orders'; }
+  get invoiceBasePath(): string { return this.isPosMode ? '/pos/invoices' : '/invoices'; }
+  private orderService        = inject(OrderService);
+  private authService         = inject(AuthService);
+  private establishmentService = inject(EstablishmentService);
+  private snackBar            = inject(MatSnackBar);
+  private dialog              = inject(MatDialog);
+  private cdr                 = inject(ChangeDetectorRef);
 
   ngOnInit(): void {
     this.canManage = this.authService.canManageOrders();
     const id = Number(this.route.snapshot.paramMap.get('id'));
     this.loadOrder(id);
+    this.establishmentService.getAll().subscribe({
+      next: (items) => { this.establishment = items[0] ?? null; },
+      error: () => {}
+    });
   }
 
   loadOrder(id: number): void {
@@ -76,7 +88,7 @@ export class OrderDetailComponent implements OnInit {
       error: () => {
         this.loading = false;
         this.notify('Commande introuvable', 'error');
-        this.router.navigate(['/orders']);
+        this.router.navigate([this.backRoute]);
       }
     });
   }
@@ -114,7 +126,11 @@ export class OrderDetailComponent implements OnInit {
   openPaymentDialog(): void {
     const ref = this.dialog.open(PaymentDialogComponent, {
       width: '420px',
-      data: { order: this.order }
+      data: {
+        order: this.order,
+        paymentMethods: this.establishment?.paymentMethods ?? ['cash', 'card'],
+        customPaymentMethods: this.establishment?.customPaymentMethods ?? [],
+      }
     });
     ref.afterClosed().subscribe(result => {
       if (!result) return;

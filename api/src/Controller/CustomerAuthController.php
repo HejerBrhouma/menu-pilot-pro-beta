@@ -191,8 +191,49 @@ class CustomerAuthController extends AbstractController
     public function me(): JsonResponse
     {
         $user = $this->getUser();
-        if (!$user instanceof User) return $this->json(['error' => 'Non connecté'], 401);
+        if (!$user instanceof User) {
+            return $this->json(['error' => 'Non connecté'], 401);
+        }
         return $this->json($this->serialize($user));
+    }
+
+    /**
+     * Mise à jour du profil client connecté
+     * @Route("/api/public/customer/profile", methods={"PATCH"})
+     */
+    public function updateProfile(Request $request): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            return $this->json(['error' => 'Non connecté'], 401);
+        }
+
+        $requestData = json_decode($request->getContent(), true);
+
+        if (isset($requestData['firstName'])) {
+            $user->setFirstName(trim($requestData['firstName']));
+        }
+        if (array_key_exists('lastName', $requestData)) {
+            $user->setLastName(trim($requestData['lastName']) ?: null);
+        }
+
+        // Changement de mot de passe optionnel
+        if (!empty($requestData['newPassword'])) {
+            if (empty($requestData['currentPassword'])) {
+                return $this->json(['error' => 'Mot de passe actuel requis'], 400);
+            }
+            if (!$this->hasher->isPasswordValid($user, $requestData['currentPassword'])) {
+                return $this->json(['error' => 'Mot de passe actuel incorrect'], 401);
+            }
+            $user->setPassword($this->hasher->hashPassword($user, $requestData['newPassword']));
+        }
+
+        $this->em->flush();
+
+        return $this->json([
+            'token'    => $this->jwtManager->create($user),
+            'customer' => $this->serialize($user),
+        ]);
     }
 
     // ── Helpers ────────────────────────────────────────────────────

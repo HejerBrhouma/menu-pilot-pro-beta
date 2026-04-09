@@ -108,6 +108,7 @@ export class MenuListComponent implements OnInit {
   openAddDialog(): void {
     const ref = this.dialog.open(MenuFormDialogComponent, {
       width: '750px',
+      maxWidth: '95vw',
       maxHeight: '90vh',
       data: { menu: null, products: this.allProducts, packs: this.allPacks, categories: this.allCategories }
     });
@@ -123,6 +124,7 @@ export class MenuListComponent implements OnInit {
   openEditDialog(menu: MenuRead): void {
     const ref = this.dialog.open(MenuFormDialogComponent, {
       width: '750px',
+      maxWidth: '95vw',
       maxHeight: '90vh',
       data: { menu, products: this.allProducts, packs: this.allPacks, categories: this.allCategories }
     });

@@ -535,6 +535,127 @@
   }
 }
 
+// ── Galerie Tab ─────────────────────────────────────────────────────────────
+
+.gallery-upload-zone {
+  background: var(--ds-surface, #f8fafc);
+  border: 2px dashed #e2e8f0;
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.gallery-cat-select {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .75rem;
+  margin-bottom: 1rem;
+}
+.gcat-label { font-size: .8rem; font-weight: 600; color: #64748b; }
+.gcat-pills { display: flex; flex-wrap: wrap; gap: .4rem; }
+.gcat-pill {
+  padding: .3rem .8rem;
+  border-radius: 20px;
+  border: 1.5px solid #e2e8f0;
+  background: #fff;
+  font-size: .78rem;
+  font-weight: 500;
+  cursor: pointer;
+  color: #475569;
+  transition: all .15s;
+  &.active {
+    background: var(--primary, #6366f1);
+    border-color: var(--primary, #6366f1);
+    color: #fff;
+  }
+  &:hover:not(.active) { border-color: #94a3b8; }
+}
+
+.gallery-drop-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .4rem;
+  padding: 1.5rem;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: center;
+  color: #94a3b8;
+  transition: background .15s;
+  &:hover:not(.uploading) { background: rgba(99,102,241,.04); color: #6366f1; }
+  mat-icon { font-size: 2rem; width: 2rem; height: 2rem; }
+  span { font-size: .85rem; font-weight: 500; }
+  .gdrop-hint { font-size: .72rem; color: #cbd5e1; }
+  &.uploading { pointer-events: none; }
+}
+
+.gallery-section { margin-bottom: 1.75rem; }
+.gallery-cat-header {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin-bottom: .75rem;
+}
+.gallery-cat-title { font-size: .85rem; font-weight: 700; color: #374151; }
+.gallery-cat-count { font-size: .75rem; color: #9ca3af; }
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: .6rem;
+}
+.gallery-thumb {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #f1f5f9;
+  img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform .2s;
+  }
+  &:hover img { transform: scale(1.05); }
+  &:hover .gallery-thumb-overlay { opacity: 1; }
+}
+.gallery-thumb-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity .2s;
+}
+.gallery-del-btn {
+  background: rgba(239,68,68,.9);
+  border: none;
+  border-radius: 50%;
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  color: #fff;
+  mat-icon { font-size: 16px; width: 16px; height: 16px; }
+  &:hover { background: #dc2626; }
+  &:disabled { opacity: .5; cursor: default; }
+}
+
+.gallery-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .75rem;
+  padding: 3rem 1rem;
+  color: #9ca3af;
+  text-align: center;
+  mat-icon { font-size: 3rem; width: 3rem; height: 3rem; }
+  p { margin: 0; font-size: .9rem; }
+}
+
 // ── TVA / Facturation tab ─────────────────────────────────────────────────
 .tva-row {
   display  : grid;

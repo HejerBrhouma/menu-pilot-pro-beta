@@ -21,18 +21,11 @@ export const routes: Routes = [
       import('./pages/menu-public/menu-public.component')
         .then(m => m.MenuPublicComponent)
   },
-  {
-    path: 'r/:slug',
-    title: 'Notre Enseigne',
-    loadComponent: () =>
-      import('./pages/establishment-public/establishment-public.component')
-        .then(m => m.EstablishmentPublicComponent)
-  },
-
   // ── QR Table → menu client ────────────────────────────────────────────
   {
     path: 'table/:token',
     title: 'Commander',
+    data: { hideTopBar: true },
     loadComponent: () => import('./pages/public/table-menu/table-menu.component')
       .then(m => m.TableMenuComponent)
   },
@@ -95,6 +88,48 @@ export const routes: Routes = [
             .then(m => m.UsersListComponent)
       },
     ]
+  },
+
+  // ── POS (plein écran, sans sidebar) ──────────────────────────────────
+  {
+    path: 'pos',
+    title: 'Mode Caisse',
+    canActivate: [AdminGuard],
+    loadComponent: () =>
+      import('./pages/dashboard/pos/pos.component')
+        .then(m => m.PosComponent)
+  },
+  {
+    path: 'pos/orders/new',
+    title: 'Nouvelle commande — Mode Caisse',
+    canActivate: [AdminGuard],
+    loadComponent: () =>
+      import('./pages/dashboard/orders/order-new/order-new.component')
+        .then(m => m.OrderNewComponent)
+  },
+  {
+    path: 'pos/orders/:id',
+    title: 'Commande — Mode Caisse',
+    canActivate: [AdminGuard],
+    loadComponent: () =>
+      import('./pages/dashboard/orders/order-detail/order-detail.component')
+        .then(m => m.OrderDetailComponent)
+  },
+  {
+    path: 'pos/invoices',
+    title: 'Factures — Mode Caisse',
+    canActivate: [AdminGuard],
+    loadComponent: () =>
+      import('./pages/dashboard/invoices/invoices-list/invoices-list.component')
+        .then(m => m.InvoicesListComponent)
+  },
+  {
+    path: 'pos/invoices/:id',
+    title: 'Facture — Mode Caisse',
+    canActivate: [AdminGuard],
+    loadComponent: () =>
+      import('./pages/dashboard/invoices/invoice-detail/invoice-detail.component')
+        .then(m => m.InvoiceDetailComponent)
   },
 
   // ── ADMIN (layout avec sidebar) ───────────────────────────────────────
@@ -211,7 +246,30 @@ export const routes: Routes = [
           import('./pages/dashboard/reviews/reviews-moderation.component')
             .then(m => m.ReviewsModerationComponent)
       },
+      {
+        path: 'notifications',
+        title: 'Notifications',
+        loadComponent: () =>
+          import('./pages/dashboard/notifications/notifications.component')
+            .then(m => m.NotificationsComponent)
+      },
+      {
+        path: 'settings',
+        title: 'Paramètres',
+        loadComponent: () =>
+          import('./pages/dashboard/settings/settings.component')
+            .then(m => m.SettingsComponent)
+      },
     ]
+  },
+
+  {
+    path: ':slug',
+    title: 'Notre Enseigne',
+    data: { hideTopBar: true },
+    loadComponent: () =>
+      import('./pages/establishment-public/establishment-public.component')
+        .then(m => m.EstablishmentPublicComponent)
   },
 
   { path: '**', redirectTo: 'login' }

@@ -9,6 +9,8 @@ import { EstablishmentService } from '../../core/services/establishment.service'
 import { MenuService } from '../../core/services/menu.service';
 import { Establishment, DAYS_FR } from '../../core/models/establishment.model';
 import { MenuRead } from '../../core/models/menu.model';
+import { GalleryService } from '../../core/services/gallery.service';
+import { GalleryImage, GALLERY_CATEGORIES } from '../../core/models/gallery.model';
 
 @Component({
   selector: 'app-establishment-public',
@@ -25,11 +27,17 @@ export class EstablishmentPublicComponent implements OnInit {
   daysLabels = DAYS_FR;
   daysKeys = Object.keys(DAYS_FR);
 
+  galleryImages: GalleryImage[] = [];
+  galleryCategories = GALLERY_CATEGORIES;
+  activeGalleryTab = '';
+  lightboxImage: string | null = null;
+
   constructor(
     private route: ActivatedRoute,
     private establishmentService: EstablishmentService,
     private menuService: MenuService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private galleryService: GalleryService
   ) {}
 
   ngOnInit(): void {
@@ -39,8 +47,8 @@ export class EstablishmentPublicComponent implements OnInit {
     this.establishmentService.getBySlug(slug).subscribe({
       next: (est) => {
         this.establishment = est;
-        // Charger les menus actifs
-        this.menuService.getAll(1, 100).subscribe({
+        // Charger les menus actifs filtrés par enseigne
+        this.menuService.getAll(1, 100, est.id).subscribe({
           next: ({ items }) => {
             this.menus = items.filter(m => m.isActive);
             this.loading = false;
@@ -48,9 +56,35 @@ export class EstablishmentPublicComponent implements OnInit {
           },
           error: () => { this.loading = false; this.cdr.detectChanges(); }
         });
+        this.galleryService.getByEstablishment(est.id!).subscribe({
+          next: (imgs) => {
+            this.galleryImages = imgs;
+            const cats = this.getCategoriesWithImages();
+            this.activeGalleryTab = cats[0] || '';
+            this.cdr.detectChanges();
+          },
+          error: () => {}
+        });
       },
       error: () => { this.notFound = true; this.loading = false; this.cdr.detectChanges(); }
     });
+  }
+
+  getCategoriesWithImages(): string[] {
+    const cats = new Set(this.galleryImages.map(img => img.category));
+    return GALLERY_CATEGORIES.filter(c => cats.has(c));
+  }
+
+  getGalleryByCategory(category: string): GalleryImage[] {
+    return this.galleryImages.filter(img => img.category === category);
+  }
+
+  openLightbox(url: string): void {
+    this.lightboxImage = url;
+  }
+
+  closeLightbox(): void {
+    this.lightboxImage = null;
   }
 
   getLogoUrl(): string {

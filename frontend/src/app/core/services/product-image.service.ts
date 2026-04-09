@@ -7,11 +7,9 @@ import { Observable } from 'rxjs';
 @Injectable({ providedIn: 'root' })
 export class ProductImageService {
   private http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:8008';
-
   getImageUrl(image: string | null | undefined): string | null {
     if (!image) return null;
-    return `${this.baseUrl}/uploads/products/${image}`;
+    return `/uploads/products/${image}`;
   }
 
   uploadImage(productId: number, file: File): Observable<{ image: string; imageUrl: string }> {

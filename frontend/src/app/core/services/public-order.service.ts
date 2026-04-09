@@ -96,7 +96,7 @@ export class PublicOrderService {
 
   getLogoUrl(logo: string | null): string | null {
     if (!logo) return null;
-    return `http://localhost:8008/uploads/logos/${logo}`;
+    return `/uploads/logos/${logo}`;
   }
 
   private handleError(error: any): Observable<never> {

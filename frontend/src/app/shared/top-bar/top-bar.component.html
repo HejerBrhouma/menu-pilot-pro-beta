@@ -57,6 +57,23 @@
         </span>
       </button>
 
+      <!-- Notifications (admin / manager uniquement) -->
+      <button class="action-icon-btn" *ngIf="isManagerOrAdmin"
+              (click)="goToNotifications()" matTooltip="Notifications">
+        <span class="icon-wrap">
+          <mat-icon>notifications</mat-icon>
+          <span class="icon-badge red" *ngIf="unreadNotifCount > 0">
+            {{ unreadNotifCount > 99 ? '99+' : unreadNotifCount }}
+          </span>
+        </span>
+      </button>
+
+      <!-- Mode Caisse -->
+      <button class="pos-btn" (click)="goToPos()" matTooltip="Ouvrir le mode caisse tablette">
+        <mat-icon>point_of_sale</mat-icon>
+        <span>Mode Caisse</span>
+      </button>
+
       <div class="sep"></div>
 
       <!-- Chip profil + dropdown -->

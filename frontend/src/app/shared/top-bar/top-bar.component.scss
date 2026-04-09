@@ -224,6 +224,36 @@ $text-soft  : #94a3b8;
   animation: topbar-in 0.25s ease-out forwards;
 }
 
+// ── Bouton Mode Caisse ────────────────────────────────────────────────────
+.pos-btn {
+  display        : flex;
+  align-items    : center;
+  gap            : 0.4rem;
+  height         : 36px;
+  padding        : 0 0.9rem;
+  border-radius  : 10px;
+  border         : 1.5px solid rgba(99, 102, 241, 0.35);
+  background     : rgba(99, 102, 241, 0.08);
+  color          : $accent;
+  font-size      : 0.8rem;
+  font-weight    : 700;
+  cursor         : pointer;
+  transition     : all 0.15s;
+  white-space    : nowrap;
+
+  mat-icon {
+    font-size: 1rem;
+    width    : 1rem;
+    height   : 1rem;
+  }
+
+  &:hover {
+    background  : rgba(99, 102, 241, 0.18);
+    border-color: rgba(99, 102, 241, 0.7);
+    box-shadow  : 0 2px 12px rgba(99, 102, 241, 0.2);
+  }
+}
+
 // ── Badge Super Admin ─────────────────────────────────────────────────────
 .sa-badge {
   font-size     : 0.65rem;

@@ -14,9 +14,18 @@ export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
     req.url.includes('/api/login') ||
     req.url.includes('/api/token/refresh') ||
     req.url.includes('/api/register') ||
-    req.url.includes('/api/auth/google') ||          // ← Google OAuth
-    (req.url.includes('/api/menus') && req.url.includes('qrToken')) ||
-    (req.url.includes('/api/establishments') && req.url.includes('slug'));
+    req.url.includes('/api/auth/google') ||
+    req.url.includes('/api/public/') ||
+    // Galerie et catalogue publics (page enseigne)
+    (req.method === 'GET' && req.url.includes('/api/gallery')) ||
+    // Établissement : UNIQUEMENT la recherche par slug (page publique /nom-enseigne)
+    (req.method === 'GET' && req.url.includes('/api/establishments') && req.url.includes('slug=')) ||
+    // Menu, produits, catégories, packs publics UNIQUEMENT depuis la page publique (pas de token dispo)
+    (req.method === 'GET' && req.url.includes('/api/menus') && req.url.includes('qrToken=')) ||
+    (req.method === 'GET' && req.url.includes('/api/menus') && req.url.includes('establishment=')) ||
+    (req.method === 'GET' && req.url.includes('/api/products') && req.url.includes('establishment=')) ||
+    (req.method === 'GET' && req.url.includes('/api/categories') && req.url.includes('establishment=')) ||
+    (req.method === 'GET' && req.url.includes('/api/packs') && req.url.includes('establishment='));
 
   // Utiliser impersonate_token si dispo, sinon token normal
   const token = getActiveToken();

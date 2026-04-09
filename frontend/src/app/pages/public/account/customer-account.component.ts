@@ -37,6 +37,16 @@ export class CustomerAccountComponent implements OnInit {
 
   orders: any[] = [];
 
+  // Édition profil
+  editingProfile   = false;
+  savingProfile    = false;
+  showCurrentPass  = false;
+  showNewPass      = false;
+  editFirstName    = '';
+  editLastName     = '';
+  editCurrentPass  = '';
+  editNewPass      = '';
+
   private router      = inject(Router);
   private authService = inject(CustomerAuthService);
   private reviewSvc   = inject(ReviewService);
@@ -160,6 +170,51 @@ export class CustomerAccountComponent implements OnInit {
       next: (o) => { this.orders = o; this.cdr.detectChanges(); },
       error: (err) => {
         this.snackBar.open('Erreur chargement commandes : ' + (err.status || ''), '✕', { duration: 4000 });
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  openEditProfile(): void {
+    this.editFirstName   = this.customer?.firstName || '';
+    this.editLastName    = this.customer?.lastName  || '';
+    this.editCurrentPass = '';
+    this.editNewPass     = '';
+    this.editingProfile  = true;
+  }
+
+  cancelEditProfile(): void {
+    this.editingProfile = false;
+  }
+
+  saveProfile(): void {
+    if (!this.editFirstName.trim()) {
+      this.snackBar.open('Le prénom est requis', '✕', { duration: 3000 });
+      return;
+    }
+
+    this.savingProfile = true;
+
+    const payload: any = {
+      firstName: this.editFirstName.trim(),
+      lastName:  this.editLastName.trim(),
+    };
+
+    if (this.editNewPass) {
+      payload.currentPassword = this.editCurrentPass;
+      payload.newPassword     = this.editNewPass;
+    }
+
+    this.authService.updateProfile(payload).subscribe({
+      next: () => {
+        this.savingProfile  = false;
+        this.editingProfile = false;
+        this.snackBar.open('Profil mis à jour ✓', '✕', { duration: 3000, panelClass: ['snack-success'] });
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.savingProfile = false;
+        this.snackBar.open(err.error?.error || 'Erreur lors de la mise à jour', '✕', { duration: 3500 });
         this.cdr.detectChanges();
       }
     });

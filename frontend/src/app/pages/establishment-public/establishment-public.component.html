@@ -109,6 +109,40 @@
     </div>
   </div>
 
+  <!-- GALERIE -->
+  <div class="pub-gallery" *ngIf="galleryImages.length > 0">
+    <h2 class="section-title">Notre Galerie</h2>
+
+    <!-- Category tabs -->
+    <div class="gallery-tabs">
+      <button *ngFor="let cat of getCategoriesWithImages()"
+              class="gtab"
+              [class.active]="activeGalleryTab === cat"
+              (click)="activeGalleryTab = cat">
+        {{ cat }}
+      </button>
+    </div>
+
+    <!-- Masonry grid -->
+    <div class="gallery-masonry">
+      <div class="gm-item"
+           *ngFor="let img of getGalleryByCategory(activeGalleryTab)"
+           (click)="openLightbox(img.url)">
+        <img [src]="img.url" [alt]="img.title || img.category" loading="lazy">
+        <div class="gm-overlay">
+          <mat-icon>zoom_in</mat-icon>
+          <span *ngIf="img.title">{{ img.title }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" *ngIf="lightboxImage" (click)="closeLightbox()">
+      <button class="lb-close" (click)="closeLightbox()"><mat-icon>close</mat-icon></button>
+      <img [src]="lightboxImage" alt="Photo" (click)="$event.stopPropagation()">
+    </div>
+  </div>
+
   <!-- HORAIRES -->
   <div class="pub-horaires">
     <h2 class="section-title">Horaires d'ouverture</h2>

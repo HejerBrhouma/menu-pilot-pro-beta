@@ -32,3 +32,56 @@
 .row-btn.impersonate:hover { background: #ede9fe; color: #7c3aed; }
 .row-btn.readonly { cursor: default; color: var(--clr-text-muted); }
 .row-btn.readonly:hover { background: transparent; color: var(--clr-text-muted); }
+
+// ── Live status cell ──────────────────────────────────────────────────────────
+.live-status-cell {
+  display    : flex;
+  align-items: center;
+  gap        : 6px;
+
+  &.has-alert {
+    background   : #fef2f2;
+    border-radius: 8px;
+    padding      : 4px 8px;
+  }
+}
+
+.live-dot {
+  width        : 10px;
+  height       : 10px;
+  border-radius: 50%;
+  flex-shrink  : 0;
+
+  &.pulse {
+    animation: pulse-ring 1.5s infinite;
+  }
+}
+
+@keyframes pulse-ring {
+  0%   { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
+  70%  { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.live-label {
+  font-size  : 0.78rem;
+  font-weight: 600;
+}
+
+.live-activity {
+  font-size: 0.72rem;
+  color    : var(--clr-text-muted);
+}
+
+.live-offline {
+  color    : var(--clr-text-muted);
+  font-size: 0.85rem;
+}
+
+.alert-icon {
+  font-size : 18px;
+  width     : 18px;
+  height    : 18px;
+  color     : #ef4444;
+  flex-shrink: 0;
+}
