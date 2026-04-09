@@ -41,7 +41,10 @@ class Establishment
      */
     private ?int $id = null;
 
-    /** @Groups({"establishment:read", "invoice:read"}) */
+    /**
+    * @ORM\Column(type="string", length=255, nullable=true)
+    * @Groups({"establishment:read", "establishment:write", "invoice:read"})
+    */
     private ?string $name = null;
 
     /**
@@ -92,7 +95,7 @@ class Establishment
     /**
      * Nom du fichier logo (stocké dans public/uploads/logos/)
      * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"establishment:read", "establishment:write"})
+     * @Groups({"establishment:read", "establishment:write", "invoice:read"})
      */
     private ?string $logo = null;
 
@@ -134,6 +137,13 @@ class Establishment
      * @Groups({"establishment:read", "establishment:write"})
      */
     private ?string $facebook = null;
+
+    /**
+     * Taux de TVA appliqué aux factures (ex: 19.0). Si null → 19% par défaut.
+     * @ORM\Column(type="float", nullable=true)
+     * @Groups({"establishment:read", "establishment:write"})
+     */
+    private ?float $tvaRate = null;
 
     /**
      * @ORM\Column(type="boolean")
@@ -234,6 +244,9 @@ class Establishment
 
     public function getFacebook(): ?string { return $this->facebook; }
     public function setFacebook(?string $facebook): self { $this->facebook = $facebook; return $this; }
+
+    public function getTvaRate(): ?float { return $this->tvaRate; }
+    public function setTvaRate(?float $tvaRate): self { $this->tvaRate = $tvaRate; return $this; }
 
     public function getIsActive(): bool { return $this->isActive; }
     public function setIsActive(bool $isActive): self { $this->isActive = $isActive; return $this; }

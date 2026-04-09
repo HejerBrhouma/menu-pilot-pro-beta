@@ -1,0 +1,150 @@
+<!-- customer-account.component.html -->
+<div class="account-page">
+
+  <!-- Header -->
+  <div class="acc-header">
+    <a routerLink="/" class="back-btn">
+      <mat-icon>arrow_back_ios</mat-icon>
+    </a>
+    <span class="acc-title">{{ isLoggedIn ? 'Mon compte' : 'Connexion' }}</span>
+    <button *ngIf="isLoggedIn" class="logout-btn" (click)="logout()">
+      <mat-icon>logout</mat-icon>
+    </button>
+    <div *ngIf="!isLoggedIn" style="width:32px"></div>
+  </div>
+
+  <!-- ══ NON CONNECTÉ ══ -->
+  <ng-container *ngIf="!isLoggedIn">
+
+    <!-- Hero -->
+    <div class="auth-hero">
+      <div class="auth-icon">
+        <mat-icon>account_circle</mat-icon>
+      </div>
+      <h1>Bienvenue</h1>
+      <p>Connectez-vous pour accéder à vos commandes et laisser des avis</p>
+    </div>
+
+    <!-- OAuth -->
+    <div class="oauth-section">
+      <div id="google-signin-btn"></div>
+      <button class="fb-btn" (click)="loginWithFacebook()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="#1877F2">
+          <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+        </svg>
+        Continuer avec Facebook
+      </button>
+    </div>
+
+    <div class="divider"><span>ou</span></div>
+
+    <!-- Tabs -->
+    <div class="auth-tabs">
+      <button [class.active]="tab === 'login'"    (click)="tab = 'login'">Connexion</button>
+      <button [class.active]="tab === 'register'" (click)="tab = 'register'">Créer un compte</button>
+    </div>
+
+    <!-- Login -->
+    <div class="auth-form" *ngIf="tab === 'login'">
+      <div class="input-group">
+        <mat-icon>email</mat-icon>
+        <input type="email" [(ngModel)]="loginEmail" placeholder="Email">
+      </div>
+      <div class="input-group">
+        <mat-icon>lock</mat-icon>
+        <input [type]="showPass ? 'text' : 'password'" [(ngModel)]="loginPassword"
+               placeholder="Mot de passe" (keyup.enter)="login()">
+        <button class="eye-btn" (click)="showPass = !showPass">
+          <mat-icon>{{ showPass ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+      </div>
+      <button class="auth-submit" (click)="login()" [disabled]="loading || !loginEmail || !loginPassword">
+        <mat-spinner diameter="18" *ngIf="loading"></mat-spinner>
+        <span *ngIf="!loading">Se connecter</span>
+      </button>
+    </div>
+
+    <!-- Register -->
+    <div class="auth-form" *ngIf="tab === 'register'">
+      <div class="name-row">
+        <div class="input-group">
+          <mat-icon>person</mat-icon>
+          <input [(ngModel)]="regFirstName" placeholder="Prénom">
+        </div>
+        <div class="input-group">
+          <input [(ngModel)]="regLastName" placeholder="Nom (optionnel)">
+        </div>
+      </div>
+      <div class="input-group">
+        <mat-icon>email</mat-icon>
+        <input type="email" [(ngModel)]="regEmail" placeholder="Email">
+      </div>
+      <div class="input-group">
+        <mat-icon>lock</mat-icon>
+        <input [type]="showPass ? 'text' : 'password'" [(ngModel)]="regPassword"
+               placeholder="Mot de passe" (keyup.enter)="register()">
+        <button class="eye-btn" (click)="showPass = !showPass">
+          <mat-icon>{{ showPass ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+      </div>
+      <button class="auth-submit" (click)="register()" [disabled]="loading || !regEmail || !regPassword">
+        <mat-spinner diameter="18" *ngIf="loading"></mat-spinner>
+        <span *ngIf="!loading">Créer mon compte</span>
+      </button>
+    </div>
+
+  </ng-container>
+
+  <!-- ══ CONNECTÉ ══ -->
+  <ng-container *ngIf="isLoggedIn && customer">
+
+    <!-- Profil -->
+    <div class="profile-card">
+      <div class="profile-avatar">
+        <img *ngIf="customer.avatar" [src]="customer.avatar" [alt]="customer.fullName">
+        <span *ngIf="!customer.avatar">
+          {{ (customer.firstName || customer.email)[0].toUpperCase() }}
+        </span>
+      </div>
+      <div class="profile-info">
+        <h2>{{ customer.fullName }}</h2>
+        <span>{{ customer.email }}</span>
+      </div>
+    </div>
+
+    <!-- Commandes -->
+    <div class="orders-section">
+      <div class="section-title">
+        <mat-icon>receipt_long</mat-icon>
+        Mes commandes
+      </div>
+
+      <div class="order-empty" *ngIf="orders.length === 0">
+        <mat-icon>receipt_long</mat-icon>
+        <p>Aucune commande</p>
+      </div>
+
+      <div class="order-card" *ngFor="let order of orders">
+        <div class="order-top">
+          <span class="order-num">{{ order.orderNumber }}</span>
+          <span class="order-badge"
+                [style.background]="getStatusColor(order.status) + '18'"
+                [style.color]="getStatusColor(order.status)">
+            {{ getStatusLabel(order.status) }}
+          </span>
+        </div>
+        <div class="order-meta">
+          <span>{{ formatDate(order.createdAt) }}</span>
+          <span>·</span>
+          <strong>{{ order.total | number:'1.2-2' }} TND</strong>
+        </div>
+        <button class="review-btn" *ngIf="order.canReview" (click)="goToReview(order.id)">
+          <mat-icon>star</mat-icon>
+          Laisser un avis
+        </button>
+      </div>
+    </div>
+
+  </ng-container>
+
+</div>

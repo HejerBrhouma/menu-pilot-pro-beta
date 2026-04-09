@@ -1,0 +1,84 @@
+<!-- reviews-moderation.component.html -->
+<div class="moderation-page">
+
+  <div class="page-header">
+    <div class="header-left">
+      <h1><mat-icon>reviews</mat-icon> Modération des avis</h1>
+      <p class="subtitle">{{ reviews.length }} avis en attente</p>
+    </div>
+    <button mat-icon-button (click)="loadReviews()" matTooltip="Rafraîchir">
+      <mat-icon>refresh</mat-icon>
+    </button>
+  </div>
+
+  <!-- Loader -->
+  <div class="loader" *ngIf="loading">
+    <mat-spinner diameter="36"></mat-spinner>
+  </div>
+
+  <!-- Empty -->
+  <div class="empty-state" *ngIf="!loading && reviews.length === 0">
+    <div class="empty-icon"><mat-icon>check_circle</mat-icon></div>
+    <h2>Aucun avis en attente</h2>
+    <p>Tous les avis ont été modérés</p>
+  </div>
+
+  <!-- Liste -->
+  <div class="reviews-list" *ngIf="!loading && reviews.length > 0">
+    <div class="review-card" *ngFor="let r of reviews">
+
+      <!-- Header carte -->
+      <div class="card-header">
+        <div class="target-icon" [ngClass]="r.targetType.toLowerCase()">
+          <mat-icon>{{ getTargetIcon(r.targetType) }}</mat-icon>
+        </div>
+        <div class="card-meta">
+          <span class="target-type">{{ getTargetLabel(r.targetType) }} #{{ r.targetId }}</span>
+          <span class="customer-name">{{ r.customer }}</span>
+        </div>
+        <span class="review-date">{{ r.createdAt }}</span>
+      </div>
+
+      <!-- Étoiles -->
+      <div class="stars-row">
+        <mat-icon *ngFor="let s of getStars(r.rating)"
+                  [class.filled]="s <= r.rating">
+          {{ s <= r.rating ? 'star' : 'star_border' }}
+        </mat-icon>
+        <span class="rating-num">{{ r.rating }}/5</span>
+        <span class="like-badge liked"   *ngIf="r.isLiked === true">
+          <mat-icon>thumb_up</mat-icon>
+        </span>
+        <span class="like-badge disliked" *ngIf="r.isLiked === false">
+          <mat-icon>thumb_down</mat-icon>
+        </span>
+      </div>
+
+      <!-- Commentaire -->
+      <p class="comment" *ngIf="r.comment">{{ r.comment }}</p>
+
+      <!-- Photo -->
+      <img *ngIf="r.photo" [src]="'/uploads/reviews/' + r.photo"
+           class="review-photo" alt="Photo avis">
+
+      <!-- Actions -->
+      <div class="card-actions">
+        <button mat-flat-button class="approve-btn"
+                (click)="approve(r.id)"
+                [disabled]="moderating === r.id">
+          <mat-spinner diameter="16" *ngIf="moderating === r.id"></mat-spinner>
+          <mat-icon *ngIf="moderating !== r.id">check_circle</mat-icon>
+          Approuver
+        </button>
+        <button mat-stroked-button class="reject-btn"
+                (click)="reject(r.id)"
+                [disabled]="moderating === r.id">
+          <mat-icon>cancel</mat-icon>
+          Rejeter
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+</div>

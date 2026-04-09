@@ -10,9 +10,13 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { FormsModule } from '@angular/forms';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { EstablishmentService } from '../../../../core/services/establishment.service';
 import { UserService } from '../../../../core/services/user.service';
 import { ImpersonateService } from '../../../../core/services/impersonate.service';
+import { ReviewService } from '../../../../core/services/review.service';
 import { Establishment } from '../../../../core/models/establishment.model';
 import { AppUser } from '../../../../core/models/user.model';
 import { EstablishmentFormDialogComponent } from '../establishment-form-dialog/establishment-form-dialog.component';
@@ -21,7 +25,8 @@ import { EstablishmentFormDialogComponent } from '../establishment-form-dialog/e
   selector: 'app-establishments-list',
   standalone: true,
   imports: [
-    CommonModule, RouterModule, MatIconModule, MatButtonModule,
+    CommonModule, RouterModule, FormsModule,
+    MatIconModule, MatButtonModule,
     MatSlideToggleModule, MatProgressSpinnerModule, MatSnackBarModule,
     MatTooltipModule, MatDialogModule
   ],
@@ -30,15 +35,19 @@ import { EstablishmentFormDialogComponent } from '../establishment-form-dialog/e
 })
 export class EstablishmentsListComponent implements OnInit {
   establishments: Establishment[] = [];
+  filteredEstablishments: Establishment[] = [];
   users: AppUser[] = [];
+  ratings: Record<number, { avg: number; count: number }> = {};
   loading = true;
+  searchQuery = '';
 
   establishmentService = inject(EstablishmentService);
-  private userService      = inject(UserService);
+  private userService        = inject(UserService);
   private impersonateService = inject(ImpersonateService);
-  private dialog           = inject(MatDialog);
-  private snackBar         = inject(MatSnackBar);
-  private cdr              = inject(ChangeDetectorRef);
+  private reviewService      = inject(ReviewService);
+  private dialog             = inject(MatDialog);
+  private snackBar           = inject(MatSnackBar);
+  private cdr                = inject(ChangeDetectorRef);
 
   ngOnInit(): void {
     this.loadData();
@@ -49,7 +58,8 @@ export class EstablishmentsListComponent implements OnInit {
     this.establishmentService.getAll().subscribe({
       next: (items: Establishment[]) => {
         this.establishments = items;
-        // Charger les admins de chaque enseigne
+        this.applySearch();
+
         this.userService.getAll().subscribe({
           next: (users: AppUser[]) => {
             this.users = users;
@@ -58,12 +68,39 @@ export class EstablishmentsListComponent implements OnInit {
           },
           error: () => { this.loading = false; this.cdr.detectChanges(); }
         });
+
+        // Load ratings for each establishment in parallel
+        if (items.length > 0) {
+          const calls = items.map(est =>
+            this.reviewService.getReviews('establishment', est.id!).pipe(
+              catchError(() => of({ reviews: [], count: 0, avgRating: 0 }))
+            )
+          );
+          forkJoin(calls).subscribe(results => {
+            items.forEach((est, i) => {
+              this.ratings[est.id!] = { avg: results[i].avgRating, count: results[i].count };
+            });
+            this.cdr.detectChanges();
+          });
+        }
       },
       error: () => { this.loading = false; this.cdr.detectChanges(); }
     });
   }
 
-  // Retourne l'admin d'une enseigne (pour l'impersonation)
+  applySearch(): void {
+    const q = this.searchQuery.toLowerCase().trim();
+    this.filteredEstablishments = q
+      ? this.establishments.filter(e =>
+          e.name.toLowerCase().includes(q) ||
+          (e.city?.toLowerCase().includes(q) ?? false) ||
+          e.slug.toLowerCase().includes(q)
+        )
+      : [...this.establishments];
+  }
+
+  // ── Helpers ──
+
   getAdmin(est: Establishment): AppUser | null {
     return this.users.find(u =>
       u.establishment === `/api/establishments/${est.id}` &&
@@ -77,9 +114,27 @@ export class EstablishmentsListComponent implements OnInit {
     ).length;
   }
 
+  getAvgRating(estId: number): number {
+    return this.ratings[estId]?.avg ?? 0;
+  }
+
+  getReviewCount(estId: number): number {
+    return this.ratings[estId]?.count ?? 0;
+  }
+
+  getStarIcon(estId: number, pos: number): string {
+    const avg = this.getAvgRating(estId);
+    if (avg >= pos)       return 'star';
+    if (avg >= pos - 0.5) return 'star_half';
+    return 'star_border';
+  }
+
+  // ── Actions ──
+
   openCreate(): void {
     const ref = this.dialog.open(EstablishmentFormDialogComponent, {
-      width: '640px',
+      width: '660px',
+      maxWidth: '95vw',
       data: { establishment: null }
     });
     ref.afterClosed().subscribe(result => { if (result) this.loadData(); });
@@ -87,7 +142,8 @@ export class EstablishmentsListComponent implements OnInit {
 
   openEdit(est: Establishment): void {
     const ref = this.dialog.open(EstablishmentFormDialogComponent, {
-      width: '640px',
+      width: '660px',
+      maxWidth: '95vw',
       data: { establishment: est }
     });
     ref.afterClosed().subscribe(result => { if (result) this.loadData(); });
@@ -116,6 +172,7 @@ export class EstablishmentsListComponent implements OnInit {
             { ...this.establishments[index], isActive: updated.isActive },
             ...this.establishments.slice(index + 1)
           ];
+          this.applySearch();
         }
         this.cdr.detectChanges();
         this.snackBar.open(

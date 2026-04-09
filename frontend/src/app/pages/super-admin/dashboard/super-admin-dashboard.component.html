@@ -1,81 +1,355 @@
-<!-- src/app/pages/super-admin/dashboard/super-admin-dashboard.component.html -->
+<!-- super-admin-dashboard.component.html -->
 
-<div class="sa-dashboard">
+<div class="sa-page">
 
-  <div class="page-header">
-    <h1><mat-icon>dashboard</mat-icon> Tableau de bord global</h1>
-    <p class="subtitle">Vue d'ensemble de la plateforme</p>
+  <!-- ══════════════════════════════════════════════════════════════════
+       HERO HEADER
+  ══════════════════════════════════════════════════════════════════════ -->
+  <div class="sa-hero">
+    <div class="sa-hero-left">
+      <div class="sa-hero-icon">
+        <mat-icon>admin_panel_settings</mat-icon>
+      </div>
+      <div>
+        <h1 class="sa-hero-title">Tableau de bord global</h1>
+        <p class="sa-hero-sub">
+          Vue d'ensemble de la plateforme ·
+          <span class="sa-hero-date">{{ today | date:'EEEE d MMMM yyyy':'':'fr' }}</span>
+        </p>
+      </div>
+    </div>
+    <button class="ds-btn ds-btn-outline sa-refresh-btn" (click)="loadData()" [disabled]="loading">
+      <mat-icon [class.spinning]="loading">refresh</mat-icon>
+      Actualiser
+    </button>
   </div>
 
-  <div class="loader" *ngIf="loading"><mat-spinner diameter="40"></mat-spinner></div>
-
-  <div *ngIf="!loading">
-
-    <!-- STATS ENSEIGNES -->
-    <p class="section-label">Enseignes</p>
-    <div class="stats-grid">
-      <div class="stat-card indigo">
-        <div class="stat-icon"><mat-icon>store</mat-icon></div>
-        <div class="stat-info">
-          <span class="stat-value">{{ totalEstablishments }}</span>
-          <span class="stat-label">Total</span>
-        </div>
-      </div>
-      <div class="stat-card green">
-        <div class="stat-icon"><mat-icon>check_circle</mat-icon></div>
-        <div class="stat-info">
-          <span class="stat-value">{{ activeEstablishments }}</span>
-          <span class="stat-label">Actives</span>
-        </div>
-      </div>
-      <div class="stat-card red">
-        <div class="stat-icon"><mat-icon>pause_circle</mat-icon></div>
-        <div class="stat-info">
-          <span class="stat-value">{{ inactiveEstablishments }}</span>
-          <span class="stat-label">Inactives</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- STATS USERS -->
-    <p class="section-label">Utilisateurs</p>
-    <div class="stats-grid">
-      <div class="stat-card amber">
-        <div class="stat-icon"><mat-icon>group</mat-icon></div>
-        <div class="stat-info">
-          <span class="stat-value">{{ totalUsers }}</span>
-          <span class="stat-label">Total</span>
-        </div>
-      </div>
-      <div class="stat-card green">
-        <div class="stat-icon"><mat-icon>person</mat-icon></div>
-        <div class="stat-info">
-          <span class="stat-value">{{ activeUsers }}</span>
-          <span class="stat-label">Actifs</span>
-        </div>
-      </div>
-      <div class="stat-card red">
-        <div class="stat-icon"><mat-icon>person_off</mat-icon></div>
-        <div class="stat-info">
-          <span class="stat-value">{{ totalUsers - activeUsers }}</span>
-          <span class="stat-label">Inactifs</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- ACTIONS RAPIDES -->
-    <p class="section-label">Actions rapides</p>
-    <div class="quick-actions">
-      <a routerLink="/super-admin/establishments" mat-flat-button color="primary">
-        <mat-icon>store</mat-icon> Voir les enseignes
-      </a>
-      <a routerLink="/super-admin/establishments/new" mat-stroked-button color="primary">
-        <mat-icon>add_business</mat-icon> Nouvelle enseigne
-      </a>
-      <a routerLink="/super-admin/users" mat-stroked-button>
-        <mat-icon>person_add</mat-icon> Gérer les utilisateurs
-      </a>
-    </div>
-
+  <!-- ══════════════════════════════════════════════════════════════════
+       LOADER
+  ══════════════════════════════════════════════════════════════════════ -->
+  <div class="page-loader" *ngIf="loading">
+    <mat-spinner diameter="48"></mat-spinner>
   </div>
+
+  <ng-container *ngIf="!loading">
+
+    <!-- ════════════════════════════════════════════════════════════════
+         KPI GRID — 6 cards
+    ════════════════════════════════════════════════════════════════════ -->
+    <div class="sa-kpi-grid">
+
+      <!-- Total enseignes -->
+      <div class="sa-kpi-card">
+        <div class="kpi-icon indigo"><mat-icon>store</mat-icon></div>
+        <div class="kpi-body">
+          <span class="kpi-value">{{ totalEstablishments }}</span>
+          <span class="kpi-label">Enseignes totales</span>
+          <span class="kpi-sub">{{ activeEstablishments }} actives · {{ totalEstablishments - activeEstablishments }} inactives</span>
+        </div>
+      </div>
+
+      <!-- Enseignes actives -->
+      <div class="sa-kpi-card">
+        <div class="kpi-icon green"><mat-icon>check_circle</mat-icon></div>
+        <div class="kpi-body">
+          <span class="kpi-value">{{ activeEstablishments }}</span>
+          <span class="kpi-label">Enseignes actives</span>
+          <span class="kpi-progress-bar">
+            <span class="kpi-progress-fill green"
+                  [style.width.%]="totalEstablishments > 0 ? (activeEstablishments / totalEstablishments * 100) : 0">
+            </span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Total utilisateurs -->
+      <div class="sa-kpi-card">
+        <div class="kpi-icon amber"><mat-icon>group</mat-icon></div>
+        <div class="kpi-body">
+          <span class="kpi-value">{{ totalUsers }}</span>
+          <span class="kpi-label">Utilisateurs totaux</span>
+          <span class="kpi-sub">{{ activeUsers }} actifs · {{ totalUsers - activeUsers }} inactifs</span>
+        </div>
+      </div>
+
+      <!-- Revenu total plateforme -->
+      <div class="sa-kpi-card">
+        <div class="kpi-icon teal"><mat-icon>payments</mat-icon></div>
+        <div class="kpi-body">
+          <span class="kpi-value">{{ totalRevenue | number:'1.0-0' }}<small> TND</small></span>
+          <span class="kpi-label">Chiffre d'affaires du jour</span>
+          <span class="kpi-sub">Factures payées aujourd'hui</span>
+        </div>
+      </div>
+
+      <!-- Total avis -->
+      <div class="sa-kpi-card">
+        <div class="kpi-icon purple"><mat-icon>rate_review</mat-icon></div>
+        <div class="kpi-body">
+          <span class="kpi-value">{{ totalReviews }}</span>
+          <span class="kpi-label">Avis clients collectés</span>
+          <span class="kpi-sub">Sur l'ensemble des enseignes</span>
+        </div>
+      </div>
+
+      <!-- Note moyenne globale -->
+      <div class="sa-kpi-card">
+        <div class="kpi-icon gold"><mat-icon>star</mat-icon></div>
+        <div class="kpi-body">
+          <span class="kpi-value">{{ avgGlobalRating | number:'1.1-1' }}<small>/5</small></span>
+          <span class="kpi-label">Note moyenne globale</span>
+          <div class="kpi-stars">
+            <mat-icon class="kpi-star" *ngFor="let p of [1,2,3,4,5]">
+              {{ getStarIcon(avgGlobalRating, p) }}
+            </mat-icon>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════
+         TOP PERFORMERS — 3 podium cards
+    ════════════════════════════════════════════════════════════════════ -->
+    <div class="sa-section-label">
+      <mat-icon>emoji_events</mat-icon>
+      Meilleures performances
+    </div>
+
+    <div class="sa-podium-grid">
+
+      <!-- 🏆 Top chiffre d'affaires -->
+      <div class="sa-podium-card revenue">
+        <div class="podium-badge">🏆</div>
+        <div class="podium-icon-wrap revenue">
+          <mat-icon>trending_up</mat-icon>
+        </div>
+        <p class="podium-category">Plus grand CA</p>
+
+        <ng-container *ngIf="topByRevenue; else noData">
+          <div class="podium-logo-row">
+            <div class="podium-logo" *ngIf="topByRevenue.est.logo">
+              <img [src]="getLogoUrl(topByRevenue.est.logo)" [alt]="topByRevenue.est.name">
+            </div>
+            <div class="podium-logo podium-logo-empty" *ngIf="!topByRevenue.est.logo">
+              <mat-icon>store</mat-icon>
+            </div>
+            <div>
+              <h3 class="podium-name">{{ topByRevenue.est.name }}</h3>
+              <span class="podium-city" *ngIf="topByRevenue.est.city">
+                <mat-icon>location_on</mat-icon>{{ topByRevenue.est.city }}
+              </span>
+            </div>
+          </div>
+          <div class="podium-metric revenue">
+            {{ topByRevenue.revenue | number:'1.0-0' }} TND
+          </div>
+          <div class="podium-detail">
+            <span><mat-icon>group</mat-icon>{{ topByRevenue.staffCount }} staff</span>
+            <span><mat-icon>star</mat-icon>{{ topByRevenue.avgRating | number:'1.1-1' }}</span>
+          </div>
+        </ng-container>
+      </div>
+
+      <!-- 👥 Top avis clients (engagement) -->
+      <div class="sa-podium-card reviews">
+        <div class="podium-badge">👥</div>
+        <div class="podium-icon-wrap reviews">
+          <mat-icon>rate_review</mat-icon>
+        </div>
+        <p class="podium-category">Plus d'avis clients</p>
+
+        <ng-container *ngIf="topByReviews && topByReviews.reviewCount > 0; else noData">
+          <div class="podium-logo-row">
+            <div class="podium-logo" *ngIf="topByReviews.est.logo">
+              <img [src]="getLogoUrl(topByReviews.est.logo)" [alt]="topByReviews.est.name">
+            </div>
+            <div class="podium-logo podium-logo-empty" *ngIf="!topByReviews.est.logo">
+              <mat-icon>store</mat-icon>
+            </div>
+            <div>
+              <h3 class="podium-name">{{ topByReviews.est.name }}</h3>
+              <span class="podium-city" *ngIf="topByReviews.est.city">
+                <mat-icon>location_on</mat-icon>{{ topByReviews.est.city }}
+              </span>
+            </div>
+          </div>
+          <div class="podium-metric reviews">
+            {{ topByReviews.reviewCount }} avis
+          </div>
+          <div class="podium-detail">
+            <span><mat-icon>star</mat-icon>{{ topByReviews.avgRating | number:'1.1-1' }}/5</span>
+            <span><mat-icon>payments</mat-icon>{{ topByReviews.revenue | number:'1.0-0' }} TND</span>
+          </div>
+        </ng-container>
+      </div>
+
+      <!-- ⭐ Meilleure note -->
+      <div class="sa-podium-card rating">
+        <div class="podium-badge">⭐</div>
+        <div class="podium-icon-wrap rating">
+          <mat-icon>star_rate</mat-icon>
+        </div>
+        <p class="podium-category">Meilleure note</p>
+
+        <ng-container *ngIf="topByRating; else noData">
+          <div class="podium-logo-row">
+            <div class="podium-logo" *ngIf="topByRating.est.logo">
+              <img [src]="getLogoUrl(topByRating.est.logo)" [alt]="topByRating.est.name">
+            </div>
+            <div class="podium-logo podium-logo-empty" *ngIf="!topByRating.est.logo">
+              <mat-icon>store</mat-icon>
+            </div>
+            <div>
+              <h3 class="podium-name">{{ topByRating.est.name }}</h3>
+              <span class="podium-city" *ngIf="topByRating.est.city">
+                <mat-icon>location_on</mat-icon>{{ topByRating.est.city }}
+              </span>
+            </div>
+          </div>
+          <div class="podium-metric rating">
+            <mat-icon class="metric-star">star</mat-icon>
+            {{ topByRating.avgRating | number:'1.1-1' }} / 5
+          </div>
+          <div class="podium-detail">
+            <span><mat-icon>rate_review</mat-icon>{{ topByRating.reviewCount }} avis</span>
+            <span><mat-icon>payments</mat-icon>{{ topByRating.revenue | number:'1.0-0' }} TND</span>
+          </div>
+        </ng-container>
+      </div>
+
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════
+         CLASSEMENT COMPLET
+    ════════════════════════════════════════════════════════════════════ -->
+    <div class="sa-section-label">
+      <mat-icon>leaderboard</mat-icon>
+      Classement des enseignes
+    </div>
+
+    <div class="sa-ranking-card ds-card" *ngIf="estStats.length > 0">
+      <table class="sa-ranking-table">
+        <thead>
+          <tr>
+            <th class="col-rank">#</th>
+            <th class="col-est">Enseigne</th>
+            <th class="col-stat">Staff</th>
+            <th class="col-stat">Avis</th>
+            <th class="col-stat">Note</th>
+            <th class="col-revenue">Chiffre d'affaires</th>
+            <th class="col-status">Statut</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of estStats; let i = index"
+              class="ranking-row"
+              [class.ranking-row-top]="i < 3"
+              [style.animation-delay]="(i * 35) + 'ms'">
+
+            <!-- Rang -->
+            <td class="col-rank">
+              <span class="rank-badge" [class.gold]="i === 0" [class.silver]="i === 1" [class.bronze]="i === 2">
+                {{ getRankBadge(i) }}
+              </span>
+            </td>
+
+            <!-- Enseigne -->
+            <td class="col-est">
+              <div class="rank-est-cell">
+                <div class="rank-logo" *ngIf="item.est.logo">
+                  <img [src]="getLogoUrl(item.est.logo)" [alt]="item.est.name">
+                </div>
+                <div class="rank-logo rank-logo-empty" *ngIf="!item.est.logo">
+                  {{ item.est.name[0] | uppercase }}
+                </div>
+                <div>
+                  <span class="rank-est-name">{{ item.est.name }}</span>
+                  <span class="rank-est-city" *ngIf="item.est.city">{{ item.est.city }}</span>
+                </div>
+              </div>
+            </td>
+
+            <!-- Staff -->
+            <td class="col-stat">
+              <span class="rank-chip staff">
+                <mat-icon>group</mat-icon>{{ item.staffCount }}
+              </span>
+            </td>
+
+            <!-- Avis -->
+            <td class="col-stat">
+              <span class="rank-chip reviews">
+                <mat-icon>rate_review</mat-icon>{{ item.reviewCount }}
+              </span>
+            </td>
+
+            <!-- Note -->
+            <td class="col-stat">
+              <div class="rank-rating" *ngIf="item.reviewCount > 0">
+                <mat-icon class="rank-star">star</mat-icon>
+                <span>{{ item.avgRating | number:'1.1-1' }}</span>
+              </div>
+              <span class="rank-no-data" *ngIf="item.reviewCount === 0">—</span>
+            </td>
+
+            <!-- CA + barre -->
+            <td class="col-revenue">
+              <div class="rank-revenue-cell">
+                <span class="rank-revenue-val">{{ item.revenue | number:'1.0-0' }} <small>TND</small></span>
+                <div class="rank-revenue-bar">
+                  <div class="rank-revenue-fill" [style.width.%]="getRevenueBar(item.revenue)"></div>
+                </div>
+              </div>
+            </td>
+
+            <!-- Statut -->
+            <td class="col-status">
+              <span class="ds-badge" [class.success]="item.est.isActive" [class.danger]="!item.est.isActive">
+                {{ item.est.isActive ? 'Actif' : 'Inactif' }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════
+         ACTIONS RAPIDES
+    ════════════════════════════════════════════════════════════════════ -->
+    <div class="sa-section-label">
+      <mat-icon>bolt</mat-icon>
+      Actions rapides
+    </div>
+
+    <div class="sa-quick-grid">
+      <a class="sa-quick-card" routerLink="/super-admin/establishments">
+        <div class="sa-quick-icon indigo"><mat-icon>store</mat-icon></div>
+        <span class="sa-quick-label">Voir toutes les enseignes</span>
+        <mat-icon class="sa-quick-chevron">chevron_right</mat-icon>
+      </a>
+      <a class="sa-quick-card" routerLink="/super-admin/establishments/new">
+        <div class="sa-quick-icon green"><mat-icon>add_business</mat-icon></div>
+        <span class="sa-quick-label">Créer une enseigne</span>
+        <mat-icon class="sa-quick-chevron">chevron_right</mat-icon>
+      </a>
+      <a class="sa-quick-card" routerLink="/super-admin/users">
+        <div class="sa-quick-icon amber"><mat-icon>group</mat-icon></div>
+        <span class="sa-quick-label">Gérer les utilisateurs</span>
+        <mat-icon class="sa-quick-chevron">chevron_right</mat-icon>
+      </a>
+      <a class="sa-quick-card" routerLink="/super-admin/users/new">
+        <div class="sa-quick-icon purple"><mat-icon>person_add</mat-icon></div>
+        <span class="sa-quick-label">Ajouter un utilisateur</span>
+        <mat-icon class="sa-quick-chevron">chevron_right</mat-icon>
+      </a>
+    </div>
+
+  </ng-container>
+
 </div>
+
+<!-- Empty template -->
+<ng-template #noData>
+  <p class="podium-no-data">Aucune donnée disponible</p>
+</ng-template>

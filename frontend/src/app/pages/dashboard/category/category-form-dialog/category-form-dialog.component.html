@@ -1,40 +1,46 @@
-<!-- src/app/pages/dashboard/category/category-form-dialog/category-form-dialog.component.html -->
+<!-- category-form-dialog.component.html -->
 
 <div class="dialog-wrapper">
 
+  <!-- ══ HEADER ════════════════════════════════════════════════════════ -->
   <div class="dialog-header">
-    <div class="dialog-title">
-      <mat-icon>{{ isEdit ? 'edit' : 'add_circle' }}</mat-icon>
-      <h2>{{ isEdit ? 'Modifier la catégorie' : 'Nouvelle catégorie' }}</h2>
+    <div class="dialog-header-left">
+      <div class="dialog-header-icon green">
+        <mat-icon>{{ isEdit ? 'edit' : 'add_circle' }}</mat-icon>
+      </div>
+      <div class="dialog-title-block">
+        <h2 class="dialog-title-text">{{ isEdit ? 'Modifier la catégorie' : 'Nouvelle catégorie' }}</h2>
+        <p class="dialog-subtitle-text">{{ isEdit ? 'Renommez cette catégorie' : 'Organisez vos produits par catégorie' }}</p>
+      </div>
     </div>
-    <button mat-icon-button (click)="cancel()">
+    <button class="dialog-close-btn" (click)="cancel()">
       <mat-icon>close</mat-icon>
     </button>
   </div>
 
-  <mat-divider></mat-divider>
-
+  <!-- ══ BODY ══════════════════════════════════════════════════════════ -->
   <form [formGroup]="form" class="dialog-body">
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Nom de la catégorie </mat-label>
+
+    <mat-form-field appearance="outline" class="dlg-full">
+      <mat-label>Nom de la catégorie</mat-label>
       <input matInput formControlName="name"
-             placeholder="Ex: Boissons, Pizzas, Desserts…"
+             placeholder="Ex : Boissons, Pizzas, Desserts…"
              (keyup.enter)="submit()">
       <mat-icon matSuffix>label</mat-icon>
       <mat-error>{{ nameError }}</mat-error>
     </mat-form-field>
 
-    <p class="hint-text">
+    <div class="dlg-hint">
       <mat-icon>info_outline</mat-icon>
-      Les catégories permettent d'organiser vos produits dans le menu.
-    </p>
+      Les catégories permettent d'organiser vos produits dans le menu client.
+    </div>
+
   </form>
 
-  <mat-divider></mat-divider>
-
+  <!-- ══ FOOTER ════════════════════════════════════════════════════════ -->
   <div class="dialog-footer">
-    <button mat-stroked-button (click)="cancel()">Annuler</button>
-    <button mat-flat-button color="primary" (click)="submit()" [disabled]="form.invalid">
+    <button class="ds-btn ds-btn-outline" (click)="cancel()">Annuler</button>
+    <button class="ds-btn ds-btn-green" (click)="submit()" [disabled]="form.invalid">
       <mat-icon>{{ isEdit ? 'save' : 'add' }}</mat-icon>
       {{ isEdit ? 'Enregistrer' : 'Créer' }}
     </button>

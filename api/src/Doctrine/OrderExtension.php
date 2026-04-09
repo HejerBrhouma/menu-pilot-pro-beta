@@ -48,18 +48,9 @@ class OrderExtension implements QueryCollectionExtensionInterface, QueryItemExte
 
         $rootAlias = $qb->getRootAliases()[0];
 
-        // WAITER ne voit que ses propres commandes
-        if ($this->security->isGranted('ROLE_WAITER') &&
-            !$this->security->isGranted('ROLE_ADMIN') &&
-            !$this->security->isGranted('ROLE_MANAGER') &&
-            $resourceClass === Order::class) {
-            $qb->andWhere(sprintf('%s.establishment = :est AND %s.waiter = :waiter', $rootAlias, $rootAlias))
-               ->setParameter('est', $establishment)
-               ->setParameter('waiter', $user);
-            return;
-        }
-
+        // TOUS les rôles (WAITER, MANAGER, ADMIN) voient
+        // toutes les commandes de leur enseigne
         $qb->andWhere(sprintf('%s.establishment = :est', $rootAlias))
-           ->setParameter('est', $establishment);
+            ->setParameter('est', $establishment);
     }
 }

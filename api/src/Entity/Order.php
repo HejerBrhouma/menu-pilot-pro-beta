@@ -5,6 +5,7 @@ namespace App\Entity;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -14,9 +15,13 @@ use Symfony\Component\Serializer\Annotation\Groups;
 /**
  * @ApiResource(
  *   normalizationContext={"groups"={"order:read"}},
- *   denormalizationContext={"groups"={"order:write"}}
+ *   denormalizationContext={"groups"={"order:write"}},
+ *   order={"createdAt": "DESC"},
+ *   paginationItemsPerPage=200,
+ *   paginationMaximumItemsPerPage=500
  * )
  * @ApiFilter(SearchFilter::class, properties={"status": "exact", "waiter": "exact", "table": "exact"})
+ * @ApiFilter(OrderFilter::class, properties={"createdAt": "DESC"})
  * @ORM\Entity()
  * @ORM\Table(name="orders")
  * @ORM\HasLifecycleCallbacks()
@@ -124,6 +129,14 @@ class Order
     private bool $isQrOrder = false;
 
     /**
+     * Client connecté qui a passé la commande via QR
+     * @ORM\ManyToOne(targetEntity=User::class)
+     * @ORM\JoinColumn(nullable=true)
+     * @Groups({"order:read"})
+     */
+    private ?User $customer = null;
+
+    /**
      * @ORM\Column(type="datetime_immutable")
      * @Groups({"order:read"})
      */
@@ -183,6 +196,8 @@ class Order
     public function setCustomerName(?string $n): self { $this->customerName = $n; return $this; }
     public function getIsQrOrder(): bool { return $this->isQrOrder; }
     public function setIsQrOrder(bool $v): self { $this->isQrOrder = $v; return $this; }
+    public function getCustomer(): ?User { return $this->customer; }
+    public function setCustomer(?User $u): self { $this->customer = $u; return $this; }
 
     public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
     public function getUpdatedAt(): ?\DateTime { return $this->updatedAt; }

@@ -219,9 +219,13 @@
   display: inline-flex; align-items: center; gap: 5px;
   padding: 5px 12px; border-radius: 8px; border: 1.5px solid;
   background: transparent; cursor: pointer; font-size: 0.78rem; font-weight: 700;
-  transition: all 0.15s; white-space: nowrap;
+  transition: all 0.15s; white-space: nowrap; text-decoration: none;
   mat-icon { font-size: 0.875rem; width: 0.875rem; height: 0.875rem; }
   &:hover { opacity: 0.85; transform: scale(1.02); }
+  &.pay-btn {
+    background: #10b981; color: white; border-color: #10b981;
+    &:hover { background: #059669; border-color: #059669; opacity: 1; }
+  }
 }
 
 .more-btn { width: 32px; height: 32px; }

@@ -162,11 +162,18 @@ export class PackListComponent implements OnInit {
   }
 
   getProductNames(pack: PackRead): string[] {
-    return pack.products?.map((p: any) =>
-      typeof p === 'string'
-        ? this.allProducts.find(ap => ap['@id'] === p)?.name ?? '—'
-        : p.name
-    ) ?? [];
+    return pack.products?.map((p: any) => {
+      if (typeof p === 'string') {
+        // p is an IRI like "/api/products/5"
+        return this.allProducts.find(ap => ap['@id'] === p)?.name
+          ?? p.split('/').pop()
+          ?? '—';
+      }
+      // p is an embedded object — use name directly, or look up by @id
+      return p.name
+        ?? this.allProducts.find(ap => ap['@id'] === p['@id'])?.name
+        ?? '—';
+    }) ?? [];
   }
 
   private notify(message: string, type: 'success' | 'error' = 'success'): void {

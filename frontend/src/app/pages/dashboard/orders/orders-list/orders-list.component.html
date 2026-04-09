@@ -150,6 +150,7 @@
 
           <div class="card-actions" (click)="$event.stopPropagation()">
 
+            <!-- Bouton avancer (PENDING→CONFIRMED, CONFIRMED→SERVED) -->
             <button class="advance-btn"
                     *ngIf="getNextStatus(order.status) && order.status !== 'CANCELLED'"
                     [style.background]="getStatusColor(getNextStatus(order.status)!) + '18'"
@@ -161,6 +162,15 @@
               {{ getNextLabel(order.status) }}
             </button>
 
+            <!-- Bouton encaissement pour les commandes SERVED -->
+            <a class="advance-btn pay-btn"
+               *ngIf="order.status === 'SERVED'"
+               [routerLink]="['/orders', order.id]"
+               matTooltip="Aller à l'encaissement">
+              <mat-icon>point_of_sale</mat-icon>
+              Encaisser
+            </a>
+
             <button mat-icon-button [matMenuTriggerFor]="actionsMenu" class="more-btn"
                     *ngIf="order.status !== 'PAID' && order.status !== 'CANCELLED'">
               <mat-icon>more_vert</mat-icon>
@@ -170,11 +180,11 @@
               <a mat-menu-item [routerLink]="['/orders', order.id]">
                 <mat-icon>visibility</mat-icon> Voir détail
               </a>
-              <button mat-menu-item
-                      *ngIf="order.status === 'SERVED'"
-                      (click)="changeStatus(order, 'PAID', $event)">
-                <mat-icon>payments</mat-icon> Marquer payée
-              </button>
+              <a mat-menu-item
+                 *ngIf="order.status === 'SERVED'"
+                 [routerLink]="['/orders', order.id]">
+                <mat-icon>point_of_sale</mat-icon> Encaisser
+              </a>
               <mat-divider></mat-divider>
               <button mat-menu-item
                       *ngIf="order.status !== 'PAID' && order.status !== 'CANCELLED'"

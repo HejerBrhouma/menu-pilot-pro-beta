@@ -1,0 +1,172 @@
+// customer-account.component.scss
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap');
+
+:host {
+  display: block;
+  font-family: 'DM Sans', sans-serif;
+  background: #f8f9fa;
+  min-height: 100vh;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+// ── Header ────────────────────────────────────
+.acc-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.25rem 1.25rem 0;
+}
+.back-btn {
+  width: 36px; height: 36px; border-radius: 10px; background: white;
+  border: 1.5px solid #f1f5f9; display: flex; align-items: center;
+  justify-content: center; text-decoration: none; color: #6b7280;
+  mat-icon { font-size: 1rem; width: 1rem; height: 1rem; }
+}
+.acc-title { font-size: 1rem; font-weight: 700; color: #1a1a2e; }
+.logout-btn {
+  border: none; background: none; cursor: pointer; color: #9ca3af; display: flex;
+  align-items: center; padding: 4px;
+  &:hover { color: #ef4444; }
+}
+
+// ── Hero ──────────────────────────────────────
+.auth-hero {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 2rem 1.5rem 1.5rem; text-align: center;
+}
+.auth-icon {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 1rem;
+  box-shadow: 0 8px 24px rgba(99,102,241,0.3);
+  mat-icon { font-size: 2.5rem; width: 2.5rem; height: 2.5rem; color: white; }
+}
+.auth-hero h1 { font-size: 1.5rem; font-weight: 800; color: #1a1a2e; margin: 0 0 6px; }
+.auth-hero p  { font-size: 0.875rem; color: #6b7280; margin: 0; line-height: 1.5; }
+
+// ── OAuth ─────────────────────────────────────
+.oauth-section {
+  padding: 0 1.25rem;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.fb-btn {
+  width: 100%; height: 46px; border-radius: 12px;
+  border: 1.5px solid #e5e7eb; background: white;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  font-size: 0.875rem; font-weight: 600; color: #374151; cursor: pointer;
+  transition: all 0.15s;
+  &:hover { background: #f8f9fa; border-color: #1877F2; }
+}
+
+.divider {
+  display: flex; align-items: center; gap: 12px;
+  color: #9ca3af; font-size: 0.75rem; padding: 0.75rem 1.25rem;
+  &::before, &::after { content: ''; flex: 1; height: 1px; background: #e5e7eb; }
+}
+
+// ── Tabs ──────────────────────────────────────
+.auth-tabs {
+  display: flex; background: #f1f5f9; border-radius: 12px;
+  padding: 4px; gap: 4px; margin: 0 1.25rem 1.25rem;
+  button {
+    flex: 1; border: none; background: none; padding: 9px;
+    border-radius: 9px; cursor: pointer; font-size: 0.875rem;
+    font-weight: 600; color: #6b7280; transition: all 0.15s;
+    font-family: 'DM Sans', sans-serif;
+    &.active { background: white; color: #1a1a2e; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+  }
+}
+
+// ── Formulaire ────────────────────────────────
+.auth-form {
+  padding: 0 1.25rem;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.name-row { display: flex; gap: 8px; .input-group { flex: 1; } }
+
+.input-group {
+  display: flex; align-items: center; gap: 8px;
+  background: white; border: 1.5px solid #e5e7eb;
+  border-radius: 12px; padding: 0 14px; height: 48px;
+  transition: border-color 0.15s;
+  &:focus-within { border-color: #6366f1; }
+  mat-icon { color: #9ca3af; font-size: 1.1rem; width: 1.1rem; height: 1.1rem; flex-shrink: 0; }
+  input {
+    flex: 1; border: none; background: none; outline: none;
+    font-size: 0.9rem; font-family: 'DM Sans', sans-serif; color: #1a1a2e;
+    &::placeholder { color: #9ca3af; }
+  }
+}
+.eye-btn {
+  border: none; background: none; cursor: pointer; padding: 0;
+  color: #9ca3af; display: flex; align-items: center;
+  mat-icon { font-size: 1.1rem; width: 1.1rem; height: 1.1rem; }
+}
+
+.auth-submit {
+  height: 50px; border-radius: 12px; border: none;
+  background: #1a1a2e; color: white; cursor: pointer;
+  font-size: 0.9rem; font-weight: 700; font-family: 'DM Sans', sans-serif;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  margin-top: 4px; transition: all 0.2s;
+  &:hover:not(:disabled) { background: #2d2d4e; transform: translateY(-1px); }
+  &:disabled { background: #e5e7eb; color: #9ca3af; cursor: not-allowed; }
+}
+
+// ── Profil ────────────────────────────────────
+.profile-card {
+  display: flex; align-items: center; gap: 1rem;
+  background: white; border-radius: 16px; padding: 1.25rem;
+  margin: 1.25rem; border: 1.5px solid #f1f5f9;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.profile-avatar {
+  width: 54px; height: 54px; border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem; font-weight: 800; color: white;
+  overflow: hidden; flex-shrink: 0;
+  img { width: 100%; height: 100%; object-fit: cover; }
+}
+.profile-info {
+  h2 { font-size: 1rem; font-weight: 700; color: #1a1a2e; margin: 0 0 3px; }
+  span { font-size: 0.75rem; color: #9ca3af; }
+}
+
+// ── Commandes ─────────────────────────────────
+.orders-section { padding: 0 1.25rem 2rem; }
+
+.section-title {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.875rem; font-weight: 700; color: #1a1a2e;
+  margin-bottom: 1rem;
+  mat-icon { font-size: 1rem; width: 1rem; height: 1rem; color: #6366f1; }
+}
+
+.order-empty {
+  text-align: center; padding: 2.5rem; color: #9ca3af;
+  mat-icon { font-size: 2.5rem; width: 2.5rem; height: 2.5rem; opacity: 0.3; display: block; margin: 0 auto 0.75rem; }
+  p { margin: 0; }
+}
+
+.order-card {
+  background: white; border-radius: 14px; border: 1.5px solid #f1f5f9;
+  padding: 1rem; margin-bottom: 0.75rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.order-top {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;
+}
+.order-num   { font-weight: 700; font-size: 0.875rem; color: #1a1a2e; }
+.order-badge { font-size: 0.68rem; font-weight: 700; padding: 3px 9px; border-radius: 99px; }
+.order-meta  { display: flex; gap: 6px; font-size: 0.75rem; color: #9ca3af; margin-bottom: 0.75rem; }
+
+.review-btn {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; height: 38px; border-radius: 10px;
+  background: #fef3c7; border: 1.5px solid #fde68a; color: #d97706;
+  font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: all 0.15s;
+  font-family: 'DM Sans', sans-serif;
+  mat-icon { font-size: 0.9rem; width: 0.9rem; height: 0.9rem; }
+  &:hover { background: #fde68a; }
+}

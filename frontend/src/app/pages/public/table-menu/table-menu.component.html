@@ -1,6 +1,6 @@
 <!-- table-menu.component.html -->
 
-<!-- Loader -->
+<!-- ══ LOADER ══ -->
 <div class="tm-loader" *ngIf="loading">
   <div class="loader-inner">
     <mat-spinner diameter="36"></mat-spinner>
@@ -8,52 +8,143 @@
   </div>
 </div>
 
-<!-- Erreur -->
+<!-- ══ ERREUR ══ -->
 <div class="tm-error" *ngIf="!loading && error">
   <mat-icon>error_outline</mat-icon>
   <h2>Oups !</h2>
   <p>{{ error }}</p>
 </div>
 
-<!-- ══════════════════════════════════════════ -->
-<!-- ÉCRAN D'ACCUEIL                           -->
-<!-- ══════════════════════════════════════════ -->
+<!-- ══════════════════════════════════════════════ -->
+<!-- ÉCRAN D'ACCUEIL                               -->
+<!-- ══════════════════════════════════════════════ -->
 <div class="welcome-screen" *ngIf="!loading && !error && screen === 'welcome'">
 
+  <!-- Hero -->
   <div class="welcome-hero">
     <div class="welcome-logo">
-      <img *ngIf="getLogoUrl()" [src]="getLogoUrl()!" class="welcome-img">
+      <img *ngIf="getLogoUrl()" [src]="getLogoUrl()!" [alt]="tableInfo?.establishment?.name">
       <mat-icon *ngIf="!getLogoUrl()">restaurant_menu</mat-icon>
     </div>
     <h1>{{ tableInfo?.establishment?.name }}</h1>
-    <div class="welcome-table">
+    <p class="est-desc" *ngIf="tableInfo?.establishment?.description">
+      {{ tableInfo?.establishment?.description }}
+    </p>
+    <div class="table-pill">
       <mat-icon>table_restaurant</mat-icon>
       {{ tableInfo?.table?.name }}
+      <span class="capacity-sep">·</span>
+      <mat-icon>people</mat-icon>
+      {{ tableInfo?.table?.capacity }} pers.
     </div>
   </div>
 
-  <div class="welcome-form">
-    <p class="welcome-prompt">Bienvenue ! Comment vous appelez-vous ?</p>
-    <input
-      class="name-input"
-      [(ngModel)]="customerNameInput"
-      placeholder="Votre prénom (optionnel)"
-      (keyup.enter)="enterMenu()"
-      autofocus>
-    <button class="welcome-btn" (click)="enterMenu()">
-      <mat-icon>arrow_forward</mat-icon>
-      Voir le menu
-    </button>
-    <p class="skip-hint" *ngIf="cartRestored">
-      🛒 Vous avez {{ cartCount }} article(s) dans votre panier
-    </p>
+  <!-- Loader auth -->
+  <div class="auth-loading" *ngIf="authLoading">
+    <mat-spinner diameter="32"></mat-spinner>
+    <span>Connexion en cours...</span>
   </div>
 
+  <ng-container *ngIf="!authLoading">
+
+    <!-- OAuth -->
+    <div class="oauth-btns">
+      <!-- Google SDK button -->
+      <div id="google-btn-table" class="google-btn-wrap"></div>
+      <!-- Facebook -->
+      <button class="fb-btn" (click)="loginWithFacebook()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="#1877F2">
+          <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+        </svg>
+        Continuer avec Facebook
+      </button>
+    </div>
+
+    <div class="divider"><span>ou</span></div>
+
+    <!-- Tabs -->
+    <div class="welcome-tabs">
+      <button [class.active]="welcomeTab === 'guest'"    (click)="welcomeTab = 'guest'; renderGoogleButton()">
+        <mat-icon>person_outline</mat-icon> Visiteur
+      </button>
+      <button [class.active]="welcomeTab === 'login'"    (click)="welcomeTab = 'login'; renderGoogleButton()">
+        <mat-icon>login</mat-icon> Connexion
+      </button>
+      <button [class.active]="welcomeTab === 'register'" (click)="welcomeTab = 'register'; renderGoogleButton()">
+        <mat-icon>person_add</mat-icon> Créer
+      </button>
+    </div>
+
+    <!-- Tab: Visiteur -->
+    <div class="welcome-form" *ngIf="welcomeTab === 'guest'">
+      <p class="form-hint">Commander rapidement sans créer de compte</p>
+      <div class="input-group">
+        <mat-icon>badge</mat-icon>
+        <input [(ngModel)]="customerNameInput" placeholder="Votre prénom *"
+               (keyup.enter)="enterAsGuest()">
+      </div>
+      <button class="enter-btn" (click)="enterAsGuest()"
+              [disabled]="!customerNameInput.trim()">
+        <mat-icon>arrow_forward</mat-icon>
+        Voir le menu
+      </button>
+    </div>
+
+    <!-- Tab: Connexion -->
+    <div class="welcome-form" *ngIf="welcomeTab === 'login'">
+      <div class="input-group">
+        <mat-icon>email</mat-icon>
+        <input type="email" [(ngModel)]="loginEmail" placeholder="Email">
+      </div>
+      <div class="input-group">
+        <mat-icon>lock</mat-icon>
+        <input [type]="showPass ? 'text' : 'password'" [(ngModel)]="loginPassword"
+               placeholder="Mot de passe" (keyup.enter)="loginAndEnter()">
+        <button class="eye-btn" (click)="showPass = !showPass">
+          <mat-icon>{{ showPass ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+      </div>
+      <button class="enter-btn" (click)="loginAndEnter()"
+              [disabled]="!loginEmail || !loginPassword">
+        <mat-icon>login</mat-icon> Se connecter
+      </button>
+    </div>
+
+    <!-- Tab: Créer compte -->
+    <div class="welcome-form" *ngIf="welcomeTab === 'register'">
+      <div class="name-row">
+        <div class="input-group">
+          <mat-icon>person</mat-icon>
+          <input [(ngModel)]="regFirstName" placeholder="Prénom *">
+        </div>
+        <div class="input-group">
+          <input [(ngModel)]="regLastName" placeholder="Nom">
+        </div>
+      </div>
+      <div class="input-group">
+        <mat-icon>email</mat-icon>
+        <input type="email" [(ngModel)]="regEmail" placeholder="Email *">
+      </div>
+      <div class="input-group">
+        <mat-icon>lock</mat-icon>
+        <input [type]="showPass ? 'text' : 'password'" [(ngModel)]="regPassword"
+               placeholder="Mot de passe *" (keyup.enter)="registerAndEnter()">
+        <button class="eye-btn" (click)="showPass = !showPass">
+          <mat-icon>{{ showPass ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+      </div>
+      <button class="enter-btn" (click)="registerAndEnter()"
+              [disabled]="!regFirstName || !regEmail || !regPassword">
+        <mat-icon>person_add</mat-icon> Créer et commander
+      </button>
+    </div>
+
+  </ng-container>
 </div>
 
-<!-- ══════════════════════════════════════════ -->
-<!-- MENU PRINCIPAL                            -->
-<!-- ══════════════════════════════════════════ -->
+<!-- ══════════════════════════════════════════════ -->
+<!-- MENU + COMMANDES                              -->
+<!-- ══════════════════════════════════════════════ -->
 <div class="tm-page" *ngIf="!loading && !error && (screen === 'menu' || screen === 'orders')">
 
   <!-- Header -->
@@ -68,20 +159,22 @@
             <mat-icon>table_restaurant</mat-icon>{{ tableInfo?.table?.name }}
           </span>
           <span class="customer-badge" *ngIf="customerName">
-            <mat-icon>person</mat-icon>{{ customerName }}
+            <mat-icon>{{ isLoggedIn ? 'verified_user' : 'person' }}</mat-icon>
+            {{ customerName }}
           </span>
         </div>
       </div>
     </div>
-    <!-- Nav -->
     <div class="header-nav">
       <button class="nav-btn" [class.active]="screen === 'menu'" (click)="screen = 'menu'">
         <mat-icon>menu_book</mat-icon>
       </button>
-      <button class="nav-btn orders-nav" [class.active]="screen === 'orders'"
-              (click)="screen = 'orders'">
+      <button class="nav-btn" [class.active]="screen === 'orders'" (click)="screen = 'orders'">
         <mat-icon>receipt_long</mat-icon>
         <span class="nav-dot" *ngIf="hasActiveOrders()"></span>
+      </button>
+      <button class="nav-btn" *ngIf="isLoggedIn" (click)="logout()">
+        <mat-icon>logout</mat-icon>
       </button>
     </div>
   </div>
@@ -89,9 +182,9 @@
   <!-- ── VUE MENU ── -->
   <ng-container *ngIf="screen === 'menu'">
 
-    <!-- Panier restauré banner -->
+    <!-- Banner panier restauré -->
     <div class="restore-banner" *ngIf="cartRestored && cartCount > 0">
-      <mat-icon>shopping_cart</mat-icon>
+      <mat-icon>restore</mat-icon>
       <span>Panier restauré · {{ cartTimeRemaining }} restant</span>
       <button (click)="cartRestored = false"><mat-icon>close</mat-icon></button>
     </div>
@@ -129,7 +222,9 @@
       <div class="tm-empty" *ngIf="filteredProducts.length === 0">
         <mat-icon>search_off</mat-icon><p>Aucun produit trouvé</p>
       </div>
-      <div class="product-card" *ngFor="let p of filteredProducts" [class.in-cart]="isInCart(p.id, 'PRODUCT')">
+
+      <div class="product-card" *ngFor="let p of filteredProducts"
+           [class.in-cart]="isInCart(p.id, 'PRODUCT')">
         <div class="product-media" [class.has-image]="getProductImageUrl(p)">
           <img *ngIf="getProductImageUrl(p)" [src]="getProductImageUrl(p)!" [alt]="p.name" class="product-photo" loading="lazy">
           <div *ngIf="!getProductImageUrl(p)" class="product-avatar" [style.background]="getAvatarColor(p.name)">
@@ -140,6 +235,7 @@
           <span class="product-name">{{ p.name }}</span>
           <span class="product-desc" *ngIf="p.description">{{ p.description }}</span>
           <span class="product-price">{{ p.price | number:'1.2-2' }} TND</span>
+          <app-star-rating [rating]="getRating('PRODUCT', p.id)" [count]="getRatingCount('PRODUCT', p.id)" [showEmpty]="false"></app-star-rating>
         </div>
         <button class="add-btn" *ngIf="!isInCart(p.id, 'PRODUCT')" (click)="addToCart(p, 'PRODUCT')">
           <mat-icon>add</mat-icon>
@@ -157,12 +253,14 @@
       <div class="tm-empty" *ngIf="filteredPacks.length === 0">
         <mat-icon>search_off</mat-icon><p>Aucune formule disponible</p>
       </div>
-      <div class="product-card pack-card" *ngFor="let pk of filteredPacks" [class.in-cart]="isInCart(pk.id, 'PACK')">
+      <div class="product-card pack-card" *ngFor="let pk of filteredPacks"
+           [class.in-cart]="isInCart(pk.id, 'PACK')">
         <div class="product-avatar pack-av"><mat-icon>layers</mat-icon></div>
         <div class="product-info">
           <span class="product-name">{{ pk.name }}</span>
           <span class="product-desc" *ngIf="pk.description">{{ pk.description }}</span>
           <span class="product-price">{{ pk.price | number:'1.2-2' }} TND</span>
+          <app-star-rating [rating]="getRating('PACK', pk.id)" [count]="getRatingCount('PACK', pk.id)" [showEmpty]="false"></app-star-rating>
         </div>
         <button class="add-btn pack-add" *ngIf="!isInCart(pk.id, 'PACK')" (click)="addToCart(pk, 'PACK')"><mat-icon>add</mat-icon></button>
         <div class="qty-controls" *ngIf="isInCart(pk.id, 'PACK')">
@@ -180,44 +278,117 @@
     <div class="orders-view">
       <div class="ov-header">
         <h2>Mes commandes</h2>
-        <button class="new-order-btn" (click)="screen = 'menu'">
-          <mat-icon>add</mat-icon> Nouvelle commande
-        </button>
+        <div class="ov-header-actions">
+          <button class="refresh-btn" *ngIf="isLoggedIn" (click)="loadCustomerOrders()" [disabled]="ordersLoading">
+            <mat-icon>refresh</mat-icon>
+          </button>
+          <button class="new-order-btn" (click)="screen = 'menu'">
+            <mat-icon>add</mat-icon> Commander
+          </button>
+        </div>
       </div>
 
-      <div class="ov-empty" *ngIf="pastOrders.length === 0">
-        <mat-icon>receipt_long</mat-icon>
-        <p>Aucune commande encore</p>
-        <button (click)="screen = 'menu'">Voir le menu</button>
-      </div>
+      <!-- ── Commandes connecté (API) ── -->
+      <ng-container *ngIf="isLoggedIn">
+        <div class="ov-loading" *ngIf="ordersLoading">
+          <mat-spinner diameter="32"></mat-spinner>
+        </div>
 
-      <div class="order-history-card" *ngFor="let order of pastOrders">
-        <div class="ohc-top">
-          <span class="ohc-number">{{ order.orderNumber }}</span>
-          <span class="ohc-status"
-                [style.background]="getStatusColor(order.status) + '18'"
-                [style.color]="getStatusColor(order.status)">
-            {{ getStatusLabel(order.status) }}
-          </span>
+        <div class="ov-empty" *ngIf="!ordersLoading && customerApiOrders.length === 0">
+          <mat-icon>receipt_long</mat-icon>
+          <p>Aucune commande</p>
+          <button (click)="screen = 'menu'">Voir le menu</button>
         </div>
-        <div class="ohc-meta">
-          <span>{{ order.items }} article(s)</span>
-          <span>·</span>
-          <span>{{ order.total | number:'1.2-2' }} TND</span>
-          <span>·</span>
-          <span>{{ formatTime(order.createdAt) }}</span>
-        </div>
-        <!-- Progress bar -->
-        <div class="ohc-progress" *ngIf="order.status !== 'CANCELLED'">
-          <div class="ohc-step"
-               *ngFor="let s of ['PENDING','CONFIRMED','SERVED','PAID']"
-               [class.done]="['PENDING','CONFIRMED','SERVED','PAID'].indexOf(s) <= ['PENDING','CONFIRMED','SERVED','PAID'].indexOf(order.status)">
+
+        <div class="order-history-card" *ngFor="let order of customerApiOrders">
+          <div class="ohc-top">
+            <span class="ohc-number">{{ order.orderNumber }}</span>
+            <span class="ohc-status"
+                  [style.background]="getStatusColor(order.status) + '18'"
+                  [style.color]="getStatusColor(order.status)">
+              {{ getStatusLabel(order.status) }}
+            </span>
           </div>
+          <div class="ohc-meta">
+            <span>{{ order.items?.length || 0 }} article(s)</span>
+            <span>·</span>
+            <span>{{ order.total | number:'1.2-2' }} TND</span>
+            <span>·</span>
+            <span>{{ order.createdAt | date:'dd/MM HH:mm' }}</span>
+          </div>
+
+          <!-- Progress bar -->
+          <div class="ohc-progress" *ngIf="order.status !== 'CANCELLED'">
+            <div class="ohc-step"
+                 *ngFor="let s of ['PENDING','CONFIRMED','SERVED','PAID']"
+                 [class.done]="['PENDING','CONFIRMED','SERVED','PAID'].indexOf(s) <= ['PENDING','CONFIRMED','SERVED','PAID'].indexOf(order.status)">
+            </div>
+          </div>
+          <div class="ohc-step-labels">
+            <span>Reçue</span><span>Confirmée</span><span>Servie</span><span>Payée</span>
+          </div>
+
+          <!-- Live indicator -->
+          <div class="ohc-live" *ngIf="!['PAID','CANCELLED'].includes(order.status)">
+            <span class="live-dot"></span> En cours de traitement
+          </div>
+
+          <!-- Bouton avis après paiement -->
+          <button class="review-btn" *ngIf="order.canReview" (click)="goToReview(order.id)">
+            <mat-icon>star</mat-icon>
+            Laisser un avis
+          </button>
         </div>
-        <div class="ohc-live" *ngIf="!['PAID','CANCELLED'].includes(order.status)">
-          <span class="live-dot"></span> En cours de traitement
+      </ng-container>
+
+      <!-- ── Commandes invité (session locale) ── -->
+      <ng-container *ngIf="!isLoggedIn">
+        <div class="ov-empty" *ngIf="pastOrders.length === 0">
+          <mat-icon>receipt_long</mat-icon>
+          <p>Aucune commande</p>
+          <button (click)="screen = 'menu'">Voir le menu</button>
         </div>
-      </div>
+
+        <div class="order-history-card" *ngFor="let order of pastOrders">
+          <div class="ohc-top">
+            <span class="ohc-number">{{ order.orderNumber }}</span>
+            <span class="ohc-status"
+                  [style.background]="getStatusColor(order.status) + '18'"
+                  [style.color]="getStatusColor(order.status)">
+              {{ getStatusLabel(order.status) }}
+            </span>
+          </div>
+          <div class="ohc-meta">
+            <span>{{ order.items }} article(s)</span>
+            <span>·</span>
+            <span>{{ order.total | number:'1.2-2' }} TND</span>
+            <span>·</span>
+            <span>{{ formatTime(order.createdAt) }}</span>
+          </div>
+
+          <!-- Progress bar -->
+          <div class="ohc-progress" *ngIf="order.status !== 'CANCELLED'">
+            <div class="ohc-step"
+                 *ngFor="let s of ['PENDING','CONFIRMED','SERVED','PAID']"
+                 [class.done]="['PENDING','CONFIRMED','SERVED','PAID'].indexOf(s) <= ['PENDING','CONFIRMED','SERVED','PAID'].indexOf(order.status)">
+            </div>
+          </div>
+          <div class="ohc-step-labels">
+            <span>Reçue</span><span>Confirmée</span><span>Servie</span><span>Payée</span>
+          </div>
+
+          <!-- Live indicator -->
+          <div class="ohc-live" *ngIf="!['PAID','CANCELLED'].includes(order.status)">
+            <span class="live-dot"></span> En cours de traitement
+          </div>
+
+          <button class="review-btn" *ngIf="canReview(order)" (click)="goToReview(order.orderId)">
+            <mat-icon>star</mat-icon>
+            Laisser un avis
+          </button>
+        </div>
+      </ng-container>
+
     </div>
   </ng-container>
 
@@ -249,8 +420,7 @@
         </div>
         <div class="di-info">
           <span class="di-name">{{ item.itemName }}</span>
-          <input class="di-note" [(ngModel)]="item.notes"
-                 (ngModelChange)="saveCartToStorage()"
+          <input class="di-note" [(ngModel)]="item.notes" (ngModelChange)="saveCartToStorage()"
                  placeholder="Note (sans sauce...)">
         </div>
         <div class="di-controls">
@@ -264,8 +434,7 @@
 
     <div class="drawer-notes" *ngIf="cart.length > 0">
       <mat-icon>edit_note</mat-icon>
-      <textarea [(ngModel)]="orderNotes"
-                (ngModelChange)="saveCartToStorage()"
+      <textarea [(ngModel)]="orderNotes" (ngModelChange)="saveCartToStorage()"
                 placeholder="Instructions générales..." rows="2"></textarea>
     </div>
 

@@ -31,8 +31,63 @@ class OrderSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
-            KernelEvents::VIEW => ['onOrder', EventPriorities::PRE_WRITE],
+            KernelEvents::VIEW => [
+                ['onPreOrder',  EventPriorities::PRE_WRITE],
+                ['onPostOrder', EventPriorities::POST_WRITE],
+            ],
         ];
+    }
+
+    public function onPreOrder(ViewEvent $event): void
+    {
+        $object = $event->getControllerResult();
+        $method = $event->getRequest()->getMethod();
+        if (!$object instanceof Order) return;
+
+        $user = $this->security->getUser();
+        if (!$user) return;
+
+        if ($method === 'POST') {
+            $establishment = $user->getEstablishment();
+            if (!$establishment) return;
+
+            $object->setWaiter($user);
+            $object->setEstablishment($establishment);
+            $object->setOrderNumber($this->orderService->generateOrderNumber($establishment));
+
+            foreach ($object->getItems() as $item) {
+                $result = $this->orderService->applyPromotionsToItem(
+                    $item->getItemType(),
+                    $item->getItemId(),
+                    $item->getUnitPrice(),
+                    $establishment
+                );
+                $item->setFinalPrice($result['finalPrice']);
+                $item->setAppliedPromotions($result['appliedPromotions']);
+            }
+
+            $object->recalculate();
+        }
+
+        if ($method === 'PATCH' || $method === 'PUT') {
+            $object->recalculate();
+        }
+    }
+
+    public function onPostOrder(ViewEvent $event): void
+    {
+        $object = $event->getControllerResult();
+        $method = $event->getRequest()->getMethod();
+        if (!$object instanceof Order) return;
+
+        // Publier l'événement Mercure après création ou modification statut
+        if ($method === 'POST') {
+            $this->orderService->publishOrderEvent($object, 'NEW_ORDER');
+        }
+
+        if ($method === 'PATCH' || $method === 'PUT') {
+            $this->orderService->publishOrderEvent($object, 'STATUS_CHANGED');
+        }
     }
 
     public function onOrder(ViewEvent $event): void

@@ -1,0 +1,126 @@
+<!-- review-form.component.html -->
+<div class="review-page">
+
+  <!-- Header -->
+  <div class="review-header">
+    <a routerLink="/account" class="back-btn">
+      <mat-icon>arrow_back_ios</mat-icon>
+    </a>
+    <h1>Votre avis</h1>
+    <div style="width:36px"></div>
+  </div>
+
+  <!-- Loader -->
+  <div class="loader" *ngIf="loading">
+    <mat-spinner diameter="36"></mat-spinner>
+    <p>Chargement...</p>
+  </div>
+
+  <!-- ══ SUCCÈS ══ -->
+  <div class="success-screen" *ngIf="submitted">
+    <div class="success-emoji">⭐</div>
+    <h2>Merci pour vos avis !</h2>
+    <p>Vos avis seront publiés après validation par l'équipe.</p>
+    <a class="success-btn" routerLink="/account">
+      <mat-icon>arrow_back</mat-icon> Retour à mon compte
+    </a>
+  </div>
+
+  <!-- ══ FORMULAIRE ══ -->
+  <div class="review-content" *ngIf="!loading && !submitted">
+
+    <!-- Avis anonyme — saisie prénom -->
+    <div class="guest-card" *ngIf="isAnonymous">
+      <div class="guest-icon"><mat-icon>person_outline</mat-icon></div>
+      <div class="guest-info">
+        <span class="guest-label">Vous n'êtes pas connecté</span>
+        <p>Laissez votre prénom pour soumettre un avis</p>
+      </div>
+    </div>
+
+    <div class="input-group" *ngIf="isAnonymous">
+      <mat-icon>person</mat-icon>
+      <input [(ngModel)]="guestName" placeholder="Votre prénom *">
+    </div>
+
+    <!-- Cards avis -->
+    <div class="review-card" *ngFor="let item of reviewItems; let i = index">
+
+      <div class="card-header">
+        <div class="item-icon" [ngClass]="item.targetType.toLowerCase()">
+          <mat-icon>{{ getTargetIcon(item.targetType) }}</mat-icon>
+        </div>
+        <div class="item-label">
+          <span class="item-type">{{ getTargetLabel(item.targetType) }}</span>
+          <h3>{{ item.targetName }}</h3>
+        </div>
+      </div>
+
+      <!-- Étoiles -->
+      <div class="stars-row">
+        <button *ngFor="let s of stars" class="star-btn"
+                [class.filled]="s <= item.rating"
+                (click)="setRating(item, s)">
+          <mat-icon>{{ s <= item.rating ? 'star' : 'star_border' }}</mat-icon>
+        </button>
+        <span class="rating-label">{{ getRatingLabel(item.rating) }}</span>
+      </div>
+
+      <!-- Like/Dislike -->
+      <div class="like-row">
+        <button class="like-btn"
+                [class.liked]="item.isLiked === true"
+                (click)="setLike(item, true)">
+          <mat-icon>thumb_up</mat-icon>
+          <span>J'aime</span>
+        </button>
+        <button class="like-btn dislike"
+                [class.disliked]="item.isLiked === false"
+                (click)="setLike(item, false)">
+          <mat-icon>thumb_down</mat-icon>
+          <span>Je n'aime pas</span>
+        </button>
+      </div>
+
+      <!-- Commentaire -->
+      <textarea class="comment-input" [(ngModel)]="item.comment"
+                placeholder="Partagez votre expérience... (optionnel)"
+                rows="3"></textarea>
+
+      <!-- Photo -->
+      <div class="photo-section">
+        <div class="photo-preview" *ngIf="item.photoPreview">
+          <img [src]="item.photoPreview" alt="Photo">
+          <button class="remove-photo" (click)="removePhoto(item)">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        <label class="photo-btn" *ngIf="!item.photoPreview">
+          <mat-icon>add_photo_alternate</mat-icon>
+          <span>Ajouter une photo</span>
+          <input type="file" accept="image/*" style="display:none"
+                 (change)="onPhotoSelected($event, item)">
+        </label>
+      </div>
+
+    </div>
+
+    <!-- Bouton soumettre -->
+    <button class="submit-btn" (click)="submitAll()" [disabled]="submitting">
+      <mat-spinner diameter="20" *ngIf="submitting"></mat-spinner>
+      <mat-icon *ngIf="!submitting">send</mat-icon>
+      <span>{{ submitting ? 'Envoi en cours...' : 'Envoyer mes avis' }}</span>
+    </button>
+
+    <!-- Lien connexion pour les anonymes -->
+    <div class="login-hint" *ngIf="isAnonymous">
+      <mat-icon>info_outline</mat-icon>
+      <span>
+        <a routerLink="/account">Connectez-vous</a>
+        pour accéder à l'historique de vos commandes
+      </span>
+    </div>
+
+  </div>
+
+</div>

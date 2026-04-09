@@ -3,26 +3,6 @@
 <mat-sidenav-container class="sidenav-container">
   <mat-sidenav mode="side" opened class="sidenav">
 
-    <!-- Logo -->
-    <div class="sidebar-logo" routerLink="/dashboard">
-      <ng-container *ngIf="logoUrl; else defaultLogo">
-        <div class="logo-establishment">
-          <img [src]="logoUrl" [alt]="establishment?.name" class="establishment-img">
-        </div>
-        <div class="logo-text">
-          <span class="logo-name">{{ establishment?.name }}</span>
-          <span class="logo-version">Menu Pilot</span>
-        </div>
-      </ng-container>
-      <ng-template #defaultLogo>
-        <div class="logo-icon"><mat-icon>restaurant_menu</mat-icon></div>
-        <div class="logo-text">
-          <span class="logo-name">{{ establishment?.name || 'Menu Pilot' }}</span>
-          <span class="logo-version">Pro</span>
-        </div>
-      </ng-template>
-    </div>
-
     <div class="sidebar-content">
 
       <!-- Dashboard -->
@@ -58,7 +38,7 @@
       </div>
 
       <!-- ── Gestion ── -->
-      <div class="nav-group">
+      <div class="nav-group" *ngIf="!isWaiter">
         <div class="nav-group-label">Gestion</div>
         <nav class="nav-section">
           <a mat-ripple class="nav-item" routerLink="/establishment" routerLinkActive="active">
@@ -90,7 +70,7 @@
       </div>
 
       <!-- ── Menu Digital ── -->
-      <div class="nav-group">
+      <div class="nav-group" *ngIf="!isWaiter">
         <div class="nav-group-label">Menu Digital</div>
         <nav class="nav-section">
           <a mat-ripple class="nav-item" routerLink="/menu" routerLinkActive="active">
@@ -106,7 +86,7 @@
       </div>
 
       <!-- ── Interactions ── -->
-      <div class="nav-group">
+      <div class="nav-group" *ngIf="!isWaiter">
         <div class="nav-group-label">Interactions</div>
         <nav class="nav-section">
           <a mat-ripple class="nav-item" routerLink="/reviews" routerLinkActive="active">
@@ -122,7 +102,7 @@
       </div>
 
       <!-- ── Système ── -->
-      <div class="nav-group">
+      <div class="nav-group" *ngIf="!isWaiter">
         <div class="nav-group-label">Système</div>
         <nav class="nav-section">
           <a mat-ripple class="nav-item" routerLink="/settings" routerLinkActive="active">

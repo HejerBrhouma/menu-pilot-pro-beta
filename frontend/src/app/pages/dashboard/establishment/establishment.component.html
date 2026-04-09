@@ -1,115 +1,135 @@
 <!-- src/app/pages/dashboard/establishment/establishment.component.html -->
 
-<div class="establishment-page">
+<div class="est-page">
 
-  <!-- HEADER -->
-  <div class="page-header">
-    <div class="header-left">
-      <h1><mat-icon>store</mat-icon> Mon Enseigne</h1>
-      <p class="subtitle">Gérez les informations de votre restaurant</p>
-    </div>
-    <div class="header-actions" *ngIf="establishment">
-      <button mat-stroked-button (click)="copyPublicUrl()" class="public-btn">
-        <mat-icon>link</mat-icon>
-        Page publique
-      </button>
-      <a [href]="getPublicUrl()" target="_blank" mat-stroked-button class="preview-btn">
-        <mat-icon>open_in_new</mat-icon>
-        Voir
-      </a>
-    </div>
-  </div>
-
-  <!-- LOADER -->
+  <!-- ══ LOADER ══════════════════════════════════════════════════════ -->
   <div class="page-loader" *ngIf="loading">
-    <mat-spinner diameter="48"></mat-spinner>
+    <mat-spinner diameter="44"></mat-spinner>
   </div>
 
-  <!-- CONTENU -->
-  <div class="settings-layout" *ngIf="!loading">
+  <ng-container *ngIf="!loading">
 
-    <!-- SIDEBAR LOGO + STATUT -->
-    <div class="sidebar-card">
-      <div class="logo-section">
-        <div class="logo-preview" [class.has-logo]="logoPreview">
-          <img [src]="logoPreview" *ngIf="logoPreview" alt="Logo" class="logo-img">
-          <mat-icon *ngIf="!logoPreview">store</mat-icon>
+    <!-- ══ PAGE HEADER ═════════════════════════════════════════════════ -->
+    <div class="ds-page-header">
+      <div class="ds-page-title">
+        <div class="title-icon"><mat-icon>store</mat-icon></div>
+        <div>
+          <h1>Mon Enseigne</h1>
+          <p class="subtitle">Gérez les informations et l'apparence de votre restaurant</p>
         </div>
-        <label class="logo-upload-btn" for="logo-input" *ngIf="canManage">
-          <mat-icon>upload</mat-icon>
-          {{ logoPreview ? 'Changer le logo' : 'Ajouter un logo' }}
+      </div>
+      <div class="ds-header-actions" *ngIf="establishment">
+        <button class="ds-btn ds-btn-outline" (click)="copyPublicUrl()">
+          <mat-icon>link</mat-icon>Copier le lien
+        </button>
+        <a [href]="getPublicUrl()" target="_blank" class="ds-btn ds-btn-primary">
+          <mat-icon>open_in_new</mat-icon>Page publique
+        </a>
+      </div>
+    </div>
+
+    <!-- ══ HERO CARD (logo + statut) ═══════════════════════════════════ -->
+    <div class="hero-card ds-card">
+      <div class="hero-logo-zone">
+        <!-- Zone upload logo -->
+        <label class="logo-dropzone" for="logo-input" [class.has-logo]="logoPreview" [class.readonly]="!canManage">
+          <img *ngIf="logoPreview" [src]="logoPreview" alt="Logo" class="logo-img">
+          <ng-container *ngIf="!logoPreview">
+            <div class="logo-placeholder-icon">
+              <mat-icon>add_photo_alternate</mat-icon>
+            </div>
+            <span class="logo-placeholder-text">Ajouter un logo</span>
+            <span class="logo-placeholder-hint">PNG, JPG — max 2 MB</span>
+          </ng-container>
+          <div class="logo-overlay" *ngIf="logoPreview && canManage">
+            <mat-icon>photo_camera</mat-icon>
+            <span>Changer</span>
+          </div>
         </label>
         <input type="file" id="logo-input" accept="image/*"
                (change)="onLogoChange($event)" style="display:none">
-        <p class="logo-hint">PNG, JPG ou SVG — max 2MB</p>
       </div>
 
-      <mat-divider></mat-divider>
+      <div class="hero-info">
+        <div class="hero-name-row">
+          <h2 class="hero-name">{{ establishment?.name || 'Votre restaurant' }}</h2>
+          <span class="ds-badge" [class.success]="establishment?.isActive" [class.danger]="!establishment?.isActive">
+            <span class="badge-dot"></span>
+            {{ establishment?.isActive ? 'Actif' : 'Inactif' }}
+          </span>
+        </div>
 
-      <div class="sidebar-info" *ngIf="establishment">
-        <div class="info-row">
+        <div class="hero-meta">
+          <span class="meta-item" *ngIf="establishment?.city">
+            <mat-icon>location_on</mat-icon>{{ establishment?.city }}
+          </span>
+          <span class="meta-item" *ngIf="establishment?.phone">
+            <mat-icon>phone</mat-icon>{{ establishment?.phone }}
+          </span>
+          <span class="meta-item" *ngIf="establishment?.email">
+            <mat-icon>email</mat-icon>{{ establishment?.email }}
+          </span>
+        </div>
+
+        <div class="hero-slug" *ngIf="establishment?.slug">
           <mat-icon>link</mat-icon>
-          <span class="slug-badge">/r/{{ establishment.slug }}</span>
-        </div>
-        <div class="info-row" *ngIf="establishment.city">
-          <mat-icon>location_on</mat-icon>
-          <span>{{ establishment.city }}</span>
-        </div>
-        <div class="info-row" *ngIf="establishment.phone">
-          <mat-icon>phone</mat-icon>
-          <span>{{ establishment.phone }}</span>
-        </div>
-        <div class="status-row">
-          <span class="status-dot" [class.active]="establishment.isActive"></span>
-          <span>{{ establishment.isActive ? 'Actif' : 'Inactif' }}</span>
+          <code>/r/{{ establishment?.slug }}</code>
         </div>
       </div>
 
-      <div class="theme-preview" *ngIf="establishment">
-        <p class="preview-label">Aperçu thème</p>
-        <div class="color-preview">
-          <div class="color-dot"
+      <div class="hero-theme" *ngIf="establishment">
+        <p class="ds-section-label">Thème couleurs</p>
+        <div class="theme-dots">
+          <div class="theme-dot"
                [style.background]="themeForm.get('primaryColor')?.value"
-               matTooltip="Couleur principale"></div>
-          <div class="color-dot"
+               matTooltip="Couleur principale">
+          </div>
+          <div class="theme-dot secondary"
                [style.background]="themeForm.get('secondaryColor')?.value"
-               matTooltip="Couleur secondaire"></div>
+               matTooltip="Couleur secondaire">
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- TABS -->
-    <div class="tabs-card">
-      <mat-tab-group animationDuration="200ms" class="settings-tabs">
+    <!-- ══ SETTINGS TABS ════════════════════════════════════════════════ -->
+    <div class="settings-card ds-card">
+      <mat-tab-group animationDuration="200ms" class="est-tabs">
 
-        <!-- ── TAB 1 : Informations ── -->
+        <!-- ── TAB : Informations ── -->
         <mat-tab>
           <ng-template mat-tab-label>
-            <mat-icon>info</mat-icon>
-            Informations
+            <mat-icon>info_outline</mat-icon>&nbsp;Informations
           </ng-template>
 
-          <form [formGroup]="infoForm" class="tab-content">
-            <div class="form-grid">
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Nom du restaurant</mat-label>
-                <input matInput formControlName="name">
-                <mat-icon matSuffix>store</mat-icon>
-              </mat-form-field>
+          <div class="tab-body">
+            <div class="tab-section-title">
+              <mat-icon>business</mat-icon>
+              <span>Informations générales</span>
+            </div>
 
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Slug URL</mat-label>
-                <span matTextPrefix>/r/&nbsp;</span>
-                <input matInput formControlName="slug">
-                <mat-hint>Uniquement lettres minuscules, chiffres et tirets</mat-hint>
-              </mat-form-field>
+            <form [formGroup]="infoForm" class="form-grid">
+              <div class="form-row two">
+                <mat-form-field appearance="outline">
+                  <mat-label>Nom du restaurant</mat-label>
+                  <input matInput formControlName="name">
+                  <mat-icon matSuffix>store</mat-icon>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Slug URL</mat-label>
+                  <span matTextPrefix>/r/&nbsp;</span>
+                  <input matInput formControlName="slug">
+                  <mat-hint>lettres, chiffres, tirets</mat-hint>
+                </mat-form-field>
+              </div>
 
-              <mat-form-field appearance="outline" class="full-width">
+              <mat-form-field appearance="outline" class="full">
                 <mat-label>Description</mat-label>
-                <textarea matInput formControlName="description" rows="3"></textarea>
+                <textarea matInput formControlName="description" rows="3"
+                          placeholder="Décrivez votre restaurant..."></textarea>
               </mat-form-field>
 
-              <div class="two-cols">
+              <div class="form-row two">
                 <mat-form-field appearance="outline">
                   <mat-label>Email</mat-label>
                   <input matInput formControlName="email" type="email">
@@ -122,13 +142,13 @@
                 </mat-form-field>
               </div>
 
-              <mat-form-field appearance="outline" class="full-width">
+              <mat-form-field appearance="outline" class="full">
                 <mat-label>Adresse</mat-label>
                 <input matInput formControlName="address">
                 <mat-icon matSuffix>location_on</mat-icon>
               </mat-form-field>
 
-              <div class="two-cols">
+              <div class="form-row two">
                 <mat-form-field appearance="outline">
                   <mat-label>Ville</mat-label>
                   <input matInput formControlName="city">
@@ -138,54 +158,69 @@
                   <input matInput formControlName="country">
                 </mat-form-field>
               </div>
-            </div>
 
-            <div class="tab-actions" *ngIf="canManage">
-              <button mat-flat-button color="primary" (click)="saveInfo()"
-                      [disabled]="saving || infoForm.invalid">
-                <mat-spinner diameter="18" *ngIf="saving"></mat-spinner>
-                <mat-icon *ngIf="!saving">save</mat-icon>
-                Enregistrer
-              </button>
-            </div>
-          </form>
+              <div class="tab-actions" *ngIf="canManage">
+                <button class="ds-btn ds-btn-primary save-btn"
+                        (click)="saveInfo()"
+                        [disabled]="saving || infoForm.invalid">
+                  <mat-spinner diameter="16" *ngIf="saving"></mat-spinner>
+                  <mat-icon *ngIf="!saving">save</mat-icon>
+                  Enregistrer les informations
+                </button>
+              </div>
+            </form>
+          </div>
         </mat-tab>
 
-        <!-- ── TAB 2 : Horaires ── -->
+        <!-- ── TAB : Horaires ── -->
         <mat-tab>
           <ng-template mat-tab-label>
-            <mat-icon>schedule</mat-icon>
-            Horaires
+            <mat-icon>schedule</mat-icon>&nbsp;Horaires
           </ng-template>
 
-          <div class="tab-content">
-            <div class="horaires-grid">
-              <div class="horaire-row" *ngFor="let day of daysKeys">
-                <div class="day-label">{{ daysLabels[day] }}</div>
+          <div class="tab-body">
+            <div class="tab-section-title">
+              <mat-icon>access_time</mat-icon>
+              <span>Horaires d'ouverture</span>
+            </div>
+
+            <div class="horaires-list">
+              <div class="horaire-item" *ngFor="let day of daysKeys">
+                <div class="day-name">{{ daysLabels[day] }}</div>
+
                 <mat-slide-toggle
                   [checked]="!openingHours[day]?.closed"
                   (change)="toggleDay(day)"
                   [disabled]="!canManage"
                   color="primary">
-                  {{ openingHours[day]?.closed ? 'Fermé' : 'Ouvert' }}
                 </mat-slide-toggle>
-                <div class="time-inputs" *ngIf="!openingHours[day]?.closed">
-                  <input type="time" class="time-input"
-                         [(ngModel)]="openingHours[day].open"
-                         [disabled]="!canManage">
-                  <span class="time-sep">—</span>
-                  <input type="time" class="time-input"
-                         [(ngModel)]="openingHours[day].close"
-                         [disabled]="!canManage">
+
+                <div class="day-status-label">
+                  <span *ngIf="!openingHours[day]?.closed" class="open-label">Ouvert</span>
+                  <span *ngIf="openingHours[day]?.closed"  class="closed-label">Fermé</span>
                 </div>
-                <div class="closed-label" *ngIf="openingHours[day]?.closed">
-                  Fermé ce jour
+
+                <div class="time-inputs" *ngIf="!openingHours[day]?.closed">
+                  <div class="time-field">
+                    <span class="time-label">Ouverture</span>
+                    <input type="time" class="time-input"
+                           [(ngModel)]="openingHours[day].open"
+                           [disabled]="!canManage">
+                  </div>
+                  <div class="time-dash">→</div>
+                  <div class="time-field">
+                    <span class="time-label">Fermeture</span>
+                    <input type="time" class="time-input"
+                           [(ngModel)]="openingHours[day].close"
+                           [disabled]="!canManage">
+                  </div>
                 </div>
               </div>
             </div>
 
             <div class="tab-actions" *ngIf="canManage">
-              <button mat-flat-button color="primary" (click)="saveHoraires()" [disabled]="saving">
+              <button class="ds-btn ds-btn-primary save-btn"
+                      (click)="saveHoraires()" [disabled]="saving">
                 <mat-icon>save</mat-icon>
                 Enregistrer les horaires
               </button>
@@ -193,89 +228,177 @@
           </div>
         </mat-tab>
 
-        <!-- ── TAB 3 : Thème ── -->
+        <!-- ── TAB : Thème ── -->
         <mat-tab>
           <ng-template mat-tab-label>
-            <mat-icon>palette</mat-icon>
-            Thème
+            <mat-icon>palette</mat-icon>&nbsp;Thème
           </ng-template>
 
-          <form [formGroup]="themeForm" class="tab-content">
-            <div class="theme-section">
-              <p class="theme-desc">Personnalisez les couleurs de votre menu digital public.</p>
-              <div class="color-fields">
-                <div class="color-field">
-                  <label>Couleur principale</label>
-                  <div class="color-input-wrap">
-                    <input type="color" formControlName="primaryColor" class="color-picker">
-                    <mat-form-field appearance="outline">
+          <div class="tab-body">
+            <div class="tab-section-title">
+              <mat-icon>color_lens</mat-icon>
+              <span>Personnalisation des couleurs</span>
+            </div>
+            <p class="tab-desc">Ces couleurs s'appliquent à votre menu digital public et à votre page enseigne.</p>
+
+            <form [formGroup]="themeForm">
+              <div class="color-grid">
+                <div class="color-card">
+                  <div class="color-card-header">
+                    <span class="color-card-title">Couleur principale</span>
+                    <span class="color-card-hint">Boutons, accents, liens</span>
+                  </div>
+                  <div class="color-picker-wrap">
+                    <label class="color-swatch" [style.background]="themeForm.get('primaryColor')?.value">
+                      <input type="color" formControlName="primaryColor">
+                    </label>
+                    <mat-form-field appearance="outline" class="color-hex-field">
                       <input matInput formControlName="primaryColor" placeholder="#6366f1">
                     </mat-form-field>
                   </div>
-                  <div class="color-sample" [style.background]="themeForm.get('primaryColor')?.value">
-                    Boutons, accents
+                  <div class="color-preview-bar" [style.background]="themeForm.get('primaryColor')?.value">
+                    <span>Aperçu bouton</span>
                   </div>
                 </div>
-                <div class="color-field">
-                  <label>Couleur secondaire</label>
-                  <div class="color-input-wrap">
-                    <input type="color" formControlName="secondaryColor" class="color-picker">
-                    <mat-form-field appearance="outline">
+
+                <div class="color-card">
+                  <div class="color-card-header">
+                    <span class="color-card-title">Couleur secondaire</span>
+                    <span class="color-card-hint">En-tête, badges, highlights</span>
+                  </div>
+                  <div class="color-picker-wrap">
+                    <label class="color-swatch" [style.background]="themeForm.get('secondaryColor')?.value">
+                      <input type="color" formControlName="secondaryColor">
+                    </label>
+                    <mat-form-field appearance="outline" class="color-hex-field">
                       <input matInput formControlName="secondaryColor" placeholder="#ec4899">
                     </mat-form-field>
                   </div>
-                  <div class="color-sample secondary" [style.background]="themeForm.get('secondaryColor')?.value">
-                    Header, badges
+                  <div class="color-preview-bar secondary" [style.background]="themeForm.get('secondaryColor')?.value">
+                    <span>Aperçu en-tête</span>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div class="tab-actions" *ngIf="canManage">
-              <button mat-flat-button color="primary" (click)="saveTheme()" [disabled]="saving">
-                <mat-icon>save</mat-icon>
-                Enregistrer le thème
-              </button>
-            </div>
-          </form>
+              <div class="tab-actions" *ngIf="canManage">
+                <button class="ds-btn ds-btn-primary save-btn"
+                        (click)="saveTheme()" [disabled]="saving">
+                  <mat-icon>save</mat-icon>
+                  Enregistrer le thème
+                </button>
+              </div>
+            </form>
+          </div>
         </mat-tab>
 
-        <!-- ── TAB 4 : Réseaux sociaux ── -->
+        <!-- ── TAB : Facturation ── -->
         <mat-tab>
           <ng-template mat-tab-label>
-            <mat-icon>share</mat-icon>
-            Réseaux
+            <mat-icon>receipt</mat-icon>&nbsp;Facturation
           </ng-template>
 
-          <form [formGroup]="socialForm" class="tab-content">
-            <div class="social-fields">
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Site web</mat-label>
-                <input matInput formControlName="website" placeholder="https://monrestaurant.com">
-                <mat-icon matSuffix>language</mat-icon>
-              </mat-form-field>
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Instagram</mat-label>
-                <input matInput formControlName="instagram">
-                <mat-icon matSuffix>photo_camera</mat-icon>
-              </mat-form-field>
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Facebook</mat-label>
-                <input matInput formControlName="facebook">
-                <mat-icon matSuffix>thumb_up</mat-icon>
-              </mat-form-field>
+          <div class="tab-body">
+            <div class="tab-section-title">
+              <mat-icon>calculate</mat-icon>
+              <span>Paramètres de facturation</span>
+            </div>
+            <p class="tab-desc">
+              Le taux de TVA est figé au moment de chaque paiement.
+              Si non configuré, la valeur par défaut est <strong>19 %</strong>.
+            </p>
+
+            <form [formGroup]="facturationForm" class="form-grid">
+              <div class="form-row tva-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Taux de TVA (%)</mat-label>
+                  <input matInput formControlName="tvaRate" type="number" min="0" max="100" step="0.1"
+                         placeholder="19">
+                  <span matSuffix>%</span>
+                  <mat-hint>Ex : 19 pour 19%</mat-hint>
+                  <mat-error *ngIf="facturationForm.get('tvaRate')?.hasError('min') || facturationForm.get('tvaRate')?.hasError('max')">
+                    Valeur entre 0 et 100
+                  </mat-error>
+                </mat-form-field>
+
+                <div class="tva-preview-box">
+                  <div class="tva-preview-label">Aperçu sur une facture de 100 TND HT</div>
+                  <div class="tva-preview-row">
+                    <span>Base HT</span><span>100,000 TND</span>
+                  </div>
+                  <div class="tva-preview-row tva">
+                    <span>TVA ({{ facturationForm.get('tvaRate')?.value || 19 }}%)</span>
+                    <span>+ {{ ((facturationForm.get('tvaRate')?.value || 19) * 1) | number:'1.3-3' }} TND</span>
+                  </div>
+                  <div class="tva-preview-row total">
+                    <span>Total TTC</span>
+                    <span>{{ (100 + (facturationForm.get('tvaRate')?.value || 19)) | number:'1.3-3' }} TND</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="tab-actions" *ngIf="canManage">
+                <button class="ds-btn ds-btn-primary save-btn"
+                        (click)="saveFacturation()"
+                        [disabled]="saving || facturationForm.invalid">
+                  <mat-spinner diameter="16" *ngIf="saving"></mat-spinner>
+                  <mat-icon *ngIf="!saving">save</mat-icon>
+                  Enregistrer les paramètres
+                </button>
+              </div>
+            </form>
+          </div>
+        </mat-tab>
+
+        <!-- ── TAB : Réseaux sociaux ── -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <mat-icon>share</mat-icon>&nbsp;Réseaux
+          </ng-template>
+
+          <div class="tab-body">
+            <div class="tab-section-title">
+              <mat-icon>public</mat-icon>
+              <span>Présence en ligne</span>
             </div>
 
-            <div class="tab-actions" *ngIf="canManage">
-              <button mat-flat-button color="primary" (click)="saveSocial()" [disabled]="saving">
-                <mat-icon>save</mat-icon>
-                Enregistrer
-              </button>
-            </div>
-          </form>
+            <form [formGroup]="socialForm" class="social-list">
+              <div class="social-item">
+                <div class="social-icon web"><mat-icon>language</mat-icon></div>
+                <mat-form-field appearance="outline" class="full">
+                  <mat-label>Site web</mat-label>
+                  <input matInput formControlName="website" placeholder="https://monrestaurant.com">
+                </mat-form-field>
+              </div>
+
+              <div class="social-item">
+                <div class="social-icon insta"><mat-icon>photo_camera</mat-icon></div>
+                <mat-form-field appearance="outline" class="full">
+                  <mat-label>Instagram</mat-label>
+                  <input matInput formControlName="instagram" placeholder="@monrestaurant">
+                </mat-form-field>
+              </div>
+
+              <div class="social-item">
+                <div class="social-icon fb"><mat-icon>thumb_up</mat-icon></div>
+                <mat-form-field appearance="outline" class="full">
+                  <mat-label>Facebook</mat-label>
+                  <input matInput formControlName="facebook" placeholder="facebook.com/monrestaurant">
+                </mat-form-field>
+              </div>
+
+              <div class="tab-actions" *ngIf="canManage">
+                <button class="ds-btn ds-btn-primary save-btn"
+                        (click)="saveSocial()" [disabled]="saving">
+                  <mat-icon>save</mat-icon>
+                  Enregistrer les réseaux
+                </button>
+              </div>
+            </form>
+          </div>
         </mat-tab>
 
       </mat-tab-group>
     </div>
-  </div>
+
+  </ng-container>
 </div>

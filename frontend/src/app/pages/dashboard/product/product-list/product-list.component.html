@@ -1,53 +1,59 @@
 <!-- src/app/pages/dashboard/product/product-list/product-list.component.html -->
 
-<div class="product-page">
+<div class="list-page">
 
-  <!-- HEADER -->
-  <div class="page-header">
-    <div class="header-left">
-      <h1>
-        <mat-icon>inventory_2</mat-icon>
-        Produits
-        <span class="total-badge" *ngIf="totalItems > 0">{{ totalItems }}</span>
-      </h1>
-      <p class="subtitle">Gérez votre catalogue de produits</p>
+  <!-- ══ PAGE HEADER ══════════════════════════════════════════════════════ -->
+  <div class="ds-page-header">
+    <div class="ds-page-title">
+      <div class="title-icon"><mat-icon>inventory_2</mat-icon></div>
+      <div>
+        <h1>Produits</h1>
+        <p class="subtitle">Gérez votre catalogue de produits</p>
+      </div>
     </div>
-    <button mat-flat-button color="primary" class="add-btn" (click)="openAddDialog()">
-      <mat-icon>add</mat-icon>
-      Nouveau produit
-    </button>
+    <div class="ds-header-actions">
+      <button class="ds-btn ds-btn-primary" (click)="openAddDialog()">
+        <mat-icon>add</mat-icon>Nouveau produit
+      </button>
+    </div>
   </div>
 
-  <!-- RECHERCHE -->
-  <div class="toolbar">
-    <mat-form-field appearance="outline" class="search-field">
-      <mat-label>Rechercher un produit…</mat-label>
-      <mat-icon matPrefix>search</mat-icon>
-      <input matInput [formControl]="searchControl">
-      <button *ngIf="searchControl.value" matSuffix mat-icon-button (click)="searchControl.setValue('')">
+  <!-- ══ FILTER BAR ════════════════════════════════════════════════════════ -->
+  <div class="filter-bar">
+    <div class="filter-search">
+      <mat-icon class="search-icon">search</mat-icon>
+      <input class="search-input" placeholder="Rechercher un produit…"
+             [formControl]="searchControl">
+      <button class="search-clear" *ngIf="searchControl.value"
+              (click)="searchControl.setValue('')">
         <mat-icon>close</mat-icon>
       </button>
-    </mat-form-field>
+    </div>
+    <div class="filter-right" *ngIf="totalItems > 0">
+      <span class="result-count">
+        <strong>{{ totalItems }}</strong> produit{{ totalItems > 1 ? 's' : '' }}
+      </span>
+    </div>
   </div>
 
-  <!-- LOADER -->
-  <div class="loader-overlay" *ngIf="loading">
-    <mat-spinner diameter="48"></mat-spinner>
+  <!-- ══ LOADER ════════════════════════════════════════════════════════════ -->
+  <div class="page-loader" *ngIf="loading">
+    <mat-spinner diameter="44"></mat-spinner>
   </div>
 
-  <!-- TABLE -->
-  <div class="table-container mat-elevation-z2" [class.loading]="loading">
-    <table mat-table [dataSource]="dataSource" matSort>
+  <!-- ══ TABLE CARD ════════════════════════════════════════════════════════ -->
+  <div class="table-card ds-card" [class.tbl-loading]="loading">
+    <table mat-table [dataSource]="dataSource" matSort class="data-table">
 
-      <!-- Nom -->
+      <!-- Produit -->
       <ng-container matColumnDef="name">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Nom</th>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Produit</th>
         <td mat-cell *matCellDef="let p">
-          <div class="product-name">
-            <div class="product-avatar">{{ p.name[0] | uppercase }}</div>
-            <div>
-              <span class="name-text">{{ p.name }}</span>
-              <span class="description-text" *ngIf="p.description">{{ p.description }}</span>
+          <div class="item-name-cell">
+            <div class="item-avatar indigo">{{ p.name[0] | uppercase }}</div>
+            <div class="item-meta">
+              <span class="item-title">{{ p.name }}</span>
+              <span class="item-sub" *ngIf="p.description">{{ p.description }}</span>
             </div>
           </div>
         </td>
@@ -57,7 +63,7 @@
       <ng-container matColumnDef="price">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Prix</th>
         <td mat-cell *matCellDef="let p">
-          <span class="price-tag">{{ p.price | number:'1.2-2' }} €</span>
+          <span class="price-pill">{{ p.price | number:'1.2-2' }} TND</span>
         </td>
       </ng-container>
 
@@ -65,11 +71,11 @@
       <ng-container matColumnDef="categories">
         <th mat-header-cell *matHeaderCellDef>Catégories</th>
         <td mat-cell *matCellDef="let p">
-          <div class="chips-cell">
-            <span class="cat-chip" *ngFor="let cat of p.categories">
+          <div class="chips-row">
+            <span class="item-chip" *ngFor="let cat of p.categories">
               {{ getCategoryName(cat) }}
             </span>
-            <span class="no-cat" *ngIf="!p.categories?.length">—</span>
+            <span class="chip-empty" *ngIf="!p.categories?.length">—</span>
           </div>
         </td>
       </ng-container>
@@ -78,10 +84,10 @@
       <ng-container matColumnDef="status">
         <th mat-header-cell *matHeaderCellDef>Statut</th>
         <td mat-cell *matCellDef="let p">
-          <span class="status-badge"
-                [class.active]="p.isAvailable !== false"
-                [class.inactive]="p.isAvailable === false">
-            <span class="dot"></span>
+          <span class="ds-badge"
+                [class.success]="p.isAvailable !== false"
+                [class.danger]="p.isAvailable === false">
+            <span class="badge-dot"></span>
             {{ p.isAvailable !== false ? 'Disponible' : 'Indisponible' }}
           </span>
         </td>
@@ -89,26 +95,29 @@
 
       <!-- Actions -->
       <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef class="actions-header">Actions</th>
-        <td mat-cell *matCellDef="let p" class="actions-cell">
-          <button mat-icon-button color="primary" (click)="openEditDialog(p)" matTooltip="Modifier">
+        <th mat-header-cell *matHeaderCellDef class="th-actions"></th>
+        <td mat-cell *matCellDef="let p" class="td-actions">
+          <button class="row-btn" (click)="openEditDialog(p)" matTooltip="Modifier">
             <mat-icon>edit</mat-icon>
           </button>
-          <button mat-icon-button color="warn" (click)="confirmDelete(p)" matTooltip="Supprimer">
+          <button class="row-btn danger" (click)="confirmDelete(p)" matTooltip="Supprimer">
             <mat-icon>delete_outline</mat-icon>
           </button>
         </td>
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="product-row"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="data-row"></tr>
 
       <tr class="mat-row" *matNoDataRow>
-        <td class="mat-cell no-data-cell" [attr.colspan]="displayedColumns.length">
+        <td class="mat-cell" [attr.colspan]="displayedColumns.length">
           <div class="empty-state">
-            <mat-icon>search_off</mat-icon>
-            <p>Aucun produit trouvé</p>
-            <button mat-stroked-button (click)="searchControl.setValue('')">Réinitialiser</button>
+            <div class="empty-icon"><mat-icon>inventory_2</mat-icon></div>
+            <p class="empty-title">Aucun produit trouvé</p>
+            <p class="empty-sub">Modifiez votre recherche ou créez un nouveau produit</p>
+            <button class="ds-btn ds-btn-primary" (click)="openAddDialog()">
+              <mat-icon>add</mat-icon>Nouveau produit
+            </button>
           </div>
         </td>
       </tr>
@@ -122,4 +131,5 @@
       showFirstLastButtons>
     </mat-paginator>
   </div>
+
 </div>

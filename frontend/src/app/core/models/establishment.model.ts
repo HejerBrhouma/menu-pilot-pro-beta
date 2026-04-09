@@ -35,6 +35,7 @@ export interface Establishment {
   website?:        string;
   instagram?:      string;
   facebook?:       string;
+  tvaRate?:        number | null;
   isActive:        boolean;
   maxUsers:        number;
   owner?:          string;

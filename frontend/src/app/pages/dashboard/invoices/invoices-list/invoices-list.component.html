@@ -1,116 +1,119 @@
 <!-- invoices-list.component.html -->
-<div class="invoices-page">
 
-  <!-- Header -->
-  <div class="page-header">
-    <div class="header-left">
-      <h1><mat-icon>receipt</mat-icon> Factures</h1>
-      <p class="header-sub">
-        {{ allInvoices.length }} facture(s) ·
-        <span class="revenue">{{ totalRevenue | number:'1.2-2' }} TND total</span>
-      </p>
-    </div>
-    <div class="header-right">
-      <div class="search-box">
-        <mat-icon>search</mat-icon>
-        <input [(ngModel)]="searchQuery" placeholder="N° facture, commande...">
-        <button *ngIf="searchQuery" (click)="searchQuery = ''">
-          <mat-icon>close</mat-icon>
-        </button>
+<div class="list-page">
+
+  <!-- ══ PAGE HEADER ══════════════════════════════════════════════════════ -->
+  <div class="ds-page-header">
+    <div class="ds-page-title">
+      <div class="title-icon teal"><mat-icon>receipt</mat-icon></div>
+      <div>
+        <h1>Factures</h1>
+        <p class="subtitle">Consultez et imprimez vos factures</p>
       </div>
-      <button mat-icon-button (click)="loadInvoices()" matTooltip="Rafraîchir">
-        <mat-icon>refresh</mat-icon>
+    </div>
+    <div class="ds-header-actions">
+      <button class="ds-btn ds-btn-outline" (click)="loadInvoices()" matTooltip="Rafraîchir">
+        <mat-icon>refresh</mat-icon>Rafraîchir
       </button>
     </div>
   </div>
 
-  <!-- Stats -->
-  <div class="stats-row" *ngIf="!loading && allInvoices.length > 0">
-    <div class="stat-box">
-      <mat-icon>receipt</mat-icon>
+  <!-- ══ KPI STRIP ════════════════════════════════════════════════════════ -->
+  <div class="inv-kpi-row" *ngIf="!loading && allInvoices.length > 0">
+    <div class="inv-kpi-card">
+      <div class="inv-kpi-icon"><mat-icon>receipt_long</mat-icon></div>
       <div>
-        <span class="stat-val">{{ allInvoices.length }}</span>
-        <span class="stat-lbl">Total factures</span>
+        <span class="inv-kpi-val">{{ allInvoices.length }}</span>
+        <span class="inv-kpi-lbl">Total factures</span>
       </div>
     </div>
-    <div class="stat-box green">
-      <mat-icon>payments</mat-icon>
+    <div class="inv-kpi-card green">
+      <div class="inv-kpi-icon"><mat-icon>payments</mat-icon></div>
       <div>
-        <span class="stat-val">{{ totalRevenue | number:'1.2-2' }} TND</span>
-        <span class="stat-lbl">Chiffre d'affaires</span>
+        <span class="inv-kpi-val">{{ totalRevenue | number:'1.2-2' }} TND</span>
+        <span class="inv-kpi-lbl">Chiffre d'affaires</span>
       </div>
     </div>
-    <div class="stat-box blue">
-      <mat-icon>today</mat-icon>
+    <div class="inv-kpi-card blue">
+      <div class="inv-kpi-icon"><mat-icon>today</mat-icon></div>
       <div>
-        <span class="stat-val">{{ todayRevenue | number:'1.2-2' }} TND</span>
-        <span class="stat-lbl">Aujourd'hui</span>
+        <span class="inv-kpi-val">{{ todayRevenue | number:'1.2-2' }} TND</span>
+        <span class="inv-kpi-lbl">Aujourd'hui</span>
       </div>
     </div>
   </div>
 
-  <!-- Filtres -->
-  <div class="filter-tabs">
-    <button *ngFor="let f of filters"
-            class="filter-tab"
-            [class.active]="activeFilter === f.key"
-            (click)="activeFilter = f.key">
-      {{ f.label }}
-      <span class="f-count">{{ f.count }}</span>
-    </button>
+  <!-- ══ FILTER BAR ════════════════════════════════════════════════════════ -->
+  <div class="filter-bar">
+    <div class="filter-search">
+      <mat-icon class="search-icon">search</mat-icon>
+      <input class="search-input" placeholder="N° facture, commande…"
+             [(ngModel)]="searchQuery">
+      <button class="search-clear" *ngIf="searchQuery" (click)="searchQuery = ''">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    <div class="filter-tabs-inline">
+      <button *ngFor="let f of filters"
+              class="ftab"
+              [class.active]="activeFilter === f.key"
+              (click)="activeFilter = f.key">
+        {{ f.label }}
+        <span class="ftab-count">{{ f.count }}</span>
+      </button>
+    </div>
   </div>
 
-  <!-- Loader -->
-  <div class="loader" *ngIf="loading">
-    <mat-spinner diameter="36"></mat-spinner>
+  <!-- ══ LOADER ════════════════════════════════════════════════════════════ -->
+  <div class="page-loader" *ngIf="loading">
+    <mat-spinner diameter="44"></mat-spinner>
   </div>
 
-  <!-- Empty -->
+  <!-- ══ EMPTY ════════════════════════════════════════════════════════════ -->
   <div class="empty-state" *ngIf="!loading && filtered.length === 0">
-    <mat-icon>receipt</mat-icon>
-    <p>Aucune facture</p>
-    <small>Les factures sont générées lors du paiement des commandes</small>
+    <div class="empty-icon teal"><mat-icon>receipt</mat-icon></div>
+    <p class="empty-title">Aucune facture</p>
+    <p class="empty-sub">Les factures sont générées lors du paiement des commandes</p>
   </div>
 
-  <!-- Liste -->
-  <div class="invoices-list" *ngIf="!loading && filtered.length > 0">
-    <a class="invoice-row"
-       *ngFor="let inv of filtered"
-       [routerLink]="['/invoices', inv.id]">
+  <!-- ══ INVOICE LIST ══════════════════════════════════════════════════════ -->
+  <div class="inv-list ds-card" *ngIf="!loading && filtered.length > 0">
+    <a class="inv-row"
+       *ngFor="let inv of filtered; let i = index"
+       [routerLink]="['/invoices', inv.id]"
+       [style.animation-delay]="(i * 40) + 'ms'">
 
-      <div class="inv-icon" [ngClass]="'method-' + (inv.paymentMethod || 'CASH').toLowerCase()">
+      <!-- Icône méthode -->
+      <div class="inv-icon" [ngClass]="'pm-' + (inv.paymentMethod || 'CASH').toLowerCase()">
         <mat-icon>{{ getPaymentIcon(inv.paymentMethod) }}</mat-icon>
       </div>
 
-      <div class="inv-main">
-        <div class="inv-numbers">
+      <!-- Numéros -->
+      <div class="inv-body">
+        <div class="inv-top">
           <span class="inv-num">{{ inv.invoiceNumber }}</span>
-          <span class="inv-order">Cmd: {{ getOrderNumber(inv) }}</span>
+          <span class="inv-order-ref">Cmd #{{ getOrderNumber(inv) }}</span>
         </div>
-        <div class="inv-meta">
-          <span>
-            <mat-icon>person</mat-icon>{{ getWaiterName(inv) }}
-          </span>
+        <div class="inv-bottom">
+          <mat-icon>person_outline</mat-icon>{{ getWaiterName(inv) }}
           <span class="sep">·</span>
-          <span>
-            <mat-icon>schedule</mat-icon>{{ formatDate(inv.createdAt) }}
-          </span>
+          <mat-icon>schedule</mat-icon>{{ formatDate(inv.createdAt) }}
         </div>
       </div>
 
-      <div class="inv-method">
-        <span class="method-badge" [ngClass]="'method-' + (inv.paymentMethod || 'CASH').toLowerCase()">
-          <mat-icon>{{ getPaymentIcon(inv.paymentMethod) }}</mat-icon>
-          {{ paymentLabels[inv.paymentMethod!] || inv.paymentMethod }}
-        </span>
-      </div>
+      <!-- Méthode badge -->
+      <span class="pm-badge" [ngClass]="'pm-' + (inv.paymentMethod || 'CASH').toLowerCase()">
+        <mat-icon>{{ getPaymentIcon(inv.paymentMethod) }}</mat-icon>
+        {{ paymentLabels[inv.paymentMethod!] || inv.paymentMethod }}
+      </span>
 
+      <!-- Montant -->
       <div class="inv-amount">
-        <span class="amount-val">{{ inv.total | number:'1.2-2' }}</span>
-        <span class="amount-cur">TND</span>
+        <span class="amt-val">{{ inv.total | number:'1.2-2' }}</span>
+        <span class="amt-cur">TND</span>
       </div>
 
-      <mat-icon class="inv-arrow">chevron_right</mat-icon>
+      <mat-icon class="inv-chevron">chevron_right</mat-icon>
     </a>
   </div>
 

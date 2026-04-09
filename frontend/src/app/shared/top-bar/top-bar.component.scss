@@ -1,0 +1,312 @@
+// src/app/shared/top-bar/top-bar.component.scss
+
+$h          : 56px;
+$bg         : #ffffff;
+$border     : #e8ecf4;
+$accent     : #6366f1;
+$text-dark  : #0f172a;
+$text-mid   : #475569;
+$text-soft  : #94a3b8;
+
+// ── Barre principale ───────────────────────────────────────────────────────
+.topbar {
+  position      : fixed;
+  top           : 0;
+  left          : 0;
+  right         : 0;
+  height        : $h;
+  z-index       : 1100;
+  background    : $bg;
+  border-bottom : 1px solid $border;
+  box-shadow    : 0 1px 12px rgba(15, 23, 42, 0.07);
+
+  display         : flex;
+  align-items     : center;
+  justify-content : space-between;
+  padding         : 0 1.5rem;
+  gap             : 1rem;
+}
+
+// ══ GAUCHE ═════════════════════════════════════════════════════════════════
+.topbar-left {
+  display    : flex;
+  align-items: center;
+  gap        : 0.7rem;
+  flex-shrink: 0;
+  min-width  : 0;
+}
+
+// Logo image enseigne
+.brand-logo {
+  width        : 38px;
+  height       : 38px;
+  border-radius: 10px;
+  overflow     : hidden;
+  border       : 1.5px solid $border;
+  flex-shrink  : 0;
+  background   : #f8fafc;
+
+  .brand-logo-img {
+    width     : 100%;
+    height    : 100%;
+    object-fit: cover;
+  }
+}
+
+// Icône app par défaut
+.brand-icon-wrap {
+  width           : 38px;
+  height          : 38px;
+  border-radius   : 10px;
+  background      : linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  display         : flex;
+  align-items     : center;
+  justify-content : center;
+  flex-shrink     : 0;
+  box-shadow      : 0 3px 10px rgba(99, 102, 241, 0.3);
+}
+
+.brand-icon {
+  color    : #ffffff !important;
+  font-size: 1.2rem !important;
+  width    : 1.2rem !important;
+  height   : 1.2rem !important;
+}
+
+// Texte marque
+.brand-text {
+  display       : flex;
+  flex-direction: column;
+  line-height   : 1.15;
+  min-width     : 0;
+}
+
+.brand-name {
+  font-size    : 0.9rem;
+  font-weight  : 700;
+  color        : $text-dark;
+  white-space  : nowrap;
+  overflow     : hidden;
+  text-overflow: ellipsis;
+  max-width    : 200px;
+  letter-spacing: -0.2px;
+}
+
+.brand-tag {
+  font-size     : 0.6rem;
+  font-weight   : 700;
+  color         : $accent;
+  text-transform: uppercase;
+  letter-spacing: 0.9px;
+
+  &.super { color: #f59e0b; }
+}
+
+// ══ DROITE ═════════════════════════════════════════════════════════════════
+.topbar-right {
+  display    : flex;
+  align-items: center;
+  gap        : 0.35rem;
+  flex-shrink: 0;
+}
+
+// Séparateur vertical
+.sep {
+  width    : 1px;
+  height   : 26px;
+  background: $border;
+  margin   : 0 0.4rem;
+  flex-shrink: 0;
+}
+
+// ── Bouton icône ──────────────────────────────────────────────────────────
+.action-icon-btn {
+  width          : 40px;
+  height         : 40px;
+  border-radius  : 10px;
+  border         : none;
+  background     : transparent;
+  cursor         : pointer;
+  display        : flex;
+  align-items    : center;
+  justify-content: center;
+  color          : $text-mid;
+  transition     : background 0.15s, color 0.15s;
+  padding        : 0;
+
+  mat-icon {
+    font-size: 1.2rem;
+    width    : 1.2rem;
+    height   : 1.2rem;
+  }
+
+  &:hover {
+    background: rgba(99, 102, 241, 0.08);
+    color     : $accent;
+  }
+
+  &.logout:hover {
+    background: rgba(239, 68, 68, 0.08);
+    color     : #ef4444;
+  }
+}
+
+// ── Wrapper icône + badge ─────────────────────────────────────────────────
+.icon-wrap {
+  position: relative;
+  display : inline-flex;
+  align-items    : center;
+  justify-content: center;
+  width  : 24px;
+  height : 24px;
+}
+
+// ── Badge compteur ────────────────────────────────────────────────────────
+@keyframes badge-pop {
+  0%   { transform: scale(0.5); opacity: 0; }
+  70%  { transform: scale(1.2); }
+  100% { transform: scale(1);   opacity: 1; }
+}
+
+@keyframes badge-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
+  50%       { box-shadow: 0 0 0 4px rgba(239, 68, 68, 0); }
+}
+
+@keyframes badge-pulse-amber {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.5); }
+  50%       { box-shadow: 0 0 0 4px rgba(245, 158, 11, 0); }
+}
+
+.icon-badge {
+  position      : absolute;
+  top           : -6px;
+  right         : -8px;
+  min-width     : 15px;
+  height        : 15px;
+  border-radius : 99px;
+  font-size     : 0.55rem;
+  font-weight   : 800;
+  color         : #fff;
+  padding       : 0 3px;
+  display       : flex;
+  align-items   : center;
+  justify-content: center;
+  border        : 1.5px solid $bg;
+  line-height   : 1;
+  pointer-events: none;
+  white-space   : nowrap;
+  animation     : badge-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+
+  &.red {
+    background: #ef4444;
+    animation : badge-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards,
+                badge-pulse 2s ease-in-out 0.3s infinite;
+  }
+  &.amber {
+    background: #f59e0b;
+    animation : badge-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards,
+                badge-pulse-amber 2s ease-in-out 0.3s infinite;
+  }
+  &.indigo {
+    background: #6366f1;
+    animation : badge-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  }
+}
+
+// ── Animation entrée topbar ───────────────────────────────────────────────
+@keyframes topbar-in {
+  from { transform: translateY(-100%); opacity: 0; }
+  to   { transform: translateY(0);     opacity: 1; }
+}
+
+.topbar {
+  animation: topbar-in 0.25s ease-out forwards;
+}
+
+// ── Badge Super Admin ─────────────────────────────────────────────────────
+.sa-badge {
+  font-size     : 0.65rem;
+  font-weight   : 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color         : #d97706;
+  background    : #fef3c7;
+  padding       : 4px 10px;
+  border-radius : 99px;
+  border        : 1px solid #fde68a;
+}
+
+// ── Chip profil ───────────────────────────────────────────────────────────
+.profile-chip {
+  display        : flex;
+  align-items    : center;
+  gap            : 0.5rem;
+  height         : 40px;
+  padding        : 0 0.5rem 0 0.375rem;
+  border-radius  : 10px;
+  border         : 1px solid transparent;
+  background     : transparent;
+  cursor         : pointer;
+  transition     : background 0.15s, border-color 0.15s;
+  text-decoration: none;
+
+  &:hover {
+    background  : #f8fafc;
+    border-color: $border;
+  }
+}
+
+// Avatar
+.avatar {
+  width          : 30px;
+  height         : 30px;
+  border-radius  : 8px;
+  font-size      : 0.8rem;
+  font-weight    : 800;
+  color          : #fff;
+  display        : flex;
+  align-items    : center;
+  justify-content: center;
+  flex-shrink    : 0;
+
+  &.admin    { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
+  &.super    { background: linear-gradient(135deg, #f59e0b, #d97706); }
+  &.customer { background: linear-gradient(135deg, #10b981, #059669); }
+}
+
+// Infos profil
+.profile-info {
+  display       : flex;
+  flex-direction: column;
+  line-height   : 1.15;
+  text-align    : left;
+}
+
+.profile-name {
+  font-size    : 0.8rem;
+  font-weight  : 600;
+  color        : $text-dark;
+  max-width    : 140px;
+  white-space  : nowrap;
+  overflow     : hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-role {
+  font-size: 0.65rem;
+  color    : $text-soft;
+}
+
+.chevron {
+  font-size  : 1rem !important;
+  width      : 1rem !important;
+  height     : 1rem !important;
+  color      : $text-soft !important;
+  transition : transform 0.2s ease !important;
+}
+
+// Rotation du chevron quand menu ouvert
+.profile-chip[aria-expanded="true"] .chevron {
+  transform: rotate(180deg);
+}
