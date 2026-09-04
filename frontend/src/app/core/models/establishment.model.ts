@@ -35,8 +35,9 @@ export interface Establishment {
   website?:        string;
   instagram?:      string;
   facebook?:       string;
-  tvaRate?:        number | null;
-  paymentMethods?:       string[];
+  tvaRate?:            number | null;
+  lowStockThreshold?:  number;
+  paymentMethods?:     string[];
   customPaymentMethods?: { value: string; label: string; icon: string }[];
   staffPermissions?: {
     manager?: Record<string, boolean>;

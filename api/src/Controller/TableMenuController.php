@@ -57,11 +57,12 @@ class TableMenuController extends AbstractController
                 'qrToken'  => $table->getQrToken(),
             ],
             'establishment' => [
-                'id'          => $establishment->getId(),
-                'name'        => $establishment->getName() ?? '',
-                'slug'        => method_exists($establishment, 'getSlug') ? ($establishment->getSlug() ?? '') : '',
-                'logo'        => method_exists($establishment, 'getLogo') ? $establishment->getLogo() : null,
-                'description' => method_exists($establishment, 'getDescription') ? $establishment->getDescription() : null,
+                'id'                => $establishment->getId(),
+                'name'              => $establishment->getName() ?? '',
+                'slug'              => method_exists($establishment, 'getSlug') ? ($establishment->getSlug() ?? '') : '',
+                'logo'              => method_exists($establishment, 'getLogo') ? $establishment->getLogo() : null,
+                'description'       => method_exists($establishment, 'getDescription') ? $establishment->getDescription() : null,
+                'lowStockThreshold' => $establishment->getLowStockThreshold(),
             ]
         ]);
     }

@@ -61,6 +61,18 @@ class Pack
     private $isActive = true;
 
     /**
+     * @ORM\Column(type="boolean")
+     * @Groups({"pack:read", "pack:write", "menu:read"})
+     */
+    private bool $trackStock = false;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     * @Groups({"pack:read", "pack:write", "menu:read"})
+     */
+    private ?int $stock = null;
+
+    /**
      * Enseigne propriétaire de ce menu
      * @ORM\ManyToOne(targetEntity=Establishment::class)
      * @ORM\JoinColumn(nullable=true)
@@ -109,5 +121,16 @@ class Pack
     {
         $this->products->removeElement($product);
         return $this;
+    }
+
+    public function getTrackStock(): bool { return $this->trackStock; }
+    public function setTrackStock(bool $v): self { $this->trackStock = $v; return $this; }
+
+    public function getStock(): ?int { return $this->stock; }
+    public function setStock(?int $v): self { $this->stock = $v; return $this; }
+
+    public function isOutOfStock(): bool
+    {
+        return $this->trackStock && $this->stock !== null && $this->stock <= 0;
     }
 }

@@ -87,6 +87,7 @@ export class SettingsComponent implements OnInit {
   waiterPerms:  Record<string, boolean> = {};
 
   facturationForm!: FormGroup;
+  stockForm!: FormGroup;
 
   constructor(
     private fb: FormBuilder,
@@ -101,6 +102,9 @@ export class SettingsComponent implements OnInit {
     this.isAdmin = this.authService.isAdmin();
     this.facturationForm = this.fb.group({
       tvaRate: [19, [Validators.required, Validators.min(0), Validators.max(100)]],
+    });
+    this.stockForm = this.fb.group({
+      lowStockThreshold: [0, [Validators.required, Validators.min(0)]],
     });
     this.establishmentService.getAll().subscribe({
       next: (items) => {
@@ -143,6 +147,9 @@ export class SettingsComponent implements OnInit {
 
     // Facturation
     this.facturationForm.patchValue({ tvaRate: this.establishment.tvaRate ?? 19 });
+    // Stock
+    this.stockForm.patchValue({ lowStockThreshold: this.establishment.lowStockThreshold ?? 0 });
+    if (!this.isAdmin) { this.stockForm.disable(); }
     if (!this.isAdmin) { this.facturationForm.disable(); }
   }
 
@@ -205,6 +212,20 @@ export class SettingsComponent implements OnInit {
         this.permissionService.loadFromEstablishment(est);
         this.saving = false;
         this.notify('Permissions sauvegardées ✓');
+        this.cdr.detectChanges();
+      },
+      error: (err) => { this.saving = false; this.notify(err.message, 'error'); }
+    });
+  }
+
+  saveStock(): void {
+    if (!this.establishment?.id || this.stockForm.invalid) return;
+    this.saving = true;
+    this.establishmentService.update(this.establishment.id, this.stockForm.value as any).subscribe({
+      next: (est) => {
+        this.establishment = est;
+        this.saving = false;
+        this.notify('Paramètres de stock sauvegardés ✓');
         this.cdr.detectChanges();
       },
       error: (err) => { this.saving = false; this.notify(err.message, 'error'); }

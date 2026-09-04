@@ -51,6 +51,8 @@ export class PackFormDialogComponent implements OnInit {
       description: [p?.description ?? ''],
       price:       [p?.price ?? 0,        [Validators.required, Validators.min(0.01)]],
       isActive:    [p?.isActive ?? true],
+      trackStock:  [p?.trackStock ?? false],
+      stock:       [p?.stock ?? null],
       products:    [
         p?.products?.map((prod: any) =>
           typeof prod === 'string' ? prod : prod['@id']
@@ -72,6 +74,10 @@ export class PackFormDialogComponent implements OnInit {
     return this.data.products
       .filter(p => selectedIris.includes(p['@id'] ?? ''))
       .reduce((sum, p) => sum + p.price, 0);
+  }
+
+  get isTrackingStock(): boolean {
+    return this.form.get('trackStock')?.value === true;
   }
 
   get nameError(): string {

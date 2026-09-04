@@ -688,6 +688,38 @@ $radius-sm: 10px;
   mat-icon { font-size: 1.75rem; width: 1.75rem; height: 1.75rem; color: $amber; }
 }
 
+// ── Rupture de stock ──────────────────────────
+.out-of-stock {
+  opacity: 0.75;
+
+  .pc-name { color: $text-muted; }
+  .pc-price { color: $text-muted; }
+}
+
+.oos-badge {
+  position      : absolute;
+  top           : 6px;
+  left          : 6px;
+  background    : $amber;
+  color         : $white;
+  font-size     : 9px;
+  font-weight   : 700;
+  padding       : 2px 7px;
+  border-radius : 6px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  pointer-events: none;
+  z-index       : 2;
+}
+
+.oos-btn {
+  background : #f3f4f6 !important;
+  color      : #9ca3af !important;
+  cursor     : not-allowed !important;
+
+  &:disabled { opacity: 1; }
+}
+
 .in-cart-mark {
   position     : absolute;
   top          : -5px;

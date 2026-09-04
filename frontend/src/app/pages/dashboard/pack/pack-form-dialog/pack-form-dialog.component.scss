@@ -8,3 +8,32 @@
 
 // Amber price option color override
 .dlg-opt-price { color: #d97706; }
+
+// ── Toggle stock full-width ─────────────────────
+.dlg-stock-row {
+  display        : flex;
+  align-items    : center;
+  justify-content: space-between;
+  padding        : 0.875rem 1rem;
+  background     : var(--clr-bg);
+  border         : 1.5px solid var(--clr-border);
+  border-radius  : var(--radius-md);
+  margin-bottom  : 0.75rem;
+}
+
+.dlg-stock-info {
+  display       : flex;
+  flex-direction: column;
+  gap           : 2px;
+}
+
+.dlg-stock-label {
+  font-size  : 0.875rem;
+  font-weight: 600;
+  color      : var(--clr-text);
+}
+
+.dlg-stock-hint {
+  font-size: 0.72rem;
+  color    : var(--clr-text-soft);
+}

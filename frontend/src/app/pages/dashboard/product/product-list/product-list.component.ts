@@ -41,7 +41,7 @@ export class ProductListComponent implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-  displayedColumns = ['name', 'price', 'categories', 'status', 'actions'];
+  displayedColumns = ['name', 'price', 'categories', 'stock', 'status', 'actions'];
   dataSource = new MatTableDataSource<ProductRead>();
 
   categories: Category[] = [];

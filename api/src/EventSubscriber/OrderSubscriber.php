@@ -3,6 +3,8 @@
 namespace App\EventSubscriber;
 
 use App\Entity\Order;
+use App\Entity\Pack;
+use App\Entity\Product;
 use App\Entity\User;
 use App\Service\OrderService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -59,6 +61,7 @@ class OrderSubscriber implements EventSubscriberInterface
             $staffRoles = ['ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_WAITER'];
             if (count(array_intersect($staffRoles, $user->getRoles())) > 0) {
                 $object->setStatus(Order::STATUS_CONFIRMED);
+                $this->adjustStock($object, -1);
             } else {
                 $object->setStatus(Order::STATUS_PENDING);
             }
@@ -78,7 +81,35 @@ class OrderSubscriber implements EventSubscriberInterface
         }
 
         if ($method === 'PATCH' || $method === 'PUT') {
+            $uow            = $this->em->getUnitOfWork();
+            $originalData   = $uow->getOriginalEntityData($object);
+            $previousStatus = $originalData['status'] ?? null;
+            $newStatus      = $object->getStatus();
+
+            if ($previousStatus !== Order::STATUS_CONFIRMED && $newStatus === Order::STATUS_CONFIRMED) {
+                $this->adjustStock($object, -1);
+            } elseif ($previousStatus === Order::STATUS_CONFIRMED && $newStatus === Order::STATUS_CANCELLED) {
+                $this->adjustStock($object, +1);
+            }
+
             $object->recalculate();
+        }
+    }
+
+    private function adjustStock(Order $order, int $direction): void
+    {
+        foreach ($order->getItems() as $item) {
+            if ($item->getItemType() === 'PRODUCT') {
+                $product = $this->em->getRepository(Product::class)->find($item->getItemId());
+                if ($product && $product->getTrackStock() && $product->getStock() !== null) {
+                    $product->setStock(max(0, $product->getStock() + ($direction * $item->getQuantity())));
+                }
+            } elseif ($item->getItemType() === 'PACK') {
+                $pack = $this->em->getRepository(Pack::class)->find($item->getItemId());
+                if ($pack && $pack->getTrackStock() && $pack->getStock() !== null) {
+                    $pack->setStock(max(0, $pack->getStock() + ($direction * $item->getQuantity())));
+                }
+            }
         }
     }
 

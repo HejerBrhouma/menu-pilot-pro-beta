@@ -12,3 +12,63 @@
   color         : var(--clr-primary);
   font-size     : 0.82rem;
 }
+
+// ── Boutons d'action sous la photo ─────────────
+.dlg-img-actions {
+  display        : flex;
+  gap            : 0.5rem;
+  margin-top     : -0.25rem;
+  margin-bottom  : 0.25rem;
+}
+
+.dlg-img-action-btn {
+  display       : inline-flex;
+  align-items   : center;
+  gap           : 5px;
+  padding       : 5px 12px;
+  border-radius : 8px;
+  border        : 1.5px solid var(--clr-border);
+  background    : var(--clr-surface);
+  color         : var(--clr-text-mid);
+  font-size     : 0.78rem;
+  font-weight   : 600;
+  cursor        : pointer;
+  transition    : all 0.15s;
+
+  mat-icon { font-size: 0.9rem !important; width: 0.9rem !important; height: 0.9rem !important; }
+
+  &:hover { border-color: var(--clr-primary); color: var(--clr-primary); background: var(--clr-primary-light); }
+
+  &.danger {
+    &:hover { border-color: var(--clr-danger); color: var(--clr-danger); background: #fef2f2; }
+  }
+}
+
+// ── Toggle stock full-width ─────────────────────
+.dlg-stock-row {
+  display        : flex;
+  align-items    : center;
+  justify-content: space-between;
+  padding        : 0.875rem 1rem;
+  background     : var(--clr-bg);
+  border         : 1.5px solid var(--clr-border);
+  border-radius  : var(--radius-md);
+  margin-bottom  : 0.75rem;
+}
+
+.dlg-stock-info {
+  display       : flex;
+  flex-direction: column;
+  gap           : 2px;
+}
+
+.dlg-stock-label {
+  font-size  : 0.875rem;
+  font-weight: 600;
+  color      : var(--clr-text);
+}
+
+.dlg-stock-hint {
+  font-size: 0.72rem;
+  color    : var(--clr-text-soft);
+}

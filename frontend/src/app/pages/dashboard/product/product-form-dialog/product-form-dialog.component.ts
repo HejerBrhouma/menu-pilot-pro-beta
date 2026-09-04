@@ -64,7 +64,9 @@ export class ProductFormDialogComponent implements OnInit {
       price:       [p?.price       ?? 0,  [Validators.required, Validators.min(0.01)]],
       description: [p?.description ?? ''],
       categories:  [p?.categories?.map((c: any) => typeof c === 'string' ? c : c['@id']) ?? []],
-      isAvailable: [p?.isAvailable ?? true]
+      isAvailable: [p?.isAvailable ?? true],
+      trackStock:  [p?.trackStock  ?? false],
+      stock:       [p?.stock       ?? null]
     });
 
     // Image existante
@@ -160,6 +162,10 @@ export class ProductFormDialogComponent implements OnInit {
     if (c?.hasError('required'))   return 'Le nom est requis';
     if (c?.hasError('minlength'))  return 'Minimum 2 caractères';
     return '';
+  }
+
+  get isTrackingStock(): boolean {
+    return this.form.get('trackStock')?.value === true;
   }
 
   get priceError(): string {

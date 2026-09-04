@@ -64,6 +64,20 @@ class Product
     private bool $isAvailable = true;
 
     /**
+     * Si true, la quantité en stock est suivie
+     * @ORM\Column(type="boolean")
+     * @Groups({"product:read", "product:write", "menu:read"})
+     */
+    private bool $trackStock = false;
+
+    /**
+     * Quantité disponible en stock (null = non suivi)
+     * @ORM\Column(type="integer", nullable=true)
+     * @Groups({"product:read", "product:write", "menu:read"})
+     */
+    private ?int $stock = null;
+
+    /**
      * @ORM\ManyToMany(targetEntity=Category::class, inversedBy="products")
      * @Groups({"product:read", "product:write"})
      */
@@ -112,4 +126,15 @@ class Product
 
     public function getEstablishment(): ?Establishment { return $this->establishment; }
     public function setEstablishment(?Establishment $e): self { $this->establishment = $e; return $this; }
+
+    public function getTrackStock(): bool { return $this->trackStock; }
+    public function setTrackStock(bool $v): self { $this->trackStock = $v; return $this; }
+
+    public function getStock(): ?int { return $this->stock; }
+    public function setStock(?int $v): self { $this->stock = $v; return $this; }
+
+    public function isOutOfStock(): bool
+    {
+        return $this->trackStock && $this->stock !== null && $this->stock <= 0;
+    }
 }

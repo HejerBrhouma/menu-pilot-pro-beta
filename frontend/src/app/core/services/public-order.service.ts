@@ -14,11 +14,12 @@ export interface PublicTableInfo {
     qrToken:  string;
   };
   establishment: {
-    id:          number;
-    name:        string;
-    slug:        string;
-    logo:        string | null;
-    description: string | null;
+    id:                 number;
+    name:               string;
+    slug:               string;
+    logo:               string | null;
+    description:        string | null;
+    lowStockThreshold:  number;
   };
 }
 

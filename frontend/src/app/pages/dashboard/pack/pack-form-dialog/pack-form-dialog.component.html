@@ -80,6 +80,25 @@
       </div>
     </div>
 
+    <!-- ── Stock ── -->
+    <div class="dlg-section"><mat-icon>inventory</mat-icon>Gestion du stock</div>
+
+    <div class="dlg-stock-row">
+      <div class="dlg-stock-info">
+        <span class="dlg-stock-label">Suivi du stock actif</span>
+        <span class="dlg-stock-hint">Activez pour limiter les commandes selon la quantité disponible</span>
+      </div>
+      <mat-slide-toggle formControlName="trackStock" color="primary"></mat-slide-toggle>
+    </div>
+
+    <mat-form-field appearance="outline" class="dlg-full" *ngIf="isTrackingStock">
+      <mat-label>Quantité en stock</mat-label>
+      <input matInput type="number" formControlName="stock" min="0" step="1"
+             placeholder="Ex : 10">
+      <mat-icon matSuffix>inventory_2</mat-icon>
+      <mat-hint>Le seuil de rupture est configurable dans Paramètres → Facturation</mat-hint>
+    </mat-form-field>
+
   </form>
 
   <!-- ══ FOOTER ════════════════════════════════════════════════════════ -->

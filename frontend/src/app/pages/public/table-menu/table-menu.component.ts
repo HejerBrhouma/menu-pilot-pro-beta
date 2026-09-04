@@ -387,7 +387,17 @@ export class TableMenuComponent implements OnInit, OnDestroy {
 
   // ── Panier ────────────────────────────────────────────────────────
 
+  isOutOfStock(item: any): boolean {
+    if (item.trackStock !== true || item.stock === null || item.stock === undefined) return false;
+    const threshold = this.tableInfo?.establishment?.lowStockThreshold ?? 0;
+    return item.stock <= threshold;
+  }
+
   addToCart(item: any, type: 'PRODUCT' | 'PACK'): void {
+    if (this.isOutOfStock(item)) {
+      this.snackBar.open('Ce produit est en rupture de stock', '✕', { duration: 2500 });
+      return;
+    }
     const existing = this.cart.find(c => c.itemId === item.id && c.itemType === type);
     if (existing) { existing.quantity++; }
     else { this.cart.push({ itemType: type, itemId: item.id, itemName: item.name, unitPrice: item.price, quantity: 1, notes: '' }); }

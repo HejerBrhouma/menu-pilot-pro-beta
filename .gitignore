@@ -7,8 +7,12 @@
 Thumbs.db
 
 # Environment files
+.env
 .env.local
 .env.*.local
+.env.test
+!.env.example
+!**/.env.example
 
 # Uploads
 api/public/uploads/

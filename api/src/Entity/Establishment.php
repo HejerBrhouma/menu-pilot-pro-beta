@@ -146,6 +146,14 @@ class Establishment
     private ?float $tvaRate = null;
 
     /**
+     * Seuil de rupture de stock : un produit est "en rupture" si stock <= ce seuil.
+     * 0 = rupture uniquement quand stock = 0. 5 = alerte dès que stock <= 5.
+     * @ORM\Column(type="integer")
+     * @Groups({"establishment:read", "establishment:write", "table_menu:read"})
+     */
+    private int $lowStockThreshold = 0;
+
+    /**
      * Modes de paiement acceptés (ex: ["cash","card","cheque"])
      * @ORM\Column(type="json", nullable=true)
      * @Groups({"establishment:read", "establishment:write"})
@@ -268,6 +276,9 @@ class Establishment
 
     public function getTvaRate(): ?float { return $this->tvaRate; }
     public function setTvaRate(?float $tvaRate): self { $this->tvaRate = $tvaRate; return $this; }
+
+    public function getLowStockThreshold(): int { return $this->lowStockThreshold; }
+    public function setLowStockThreshold(int $v): self { $this->lowStockThreshold = $v; return $this; }
 
     public function getPaymentMethods(): array { return $this->paymentMethods ?? ['cash', 'card']; }
     public function setPaymentMethods(array $m): self { $this->paymentMethods = $m; return $this; }

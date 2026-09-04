@@ -24,6 +24,7 @@
     <!-- ── Photo ── -->
     <div class="dlg-section"><mat-icon>photo_camera</mat-icon>Photo du produit</div>
 
+    <!-- Zone upload -->
     <div class="dlg-image-zone"
          [class.has-img]="previewUrl"
          [class.dragover]="isDragOver"
@@ -32,6 +33,7 @@
          (drop)="onDrop($event)"
          (click)="!previewUrl && fileInput.click()">
 
+      <!-- Aperçu image -->
       <ng-container *ngIf="previewUrl && !uploading">
         <img [src]="previewUrl" class="dlg-img-preview" alt="Aperçu">
         <div class="dlg-img-overlay">
@@ -46,11 +48,13 @@
         </div>
       </ng-container>
 
+      <!-- Upload en cours -->
       <div class="dlg-upload-progress" *ngIf="uploading">
         <mat-spinner diameter="28"></mat-spinner>
         <span>Upload en cours…</span>
       </div>
 
+      <!-- Placeholder vide -->
       <ng-container *ngIf="!previewUrl && !uploading">
         <mat-icon class="dlg-upload-icon">add_photo_alternate</mat-icon>
         <span class="dlg-upload-label">Cliquer ou glisser une photo</span>
@@ -59,6 +63,16 @@
 
       <input #fileInput type="file" accept="image/*" style="display:none"
              (change)="onFileSelected($event)">
+    </div>
+
+    <!-- Actions sous l'image (visible quand image présente) -->
+    <div class="dlg-img-actions" *ngIf="previewUrl && !uploading">
+      <button type="button" class="dlg-img-action-btn" (click)="fileInput.click()">
+        <mat-icon>photo_camera</mat-icon> Changer la photo
+      </button>
+      <button type="button" class="dlg-img-action-btn danger" (click)="removeImage()">
+        <mat-icon>delete_outline</mat-icon> Supprimer
+      </button>
     </div>
 
     <div class="dlg-pending-badge" *ngIf="pendingFile">
@@ -105,6 +119,25 @@
         </mat-option>
       </mat-select>
       <mat-icon matSuffix>category</mat-icon>
+    </mat-form-field>
+
+    <!-- ── Stock ── -->
+    <div class="dlg-section"><mat-icon>inventory</mat-icon>Gestion du stock</div>
+
+    <div class="dlg-stock-row">
+      <div class="dlg-stock-info">
+        <span class="dlg-stock-label">Suivi du stock actif</span>
+        <span class="dlg-stock-hint">Activez pour limiter les commandes selon la quantité disponible</span>
+      </div>
+      <mat-slide-toggle formControlName="trackStock" color="primary"></mat-slide-toggle>
+    </div>
+
+    <mat-form-field appearance="outline" class="dlg-full" *ngIf="isTrackingStock">
+      <mat-label>Quantité en stock</mat-label>
+      <input matInput type="number" formControlName="stock" min="0" step="1"
+             placeholder="Ex : 20">
+      <mat-icon matSuffix>inventory_2</mat-icon>
+      <mat-hint>Le seuil de rupture est configurable dans Paramètres → Facturation</mat-hint>
     </mat-form-field>
 
   </form>

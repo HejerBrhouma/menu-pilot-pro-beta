@@ -17,6 +17,8 @@ export interface Pack {
   description?: string;
   price: number;
   isActive: boolean;
+  trackStock?: boolean;
+  stock?: number | null;
   products: string[]; // IRIs pour écriture
 }
 

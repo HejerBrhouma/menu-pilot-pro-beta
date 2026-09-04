@@ -44,7 +44,7 @@ export class PackListComponent implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-  displayedColumns = ['name', 'products', 'price', 'status', 'actions'];
+  displayedColumns = ['name', 'products', 'price', 'stock', 'status', 'actions'];
   dataSource = new MatTableDataSource<PackRead>();
 
   allProducts: ProductRead[] = [];

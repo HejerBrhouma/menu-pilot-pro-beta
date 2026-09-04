@@ -13,6 +13,8 @@ export interface Product {
   price: number;
   description?: string;
   isAvailable?: boolean;
+  trackStock?: boolean;
+  stock?: number | null;
   categories: string[]; // IRIs ex: ["/api/categories/1"]
 }
 

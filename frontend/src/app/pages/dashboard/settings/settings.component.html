@@ -287,6 +287,83 @@
           </div>
         </mat-tab>
 
+        <!-- ── TAB : Stock ── -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <mat-icon>inventory_2</mat-icon>&nbsp;Stock
+          </ng-template>
+
+          <div class="tab-body">
+            <div class="tab-section-title">
+              <mat-icon>inventory</mat-icon>
+              <span>Gestion du stock</span>
+            </div>
+            <p class="tab-desc">
+              Configurez le comportement du stock pour les produits et formules.
+              Les produits dont le stock atteint le seuil défini apparaissent
+              <strong>en orange</strong> sur le menu client avec la mention "Rupture de stock".
+            </p>
+
+            <form [formGroup]="stockForm">
+
+              <!-- Seuil de rupture -->
+              <div class="stock-threshold-card">
+                <div class="stc-header">
+                  <div class="stc-icon">
+                    <mat-icon>warning_amber</mat-icon>
+                  </div>
+                  <div class="stc-info">
+                    <span class="stc-label">Seuil de rupture de stock</span>
+                    <span class="stc-desc">
+                      Un produit est considéré en rupture si son stock est
+                      inférieur ou égal à cette valeur.
+                    </span>
+                  </div>
+                </div>
+
+                <mat-form-field appearance="outline" class="stc-field">
+                  <mat-label>Seuil</mat-label>
+                  <input matInput formControlName="lowStockThreshold"
+                         type="number" min="0" step="1" placeholder="0">
+                  <mat-icon matSuffix>inventory_2</mat-icon>
+                  <mat-hint>0 = rupture uniquement à stock zéro · 5 = alerte dès que stock ≤ 5</mat-hint>
+                  <mat-error *ngIf="stockForm.get('lowStockThreshold')?.hasError('min')">
+                    La valeur doit être ≥ 0
+                  </mat-error>
+                </mat-form-field>
+
+                <!-- Exemples visuels -->
+                <div class="stc-examples">
+                  <div class="stc-example">
+                    <span class="stc-ex-badge out">Rupture de stock</span>
+                    <span class="stc-ex-text">
+                      Stock ≤ {{ stockForm.get('lowStockThreshold')?.value ?? 0 }}
+                      → affiché en orange, ajout au panier désactivé
+                    </span>
+                  </div>
+                  <div class="stc-example">
+                    <span class="stc-ex-badge ok">Disponible</span>
+                    <span class="stc-ex-text">
+                      Stock > {{ stockForm.get('lowStockThreshold')?.value ?? 0 }}
+                      → affiché normalement
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="tab-actions" *ngIf="isAdmin">
+                <button class="ds-btn ds-btn-primary save-btn"
+                        (click)="saveStock()"
+                        [disabled]="saving || stockForm.invalid">
+                  <mat-spinner diameter="16" *ngIf="saving"></mat-spinner>
+                  <mat-icon *ngIf="!saving">save</mat-icon>
+                  Enregistrer
+                </button>
+              </div>
+            </form>
+          </div>
+        </mat-tab>
+
       </mat-tab-group>
     </div>
 

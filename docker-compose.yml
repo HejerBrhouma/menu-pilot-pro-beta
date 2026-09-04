@@ -12,11 +12,11 @@ services:
     environment:
       JWT_SECRET_KEY: /var/www/html/config/jwt/private.pem
       JWT_PUBLIC_KEY: /var/www/html/config/jwt/public.pem
-      JWT_PASSPHRASE: aa751c3028c99c1fc3839c51df98e10d6a8055cae3a3682fad4ea89f166dfc6a
+      JWT_PASSPHRASE: ${JWT_PASSPHRASE}
       DATABASE_URL: mysql://${DB_USER}:${DB_PASSWORD}@database:${DB_PORT}/${DB_NAME}?serverVersion=mariadb-10.11.2
       MERCURE_URL: http://mercure:3000/.well-known/mercure
       MERCURE_PUBLIC_URL: http://localhost:3000/.well-known/mercure
-      MERCURE_JWT_SECRET: K8mN2pQx7vL4wR9jT6uY3hA1sD5fG0cE
+      MERCURE_JWT_SECRET: ${MERCURE_JWT_SECRET}
     depends_on:
       - database
       - mercure
@@ -83,7 +83,7 @@ services:
       SERVER_NAME: ':3000'
       MERCURE_URL: http://mercure:3000/.well-known/mercure
       MERCURE_PUBLIC_URL: http://localhost:3000/.well-known/mercure
-      MERCURE_JWT_SECRET: K8mN2pQx7vL4wR9jT6uY3hA1sD5fG0cE
+      MERCURE_JWT_SECRET: ${MERCURE_JWT_SECRET}
       MERCURE_PUBLISHER_JWT_KEY: ${MERCURE_JWT_SECRET}
       MERCURE_SUBSCRIBER_JWT_KEY: ${MERCURE_JWT_SECRET}
       MERCURE_EXTRA_DIRECTIVES: |

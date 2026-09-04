@@ -228,7 +228,8 @@
       </div>
 
       <div class="product-card" *ngFor="let p of filteredProducts"
-           [class.in-cart]="isInCart(p.id, 'PRODUCT')">
+           [class.in-cart]="isInCart(p.id, 'PRODUCT')"
+           [class.out-of-stock]="isOutOfStock(p)">
 
         <!-- Image / Avatar -->
         <div class="pc-media">
@@ -243,6 +244,7 @@
           <span class="in-cart-mark" *ngIf="isInCart(p.id, 'PRODUCT')">
             {{ getQty(p.id, 'PRODUCT') }}
           </span>
+          <span class="oos-badge" *ngIf="isOutOfStock(p)">Rupture de stock</span>
         </div>
 
         <!-- Info -->
@@ -257,12 +259,17 @@
           <div class="pc-footer">
             <span class="pc-price">{{ p.price | number:'1.2-2' }} TND</span>
             <div class="pc-actions">
-              <ng-container *ngIf="!isInCart(p.id, 'PRODUCT')">
+              <ng-container *ngIf="isOutOfStock(p)">
+                <button class="add-btn oos-btn" disabled>
+                  <mat-icon>block</mat-icon>
+                </button>
+              </ng-container>
+              <ng-container *ngIf="!isOutOfStock(p) && !isInCart(p.id, 'PRODUCT')">
                 <button class="add-btn" (click)="addToCart(p, 'PRODUCT')">
                   <mat-icon>add</mat-icon>
                 </button>
               </ng-container>
-              <ng-container *ngIf="isInCart(p.id, 'PRODUCT')">
+              <ng-container *ngIf="!isOutOfStock(p) && isInCart(p.id, 'PRODUCT')">
                 <div class="qty-row">
                   <button class="qty-btn minus"
                           (click)="updateQty(getCartItem(p.id, 'PRODUCT')!, getQty(p.id, 'PRODUCT') - 1)">
@@ -290,7 +297,8 @@
       </div>
 
       <div class="product-card pack-card" *ngFor="let pk of filteredPacks"
-           [class.in-cart]="isInCart(pk.id, 'PACK')">
+           [class.in-cart]="isInCart(pk.id, 'PACK')"
+           [class.out-of-stock]="isOutOfStock(pk)">
 
         <div class="pc-media">
           <div class="pc-avatar pack-av">
@@ -299,6 +307,7 @@
           <span class="in-cart-mark" *ngIf="isInCart(pk.id, 'PACK')">
             {{ getQty(pk.id, 'PACK') }}
           </span>
+          <span class="oos-badge" *ngIf="isOutOfStock(pk)">Rupture de stock</span>
         </div>
 
         <div class="pc-body">
@@ -318,12 +327,17 @@
           <div class="pc-footer">
             <span class="pc-price pack-price">{{ pk.price | number:'1.2-2' }} TND</span>
             <div class="pc-actions">
-              <ng-container *ngIf="!isInCart(pk.id, 'PACK')">
+              <ng-container *ngIf="isOutOfStock(pk)">
+                <button class="add-btn oos-btn" disabled>
+                  <mat-icon>block</mat-icon>
+                </button>
+              </ng-container>
+              <ng-container *ngIf="!isOutOfStock(pk) && !isInCart(pk.id, 'PACK')">
                 <button class="add-btn pack-add" (click)="addToCart(pk, 'PACK')">
                   <mat-icon>add</mat-icon>
                 </button>
               </ng-container>
-              <ng-container *ngIf="isInCart(pk.id, 'PACK')">
+              <ng-container *ngIf="!isOutOfStock(pk) && isInCart(pk.id, 'PACK')">
                 <div class="qty-row">
                   <button class="qty-btn minus"
                           (click)="updateQty(getCartItem(pk.id, 'PACK')!, getQty(pk.id, 'PACK') - 1)">
